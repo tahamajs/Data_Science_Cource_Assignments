@@ -1,9 +1,0 @@
-# تنظیمات دیتابیس MySQL
-# این فایل را کپی کرده و با نام .env ذخیره کنید
-
-DB_USER=ds_user
-DB_PASS=userpass
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=ds_project
-

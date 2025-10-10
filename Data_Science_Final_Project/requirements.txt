@@ -1,0 +1,10 @@
+pandas
+sqlalchemy
+pymysql
+scikit-learn
+matplotlib
+seaborn
+numpy
+cryptography
+SQLAlchemy
+mysql-connector-python

@@ -1,0 +1,37 @@
+# Ignore large data files
+# uber-raw-data-janjune-15.csv
+# uber_trips_processed.csv
+
+# Ignore processed outputs
+output/
+logs/
+*.log
+
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ignore IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Ignore environment files
+.env
+.venv
+venv/
+ENV/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore large CSV files (uncomment if needed)
+# *.csv
+
+# Ignore model files if too large
+# models/*.joblib
+# models/*.pkl
