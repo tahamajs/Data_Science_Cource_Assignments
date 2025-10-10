@@ -1,0 +1,8 @@
+# ignore large data files
+# uber-raw-data-janjune-15.csv
+# uber_trips_processed.csv
+
+# ignore IDE settings
+.idea/
+# *.csv
+
