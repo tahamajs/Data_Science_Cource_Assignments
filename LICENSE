@@ -1,0 +1,54 @@
+MIT License
+
+Copyright (c) 2024-2025 Data Science Course - University of Tehran
+Team Members: 810101504, 810101492, 810101520
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+ACADEMIC USE NOTICE:
+
+This repository contains coursework and projects completed as part of the 
+Data Science course at the University of Tehran (2024-2025 Academic Year).
+
+The materials in this repository are provided for:
+- Educational purposes
+- Portfolio demonstration
+- Knowledge sharing
+- Academic reference
+
+Students and educators are free to:
+✓ Study and learn from the code
+✓ Reference methodologies and approaches
+✓ Use as inspiration for their own projects
+✓ Fork and modify for educational purposes
+
+However, please note:
+✗ Direct copying for academic submissions constitutes plagiarism
+✗ Proper citation should be provided when referencing this work
+✗ Academic integrity policies of your institution must be respected
+
+CITATION:
+If you use or reference this work, please cite as:
+"Data Science Course Materials, University of Tehran, 2024-2025
+Available at: [Repository URL]"
+
+For questions or collaboration inquiries, please open an issue on GitHub.
+
