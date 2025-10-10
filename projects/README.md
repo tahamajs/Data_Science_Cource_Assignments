@@ -7,8 +7,10 @@ This repository contains all assignments and projects from the Data Science cour
 ## 📚 Projects Overview
 
 ### [CA0: Statistical Inference & Monte Carlo Simulation](./CA0_Statistical_Inference_Monte_Carlo/)
+
 **Topics**: Probability Theory, Hypothesis Testing, Confidence Intervals  
 **Concepts**:
+
 - Monte Carlo simulation for roulette games
 - Electoral polling data analysis (2016 US Election)
 - Clinical trial statistical testing
@@ -17,8 +19,10 @@ This repository contains all assignments and projects from the Data Science cour
 ---
 
 ### [CA1: Data Visualization & Score-Based Sampling](./CA1_Data_Visualization_Score_Sampling/)
+
 **Topics**: Advanced Sampling, Langevin Dynamics, Data Visualization  
 **Concepts**:
+
 - Score Function computation
 - Langevin Dynamics sampling
 - Gaussian Mixture Models
@@ -27,8 +31,10 @@ This repository contains all assignments and projects from the Data Science cour
 ---
 
 ### [CA2: Real-Time Data Streaming with Kafka](./CA2_Real_Time_Streaming_Kafka/)
+
 **Topics**: Distributed Systems, Event-Driven Architecture  
 **Concepts**:
+
 - Apache Kafka producer implementation
 - Real-time transaction event generation
 - Poisson process for realistic event arrivals
@@ -37,8 +43,10 @@ This repository contains all assignments and projects from the Data Science cour
 ---
 
 ### [CA3: Advanced Machine Learning](./CA3_Advanced_ML_Regression_RecSys/)
+
 **Topics**: Regression, Feature Engineering, Recommender Systems  
 **Concepts**:
+
 - **Q1**: Bike-sharing demand prediction with ensemble methods
 - **Q2**: Movie recommender system using collaborative filtering
 - **Q3**: Statistical visualization and data analysis
@@ -46,8 +54,10 @@ This repository contains all assignments and projects from the Data Science cour
 ---
 
 ### [CA4: Deep Learning & Neural Networks](./CA4_Deep_Learning_Neural_Networks/)
+
 **Topics**: Neural Network Architectures  
 **Concepts**:
+
 - **Task 1**: Multi-Layer Perceptrons (MLP) for classification
 - **Task 2**: Convolutional Neural Networks (CNN) for images
 - **Task 3**: Recurrent Neural Networks (RNN/LSTM) for sequences
@@ -55,8 +65,10 @@ This repository contains all assignments and projects from the Data Science cour
 ---
 
 ### [CA56: NLP & Semi-Supervised Learning](./CA56_NLP_Semi_Supervised_Learning/)
+
 **Topics**: Natural Language Processing, Limited Labeled Data  
 **Concepts**:
+
 - Text vectorization (SentenceTransformers, Word2Vec)
 - Supervised learning baselines
 - Pseudo-labeling and self-training
@@ -67,16 +79,19 @@ This repository contains all assignments and projects from the Data Science cour
 ## 🛠️ Technologies Used
 
 ### Programming Languages & Core Libraries
+
 - **Python 3.8+**
 - NumPy, Pandas, SciPy
 - Matplotlib, Seaborn
 
 ### Machine Learning
+
 - scikit-learn
 - LightGBM, XGBoost
 - PyTorch, TensorFlow
 
 ### Specialized Tools
+
 - Apache Kafka (Confluent)
 - Gensim (Word2Vec)
 - SentenceTransformers
@@ -87,12 +102,14 @@ This repository contains all assignments and projects from the Data Science cour
 ## 📊 Skills Developed
 
 ### Statistical Analysis
+
 - Hypothesis testing (t-tests, ANOVA)
 - Confidence intervals and p-values
 - Monte Carlo simulation
 - Probability distributions
 
 ### Machine Learning
+
 - **Supervised Learning**: Regression, Classification
 - **Unsupervised Learning**: Clustering, Dimensionality Reduction
 - **Semi-Supervised Learning**: Pseudo-labeling, Active Learning
@@ -100,12 +117,14 @@ This repository contains all assignments and projects from the Data Science cour
 - **Ensemble Methods**: Stacking, Bagging, Boosting
 
 ### Data Engineering
+
 - Real-time streaming pipelines
 - Event-driven architecture
 - Data preprocessing and feature engineering
 - ETL processes
 
 ### Advanced Topics
+
 - Score-based sampling
 - Langevin dynamics
 - Collaborative filtering
@@ -165,6 +184,7 @@ DS/
 ## 🚀 How to Use This Repository
 
 ### Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd DS/projects
@@ -224,4 +244,3 @@ For questions about specific projects, refer to the individual README files in e
 ---
 
 **Last Updated**: January 2025
-
