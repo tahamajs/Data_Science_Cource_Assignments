@@ -1,138 +1,137 @@
-# آزمایش دوم: نمونه‌برداری و بصری‌سازی داده
-## Data Visualization & Score-Based Sampling
+# Assignment 1: Data Visualization & Score-Based Sampling
 
 ---
 
-## 📊 نمای کلی پروژه
+## 📊 Project Overview
 
-این پروژه به بررسی عمیق **روش‌های نمونه‌برداری پیشرفته** با تمرکز بر **Langevin Dynamics** و **Score-Based Sampling** می‌پردازد. هدف اصلی درک چگونگی نمونه‌برداری از توزیع‌های احتمالاتی پیچیده با استفاده از گرادیان تابع لگاریتم چگالی احتمال (Score Function) است.
-
----
-
-## 🎯 اهداف آموزشی
-
-### بخش 1: مفاهیم پایه
-- درک **Score Function**: \( \nabla_x \log p(x) \)
-- محاسبه میدان گرادیان برای توزیع‌های گاوسی
-- بصری‌سازی میدان برداری Score Function
-
-### بخش 2: Langevin Dynamics
-- پیاده‌سازی الگوریتم **Unadjusted Langevin Algorithm (ULA)**
-- نمونه‌برداری از توزیع گاوسی دوبعدی
-- مقایسه با روش‌های مستقیم (NumPy)
-
-### بخش 3: Gaussian Mixture Models (GMM)
-- محاسبه Score Function برای مخلوط‌های گاوسی
-- نمونه‌برداری از توزیع‌های چندقلّه‌ای
-- تحلیل کیفی و کمّی نتایج
-
-### بخش 4: تحلیل داده‌های Airbnb
-- پردازش و تمیزسازی داده
-- بصری‌سازی توزیع قیمت‌ها
-- تحلیل توزیع جغرافیایی
+This project explores advanced **sampling techniques** with a focus on **Langevin Dynamics** and **Score-Based Sampling**. The main objective is to understand how to sample from complex probability distributions using the gradient of the log-density function (Score Function).
 
 ---
 
-## 🔬 مفاهیم و تکنیک‌های اصلی
+## 🎯 Learning Objectives
 
-### 1. Score Function (تابع امتیاز)
+### Part 1: Fundamentals
+- Understand **Score Function**: \( \nabla_x \log p(x) \)
+- Calculate gradient field for Gaussian distributions
+- Visualize Score Function vector fields
 
-**تعریف**: گرادیان لگاریتم تابع چگالی احتمال
+### Part 2: Langevin Dynamics
+- Implement **Unadjusted Langevin Algorithm (ULA)**
+- Sample from 2D Gaussian distributions
+- Compare with direct methods (NumPy)
+
+### Part 3: Gaussian Mixture Models (GMM)
+- Calculate Score Function for mixture distributions
+- Sample from multi-modal distributions
+- Qualitative and quantitative analysis
+
+### Part 4: Airbnb Data Analysis
+- Data processing and cleaning
+- Price distribution visualization
+- Geographic distribution analysis
+
+---
+
+## 🔬 Core Concepts & Techniques
+
+### 1. Score Function
+
+**Definition**: Gradient of log probability density function
 
 ```python
 score(x) = ∇_x log p(x) = ∇_x p(x) / p(x)
 ```
 
-**برای توزیع گاوسی**:
+**For Gaussian Distribution**:
 ```python
 score(x) = -Σ⁻¹(x - μ)
 ```
 
-**کاربرد**:
-- نمونه‌برداری پیشرفته
-- مدل‌های مولد (Generative Models)
-- Score Matching
+**Applications**:
+- Advanced sampling algorithms
+- Generative models
+- Score matching
 
 ---
 
-### 2. Langevin Dynamics (دینامیک لانژوین)
+### 2. Langevin Dynamics
 
-**فرمول به‌روزرسانی**:
+**Update Formula**:
 ```
 x_{t+1} = x_t + ε·∇_x log p(x_t) + √(2ε)·η
 ```
 
-جایی که:
-- **ε**: اندازه گام (step size)
-- **η**: نویز گاوسی ~ N(0, I)
+where:
+- **ε**: step size
+- **η**: Gaussian noise ~ N(0, I)
 
-**مزایا**:
-- نیاز به تابع چگالی نرمال‌شده ندارد
-- فقط به Score Function نیاز دارد
-- برای توزیع‌های پیچیده کارآمد است
+**Advantages**:
+- No need for normalized density
+- Only requires Score Function
+- Efficient for complex distributions
 
-**پارامترهای مهم**:
-- **تعداد گام‌ها**: تعادل بین سرعت و دقت
-- **اندازه گام**: کوچک‌تر = دقیق‌تر اما کندتر
+**Key Parameters**:
+- **Number of steps**: Balance speed vs accuracy
+- **Step size**: Smaller = more accurate but slower
 
 ---
 
 ### 3. Gaussian Mixture Model (GMM)
 
-**تعریف**:
+**Definition**:
 ```
 p(x) = α·N(x; μ₁, Σ₁) + (1-α)·N(x; μ₂, Σ₂)
 ```
 
-**Score Function برای GMM**:
+**Score Function for GMM**:
 ```python
 ∇_x log p(x) = [α·p₁(x)·∇log p₁(x) + (1-α)·p₂(x)·∇log p₂(x)] / p(x)
 ```
 
-**چالش‌ها**:
-- نمونه‌برداری از توزیع‌های چندقلّه‌ای
-- جهش بین مُدها (Mode Hopping)
-- تنظیم پارامترها برای اکتشاف همه مُدها
+**Challenges**:
+- Sampling from multi-modal distributions
+- Mode hopping between clusters
+- Parameter tuning for exploring all modes
 
 ---
 
-## 📁 ساختار پروژه
+## 📁 Project Structure
 
 ```
 Data_Visualization_Score_Sampling/
 ├── code/
-│   └── code.ipynb              # نوتبوک اصلی پروژه
+│   └── code.ipynb              # Main project notebook
 ├── dataset/
-│   ├── Airbnb_Listings.xlsx    # داده‌های اقامتگاه‌ها
-│   └── Neighborhood_Locations.xlsx  # مختصات محله‌ها
+│   ├── Airbnb_Listings.xlsx    # Listing data
+│   └── Neighborhood_Locations.xlsx  # Geographic coordinates
 ├── description/
-│   └── CA1.pdf                 # توضیحات تمرین
+│   └── CA1.pdf                 # Assignment description
 ├── note/
-│   └── CA1.pdf                 # یادداشت‌ها و نمرات
-└── README.md                   # این فایل
+│   └── CA1.pdf                 # Notes and grades
+└── README.md                   # This file
 ```
 
 ---
 
-## 🛠️ تکنولوژی‌ها و کتابخانه‌ها
+## 🛠️ Technologies & Libraries
 
 ### Python Libraries
 
 ```python
-# محاسبات عددی و آماری
-numpy                 # محاسبات عددی
-scipy.stats          # توزیع‌های آماری
+# Numerical & Statistical Computing
+numpy                 # Numerical operations
+scipy.stats          # Statistical distributions
 sklearn              # KMeans clustering
 
-# بصری‌سازی
-matplotlib           # رسم نمودار پایه
-seaborn              # نمودارهای آماری پیشرفته
+# Visualization
+matplotlib           # Basic plotting
+seaborn              # Advanced statistical plots
 
-# پردازش داده
-pandas               # دستکاری DataFrame
+# Data Processing
+pandas               # DataFrame manipulation
 ```
 
-### الگوریتم‌های پیاده‌سازی شده
+### Implemented Algorithms
 
 1. **Score Computation**
    ```python
@@ -164,87 +163,89 @@ pandas               # دستکاری DataFrame
 
 ---
 
-## 📊 وظایف و تحلیل‌ها
+## 📊 Tasks & Analysis
 
-### Task 1: نمونه‌برداری از توزیع گاوسی (Sampling)
+### Task 1: Gaussian Distribution Sampling
 
-#### 1.1: محاسبه و بصری‌سازی Score Field
-- ایجاد شبکه 2D برای ارزیابی Score Function
-- محاسبه گرادیان در هر نقطه
-- رسم Contour Plot توزیع با Quiver Plot میدان برداری
+#### 1.1: Score Field Calculation & Visualization
+- Create 2D grid for Score Function evaluation
+- Calculate gradient at each point
+- Plot contour plot with quiver (vector field)
 
-**نتیجه**: 
-- بردارها به سمت میانگین توزیع اشاره می‌کنند
-- طول بردارها با فاصله از میانگین افزایش می‌یابد
+**Result**: 
+- Vectors point towards distribution mean
+- Vector magnitude increases with distance from mean
 
-#### 1.2: پیاده‌سازی Langevin Dynamics
-- تابع `run_langevin` با پارامترهای قابل تنظیم
-- شروع از نقاط تصادفی
-- به‌روزرسانی تکراری با استفاده از Score + نویز
+#### 1.2: Langevin Dynamics Implementation
+- `run_langevin` function with tunable parameters
+- Start from random points
+- Iterative update using Score + noise
 
-#### 1.3: بصری‌سازی مسیر نمونه‌برداری
-- رسم trajectory از نقطه شروع تا همگرایی
-- نمایش مراحل نزدیک شدن به ناحیه چگالی بالا
+#### 1.3: Sampling Trajectory Visualization
+- Plot trajectory from start to convergence
+- Show step-by-step movement towards high-density region
 
-#### 1.4: مقایسه Precise vs Fast Langevin
-**تنظیمات Precise**:
+#### 1.4: Precise vs Fast Langevin Comparison
+
+**Precise Settings**:
 - Step size: 0.05
-- تعداد گام: 5000
+- Number of steps: 5000
 
-**تنظیمات Fast**:
+**Fast Settings**:
 - Step size: 0.5
-- تعداد گام: 20
+- Number of steps: 20
 
-**معیارهای ارزیابی**:
+**Evaluation Metrics**:
 ```python
-# مقایسه میانگین
+# Mean comparison
 mean_numpy = np.mean(numpy_samples, axis=0)
 mean_precise = np.mean(langevin_precise, axis=0)
 mean_fast = np.mean(langevin_fast, axis=0)
 
-# مقایسه کوواریانس
+# Covariance comparison
 cov_numpy = np.cov(numpy_samples.T)
 cov_precise = np.cov(langevin_precise.T)
 
-# فاصله Wasserstein
+# Wasserstein distance
 w_distance_x = wasserstein_distance(numpy_samples[:, 0], 
                                      langevin_samples[:, 0])
 
-# آزمون Kolmogorov-Smirnov
+# Kolmogorov-Smirnov test
 ks_stat, p_value = ks_2samp(numpy_samples[:, 0], 
                              langevin_samples[:, 0])
 ```
 
-**نتایج**:
+**Results**:
 - **Precise Langevin**: 
-  - میانگین بسیار نزدیک به واقعیت
-  - p-value > 0.05 → توزیع‌ها مشابه
-  - Wasserstein distance کم
+  - Mean very close to ground truth
+  - p-value > 0.05 → Similar distributions
+  - Low Wasserstein distance
   
 - **Fast Langevin**:
-  - انحراف بیشتر از میانگین
-  - p-value ≈ 0 → تفاوت معنادار
-  - واریانس بالاتر
+  - Higher deviation from mean
+  - p-value ≈ 0 → Significant difference
+  - Higher variance
 
 ---
 
-### Task 1 - سوال 5 (Bonus): GMM Sampling
+### Task 1 - Question 5 (Bonus): GMM Sampling
 
-#### تحلیل تئوری Score Function برای GMM
+#### Theoretical Analysis of GMM Score Function
 
-**چالش اصلی**: Score Function یک مخلوط، ترکیب وزن‌داری از Score های اجزاء است:
+**Main Challenge**: Score Function of a mixture is a weighted combination of component scores:
 
 ```
 ∇log p(x) = [α·p₁(x)·∇log p₁(x) + (1-α)·p₂(x)·∇log p₂(x)] / p(x)
 ```
 
-**ویژگی‌های مهم**:
-- در نزدیکی هر مُد، Score آن مُد غالب است
-- در نواحی بینابین، وزن‌ها به نسبت چگالی‌ها تعیین می‌شوند
-- جهش بین مُدها به نویز کافی نیاز دارد
+**Key Properties**:
+- Near each mode, that mode's score dominates
+- In between regions, weights determined by density ratios
+- Mode hopping requires sufficient noise
 
-#### پیاده‌سازی و آزمایش
-**تنظیمات GMM**:
+#### Implementation & Testing
+
+**GMM Settings**:
 ```python
 mu_A = [-5, 5]
 mu_B = [5, -5]
@@ -252,14 +253,14 @@ Sigma_A = Sigma_B = 5*I
 mixing_coefficient = 0.5
 ```
 
-**پارامترهای Langevin**:
-- تعداد نمونه: 100
-- تعداد گام: 1000
-- اندازه گام: 0.05
+**Langevin Parameters**:
+- Number of samples: 100
+- Number of steps: 1000
+- Step size: 0.05
 
-#### ارزیابی کمّی
+#### Quantitative Evaluation
 
-**مقایسه میانگین‌ها**:
+**Mean Comparison**:
 ```
 Ground Truth Mode 1: [-5, 5]
 Ground Truth Mode 2: [5, -5]
@@ -267,15 +268,15 @@ Langevin Mean: [0.34, 0.32]
 Theoretical Mixture Mean: [0, 0]
 ```
 
-**تحلیل کوواریانس**:
+**Covariance Analysis**:
 ```
 Per-Mode Covariance: [[5, 0], [0, 5]]
 Langevin Covariance: [[29.9, -23.3], [-23.3, 25.8]]
 ```
-- واریانس بالاتر نشان‌دهنده پراکندگی بین دو مُد
-- همبستگی منفی نشان‌دهنده جهت‌گیری مورب
+- Higher variance indicates spread between two modes
+- Negative correlation shows diagonal orientation
 
-**معیارهای فاصله**:
+**Distance Metrics**:
 ```
 Wasserstein Distance:
   X-axis: 0.606
@@ -285,34 +286,34 @@ Kolmogorov-Smirnov Test:
   X-axis p-value: 0.815
   Y-axis p-value: 0.815
 ```
-- p-value > 0.05 → عدم تفاوت معنادار در توزیع‌های حاشیه‌ای
+- p-value > 0.05 → No significant difference in marginals
 
-#### بصری‌سازی نتایج
-1. **Scatter Plot**: نمایش نمونه‌ها در فضای 2D
-2. **Histogram Comparison**: مقایسه توزیع‌های حاشیه‌ای
-3. **KDE Plot**: برآورد ناپارامتری چگالی
+#### Visualization Results
+1. **Scatter Plot**: Display samples in 2D space
+2. **Histogram Comparison**: Compare marginal distributions
+3. **KDE Plot**: Non-parametric density estimation
 
 ---
 
-### Task 2: تحلیل داده‌های Airbnb
+### Task 2: Airbnb Data Analysis
 
-#### هدف
-تحلیل و بصری‌سازی داده‌های اقامتگاه‌های Airbnb و بررسی توزیع قیمت‌ها در محله‌های مختلف.
+#### Objective
+Analyze and visualize Airbnb listing data, exploring price distributions across neighborhoods.
 
-#### داده‌ها
-1. **Airbnb_Listings.xlsx**: اطلاعات اقامتگاه‌ها
-   - نام، قیمت، محله، امتیازات، تسهیلات
+#### Datasets
+1. **Airbnb_Listings.xlsx**: Listing information
+   - Name, price, neighborhood, ratings, amenities
    
-2. **Neighborhood_Locations.xlsx**: مختصات جغرافیایی محله‌ها
+2. **Neighborhood_Locations.xlsx**: Geographic coordinates
 
-#### تحلیل‌های انجام شده
+#### Analyses Performed
 
-**1. پردازش داده**:
+**1. Data Processing**:
 ```python
-# تمیزسازی قیمت‌ها
+# Clean prices
 df['price_clean'] = df['price'].str.replace('$', '').str.replace(',', '').astype(float)
 
-# حذف outliers
+# Remove outliers
 Q1 = df['price_clean'].quantile(0.25)
 Q3 = df['price_clean'].quantile(0.75)
 IQR = Q3 - Q1
@@ -320,28 +321,28 @@ df_filtered = df[(df['price_clean'] >= Q1 - 1.5*IQR) &
                   (df['price_clean'] <= Q3 + 1.5*IQR)]
 ```
 
-**2. تحلیل توصیفی**:
-- میانگین، میانه، انحراف معیار قیمت
-- توزیع بر اساس نوع اقامتگاه
-- توزیع بر اساس محله
+**2. Descriptive Statistics**:
+- Mean, median, standard deviation of price
+- Distribution by property type
+- Distribution by neighborhood
 
-**3. بصری‌سازی‌ها**:
-- Histogram توزیع قیمت
-- Box Plot قیمت به تفکیک محله
-- نقشه پراکندگی جغرافیایی
-- Heatmap همبستگی متغیرها
+**3. Visualizations**:
+- Price distribution histogram
+- Box plot of price by neighborhood
+- Geographic scatter plot
+- Correlation heatmap
 
 ---
 
-## 🚀 نحوه اجرا
+## 🚀 How to Run
 
-### پیش‌نیازها
+### Prerequisites
 
 ```bash
 pip install numpy pandas matplotlib seaborn scipy scikit-learn openpyxl
 ```
 
-### اجرای نوتبوک
+### Run the Notebook
 
 ```bash
 cd code/
@@ -350,166 +351,166 @@ jupyter notebook code.ipynb
 
 ---
 
-## 📈 نتایج و یافته‌ها
+## 📈 Results & Findings
 
-### یافته‌های کلیدی - نمونه‌برداری
+### Key Findings - Sampling
 
-#### 1. Langevin Dynamics کارآمد است
-- با تنظیمات مناسب، نمونه‌های دقیقی تولید می‌کند
-- تنها به Score Function نیاز دارد (نه چگالی نرمال‌شده)
+#### 1. Langevin Dynamics is Effective
+- With proper tuning, produces accurate samples
+- Only requires Score Function (not normalized density)
 
-#### 2. Trade-off سرعت و دقت
-| روش | سرعت | دقت | کاربرد |
-|-----|------|------|--------|
-| Precise | ⭐⭐ | ⭐⭐⭐⭐⭐ | تحقیقات، مقایسه |
-| Fast | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | تولید سریع |
+#### 2. Speed-Accuracy Trade-off
+| Method | Speed | Accuracy | Use Case |
+|--------|-------|----------|----------|
+| Precise | ⭐⭐ | ⭐⭐⭐⭐⭐ | Research, benchmarking |
+| Fast | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Rapid generation |
 
-#### 3. GMM Sampling چالش‌برانگیز است
-- نیاز به تنظیم دقیق پارامترها
-- احتمال گیر کردن در یک مُد
-- نیاز به گام‌های بیشتر برای اکتشاف کامل
+#### 3. GMM Sampling is Challenging
+- Requires careful parameter tuning
+- Risk of getting stuck in one mode
+- Needs more steps for full exploration
 
-#### 4. ارزیابی کمّی ضروری است
-- بصری‌سازی لازم اما ناکافی
-- معیارهای آماری: Wasserstein, KS-test
-- مقایسه میانگین و کوواریانس
-
----
-
-### یافته‌های کلیدی - Airbnb
-
-#### توزیع قیمت
-- توزیع راست‌چوله (Right-skewed)
-- حضور Outliers قابل توجه
-- تفاوت معنادار بین محله‌ها
-
-#### عوامل مؤثر بر قیمت
-1. **موقعیت جغرافیایی** (مهم‌ترین)
-2. نوع اقامتگاه
-3. امتیازات کاربران
-4. تعداد تسهیلات
+#### 4. Quantitative Evaluation is Essential
+- Visualization necessary but insufficient
+- Statistical metrics: Wasserstein, KS-test
+- Mean and covariance comparison
 
 ---
 
-## 📚 مفاهیم پیشرفته
+### Key Findings - Airbnb
+
+#### Price Distribution
+- Right-skewed distribution
+- Significant outliers present
+- Meaningful differences across neighborhoods
+
+#### Price Factors
+1. **Geographic location** (most important)
+2. Property type
+3. User ratings
+4. Number of amenities
+
+---
+
+## 📚 Advanced Concepts
 
 ### 1. Score-Based Generative Models
 
-**ایده اصلی**: مدل‌سازی Score Function به جای خود چگالی
+**Main Idea**: Model Score Function instead of density itself
 
 ```python
 s_θ(x) ≈ ∇_x log p(x)
 ```
 
-**مزایا**:
-- نیاز به نرمال‌سازی ندارد
-- برای مدل‌های پیچیده مقیاس‌پذیر
-- کیفیت بالای نمونه‌های تولیدی
+**Advantages**:
+- No normalization needed
+- Scalable to complex models
+- High-quality sample generation
 
-**کاربردها**:
-- تولید تصویر (Image Generation)
-- تولید صدا و موسیقی
-- طراحی مولکول
+**Applications**:
+- Image generation
+- Audio and music generation
+- Molecular design
 
 ---
 
 ### 2. Annealed Langevin Dynamics
 
-**مشکل**: توزیع‌های چندقلّه‌ای
+**Problem**: Multi-modal distributions
 
-**راه‌حل**: استفاده از دنباله‌ای از توزیع‌های نرم‌شده
+**Solution**: Use sequence of smoothed distributions
 
 ```
 p_σ(x) ∝ p(x) * exp(-||x||²/(2σ²))
 ```
 
-**فرآیند**:
-1. شروع با σ بزرگ (توزیع صاف)
-2. کاهش تدریجی σ
-3. همگرایی به توزیع اصلی
+**Process**:
+1. Start with large σ (smooth distribution)
+2. Gradually decrease σ
+3. Converge to original distribution
 
 ---
 
 ### 3. Metropolis-Adjusted Langevin Algorithm (MALA)
 
-**بهبود ULA**: افزودن گام پذیرش Metropolis-Hastings
+**Improvement over ULA**: Add Metropolis-Hastings acceptance step
 
 ```python
-# محاسبه نسبت پذیرش
+# Calculate acceptance ratio
 alpha = min(1, p(x_prop)/p(x_curr) * ...transition ratio...)
 
-# پذیرش یا رد
+# Accept or reject
 if random.uniform(0,1) < alpha:
     x_curr = x_prop
 ```
 
-**مزیت**: همگرایی دقیق به توزیع هدف
+**Benefit**: Exact convergence to target distribution
 
 ---
 
-## 🎓 یادگیری‌های کلیدی
+## 🎓 Key Takeaways
 
-### درس‌های تئوری
+### Theoretical Lessons
 
-1. **Score Function** ابزاری قدرتمند برای نمونه‌برداری است
-2. **Langevin Dynamics** پل بین فیزیک و احتمال
-3. **GMM** نمونه خوبی از توزیع‌های چندقلّه‌ای
-4. **Wasserstein Distance** معیار معنادار برای مقایسه توزیع‌ها
+1. **Score Function** is powerful for sampling
+2. **Langevin Dynamics** bridges physics and probability
+3. **GMM** is good example of multi-modal distributions
+4. **Wasserstein Distance** is meaningful metric for comparing distributions
 
-### درس‌های عملی
+### Practical Lessons
 
-1. **تنظیم پارامترها** حیاتی است (step size, iterations)
-2. **ارزیابی کمّی** همیشه ضروری است
-3. **بصری‌سازی** درک بهتر ایجاد می‌کند
-4. **مقایسه با baseline** (مثل NumPy) مهم است
+1. **Parameter tuning** is critical (step size, iterations)
+2. **Quantitative evaluation** always necessary
+3. **Visualization** aids understanding
+4. **Baseline comparison** (e.g., NumPy) important
 
 ---
 
-## 🔍 موارد استفاده در دنیای واقعی
+## 🔍 Real-World Applications
 
-### مدل‌های مولد (Generative Models)
+### Generative Models
 - **Denoising Diffusion Models**: DALL-E, Stable Diffusion
-- **Score-Based Models**: انواع NCSN
+- **Score-Based Models**: Various NCSN variants
 
-### MCMC پیشرفته
-- **نمونه‌برداری بیزی**: استنتاج پارامترها
-- **فیزیک محاسباتی**: شبیه‌سازی مولکولی
+### Advanced MCMC
+- **Bayesian sampling**: Parameter inference
+- **Computational physics**: Molecular simulation
 
-### بصری‌سازی داده در کسب‌وکار
-- **تحلیل قیمت‌گذاری**: Airbnb, Hotels
-- **تحلیل بازار**: Real Estate
-- **CRM**: شناسایی الگوهای مشتری
-
----
-
-## 🐛 مشکلات رایج و راه‌حل‌ها
-
-### مشکل 1: همگرایی کند
-**علت**: Step size خیلی کوچک  
-**راه‌حل**: افزایش ε یا استفاده از Annealing
-
-### مشکل 2: نوسان زیاد
-**علت**: Step size خیلی بزرگ  
-**راه‌حل**: کاهش ε یا افزایش iterations
-
-### مشکل 3: گیر کردن در یک مُد
-**علت**: ناتوانی جهش بین مُدها  
-**راه‌حل**: 
-- افزایش نویز
-- استفاده از Parallel Tempering
-- Restart از نقاط مختلف
-
-### مشکل 4: محاسبات سنگین
-**راه‌حل**:
-- استفاده از GPU
-- بهینه‌سازی کد (vectorization)
-- کاهش تعداد نمونه‌ها
+### Business Data Visualization
+- **Pricing analysis**: Airbnb, Hotels
+- **Market analysis**: Real Estate
+- **CRM**: Customer pattern identification
 
 ---
 
-## 📖 منابع و مراجع
+## 🐛 Common Issues & Solutions
 
-### مقالات کلیدی
+### Issue 1: Slow Convergence
+**Cause**: Step size too small  
+**Solution**: Increase ε or use annealing
+
+### Issue 2: High Oscillation
+**Cause**: Step size too large  
+**Solution**: Decrease ε or increase iterations
+
+### Issue 3: Stuck in One Mode
+**Cause**: Unable to hop between modes  
+**Solution**: 
+- Increase noise
+- Use Parallel Tempering
+- Restart from different points
+
+### Issue 4: Heavy Computation
+**Solutions**:
+- Use GPU acceleration
+- Code optimization (vectorization)
+- Reduce number of samples
+
+---
+
+## 📖 References & Resources
+
+### Key Papers
 1. **Score-Based Generative Modeling through SDEs**  
    Yang Song et al., ICLR 2021
 
@@ -519,90 +520,45 @@ if random.uniform(0,1) < alpha:
 3. **Generative Modeling by Estimating Gradients**  
    Song & Ermon, NeurIPS 2019
 
-### کتاب‌ها
+### Books
 - *Pattern Recognition and Machine Learning* by Bishop
 - *Monte Carlo Statistical Methods* by Robert & Casella
 
-### دوره‌ها و آموزش‌ها
+### Courses
 - Stanford CS236: Deep Generative Models
 - MIT 6.S897: Machine Learning for Healthcare
 
-### کدهای مرجع
+### Reference Implementations
 - [Score-Based Generative Models (Official)](https://github.com/yang-song/score_sde)
 - [PyTorch Diffusion Models](https://github.com/lucidrains/denoising-diffusion-pytorch)
 
 ---
 
-## 👥 اعضای تیم
+## 👥 Team Members
 
-- **محمدطاها مجلسی** - 810101504
-- **محمدحسین مظهری** - 810101520
-- **علیرضا کریمی** - 810101492
-
----
-
-## 📝 یادداشت‌های پیاده‌سازی
-
-### بهینه‌سازی‌های ممکن
-
-```python
-# 1. Vectorization برای سرعت بیشتر
-scores = np.array([score_fn(pts[i]) for i in range(n)])
-# بهتر:
-scores = score_fn_vectorized(pts)
-
-# 2. استفاده از Jax برای JIT compilation
-import jax.numpy as jnp
-from jax import jit
-
-@jit
-def langevin_step(x, score_fn, eps):
-    return x + eps*score_fn(x) + jnp.sqrt(2*eps)*jax.random.normal(x.shape)
-
-# 3. Adaptive step size
-def adaptive_langevin(x, score_fn, target_accept_rate=0.65):
-    if accept_rate < target_accept_rate:
-        eps *= 0.9
-    else:
-        eps *= 1.1
-    return eps
-```
+- **Mohammad Taha Majlesi** - 810101504
+- **Mohammad Hossein Mazhari** - 810101520
+- **Alireza Karimi** - 810101492
 
 ---
 
-## 🔮 مسیرهای توسعه
+## 📧 Contact & Support
 
-### پروژه‌های پیشرفته‌تر
-1. پیاده‌سازی **Diffusion Models** کامل
-2. Score Matching با **Neural Networks**
-3. کاربرد در **Image Generation**
-4. **Conditional Sampling** با راهنمای کلاس
+### Technical Questions
+Contact course TAs for implementation questions.
 
-### مهارت‌های قابل یادگیری
-- **JAX** و **Automatic Differentiation**
-- **GPU Programming** با CUDA
-- **Stochastic Differential Equations (SDEs)**
-- **Variational Inference**
+### Theoretical Questions
+Consult instructors for conceptual clarification.
+
+**Instructors**: Dr. Bahrak, Dr. Yaghoobzadeh  
+**TAs**: Mohammad Reza Alavi, Mohammad Kavian, Fatemeh Mohammadi
 
 ---
 
-## 📧 ارتباط و پشتیبانی
-
-### سؤالات فنی
-برای سؤالات مربوط به کد و پیاده‌سازی با دستیاران درس تماس بگیرید.
-
-### سؤالات تئوری
-برای درک بهتر مفاهیم با استادان درس مشورت کنید.
-
-**استادان**: Dr. Bahrak, Dr. Yaghoobzadeh  
-**دستیاران**: Mohammad Reza Alavi, Mohammad Kavian, Fatemeh Mohammadi
+**Created**: Fall 2024-2025  
+**Last Updated**: January 2025
 
 ---
 
-**تاریخ ایجاد**: نیمسال اول 1404-1403  
-**آخرین به‌روزرسانی**: دی‌ماه 1404
-
----
-
-> **نکته**: این پروژه پایه‌ای برای درک مدل‌های مولد مدرن مثل Stable Diffusion و DALL-E است. با تسلط بر این مفاهیم، می‌توانید به سراغ مدل‌های پیچیده‌تر بروید.
+> **Note**: This project provides foundation for understanding modern generative models like Stable Diffusion and DALL-E. Mastering these concepts enables working with more complex models.
 
