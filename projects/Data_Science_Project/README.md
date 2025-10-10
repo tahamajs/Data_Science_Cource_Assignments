@@ -162,16 +162,16 @@ This project implements a complete data science workflow that processes over **1
 
 ### Core Technologies
 
-| Category | Technologies |
-|----------|-------------|
-| **Language** | Python 3.12+ |
-| **Database** | MySQL 8.0, SQLAlchemy, PyMySQL |
-| **ML Libraries** | scikit-learn, XGBoost, pandas, NumPy |
-| **Visualization** | Matplotlib, Seaborn, Plotly |
-| **Infrastructure** | Docker, Docker Compose |
-| **CI/CD** | GitHub Actions |
-| **Version Control** | Git, Git LFS |
-| **Notebooks** | Jupyter Lab, IPython |
+| Category            | Technologies                         |
+| ------------------- | ------------------------------------ |
+| **Language**        | Python 3.12+                         |
+| **Database**        | MySQL 8.0, SQLAlchemy, PyMySQL       |
+| **ML Libraries**    | scikit-learn, XGBoost, pandas, NumPy |
+| **Visualization**   | Matplotlib, Seaborn, Plotly          |
+| **Infrastructure**  | Docker, Docker Compose               |
+| **CI/CD**           | GitHub Actions                       |
+| **Version Control** | Git, Git LFS                         |
+| **Notebooks**       | Jupyter Lab, IPython                 |
 
 ### Python Libraries
 
@@ -480,11 +480,13 @@ The pipeline consists of four main stages, each with specific responsibilities:
 **Purpose**: Load data from MySQL database into pandas DataFrames
 
 **Process**:
+
 1. Establish database connection using SQLAlchemy
 2. Load three tables: `uber_trips`, `weather_data`, `taxi_zones`
 3. Return DataFrames for downstream processing
 
 **Code Example**:
+
 ```python
 from scripts.load_data import load_data
 
@@ -503,16 +505,19 @@ print(f"Taxi Zones: {taxi_zones.shape}")
 **Purpose**: Clean and normalize data for analysis
 
 **Operations**:
+
 - **Missing Values**: Drop rows with null values in critical columns
 - **Standardization**: Scale numerical features using StandardScaler
 - **Type Conversion**: Convert categorical variables to appropriate dtypes
 - **Outlier Handling**: Detect and handle extreme values
 
 **Standardized Features**:
+
 - Temperature, humidity, wind speed, precipitation
 - Trip distance, fare amount, total amount
 
 **Code Example**:
+
 ```python
 from scripts.preprocess import preprocess_data
 
@@ -528,19 +533,21 @@ uber_trips, weather_data, taxi_zones = preprocess_data(
 
 **Generated Features**:
 
-| Feature Name | Type | Description | Formula/Logic |
-|--------------|------|-------------|---------------|
-| `is_weekend` | Binary | Weekend indicator | 1 if Saturday/Sunday, else 0 |
-| `pickup_hour` | Integer | Hour extracted from time | 0-23 |
-| `shift_of_day` | Categorical | Time period | Morning (5-12), Afternoon (12-17), Evening (17-21), Night (21-5) |
-| `rainy_day_flag` | Binary | Rain indicator | 1 if precipitation > 0.1mm, else 0 |
-| `temperature_category` | Categorical | Temperature range | Cold (≤10°C), Moderate (10-25°C), Hot (>25°C) |
+| Feature Name           | Type        | Description              | Formula/Logic                                                    |
+| ---------------------- | ----------- | ------------------------ | ---------------------------------------------------------------- |
+| `is_weekend`           | Binary      | Weekend indicator        | 1 if Saturday/Sunday, else 0                                     |
+| `pickup_hour`          | Integer     | Hour extracted from time | 0-23                                                             |
+| `shift_of_day`         | Categorical | Time period              | Morning (5-12), Afternoon (12-17), Evening (17-21), Night (21-5) |
+| `rainy_day_flag`       | Binary      | Rain indicator           | 1 if precipitation > 0.1mm, else 0                               |
+| `temperature_category` | Categorical | Temperature range        | Cold (≤10°C), Moderate (10-25°C), Hot (>25°C)                    |
 
 **One-Hot Encoding**:
+
 - `pickup_day_of_week` → 6 binary features
 - `shift_of_day` → 3 binary features
 
 **Code Example**:
+
 ```python
 from scripts.feature_engineering import engineer_features
 
@@ -558,6 +565,7 @@ print(uber_trips.columns.tolist())
 **Purpose**: Persist processed data for model training and analysis
 
 **Output Files**:
+
 - `output/processed_uber_trips.csv`: Trips with all engineered features
 - `output/processed_weather_data.csv`: Standardized weather data
 - `output/processed_taxi_zones.csv`: Location reference data
@@ -614,16 +622,17 @@ print(uber_trips.columns.tolist())
 
 Stores NYC taxi zone locations and boundaries.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `LocationID` | INT | PRIMARY KEY | Unique zone identifier (1-265) |
-| `Borough` | VARCHAR(50) | NOT NULL | NYC borough (Manhattan, Brooklyn, Queens, Bronx, Staten Island) |
-| `Zone` | VARCHAR(100) | NOT NULL | Zone name (e.g., "Times Square", "JFK Airport") |
-| `service_zone` | VARCHAR(50) | | Service area classification (Yellow Zone, Boro Zone, Airports) |
-| `latitude` | DECIMAL(10,6) | | Zone center latitude |
-| `longitude` | DECIMAL(10,6) | | Zone center longitude |
+| Column         | Type          | Constraints | Description                                                     |
+| -------------- | ------------- | ----------- | --------------------------------------------------------------- |
+| `LocationID`   | INT           | PRIMARY KEY | Unique zone identifier (1-265)                                  |
+| `Borough`      | VARCHAR(50)   | NOT NULL    | NYC borough (Manhattan, Brooklyn, Queens, Bronx, Staten Island) |
+| `Zone`         | VARCHAR(100)  | NOT NULL    | Zone name (e.g., "Times Square", "JFK Airport")                 |
+| `service_zone` | VARCHAR(50)   |             | Service area classification (Yellow Zone, Boro Zone, Airports)  |
+| `latitude`     | DECIMAL(10,6) |             | Zone center latitude                                            |
+| `longitude`    | DECIMAL(10,6) |             | Zone center longitude                                           |
 
 **Sample Data**:
+
 ```
 LocationID | Borough   | Zone                     | latitude  | longitude
 -----------|-----------|--------------------------|-----------|----------
@@ -633,6 +642,7 @@ LocationID | Borough   | Zone                     | latitude  | longitude
 ```
 
 **Statistics**:
+
 - Total Zones: 265
 - Manhattan Zones: 69
 - Brooklyn Zones: 61
@@ -642,18 +652,19 @@ LocationID | Borough   | Zone                     | latitude  | longitude
 
 Hourly weather observations for NYC.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `date` | DATE | PRIMARY KEY | Date of observation |
-| `hour` | INT | PRIMARY KEY | Hour of day (0-23) |
-| `temperature` | FLOAT | | Temperature in Celsius |
-| `humidity` | FLOAT | | Relative humidity (%) |
-| `wind_speed` | FLOAT | | Wind speed (m/s) |
-| `precipitation` | FLOAT | | Precipitation amount (mm) |
-| `pressure` | FLOAT | | Atmospheric pressure (hPa) |
-| `weather` | VARCHAR(50) | | Weather condition (Clear, Clouds, Rain, Snow, etc.) |
+| Column          | Type        | Constraints | Description                                         |
+| --------------- | ----------- | ----------- | --------------------------------------------------- |
+| `date`          | DATE        | PRIMARY KEY | Date of observation                                 |
+| `hour`          | INT         | PRIMARY KEY | Hour of day (0-23)                                  |
+| `temperature`   | FLOAT       |             | Temperature in Celsius                              |
+| `humidity`      | FLOAT       |             | Relative humidity (%)                               |
+| `wind_speed`    | FLOAT       |             | Wind speed (m/s)                                    |
+| `precipitation` | FLOAT       |             | Precipitation amount (mm)                           |
+| `pressure`      | FLOAT       |             | Atmospheric pressure (hPa)                          |
+| `weather`       | VARCHAR(50) |             | Weather condition (Clear, Clouds, Rain, Snow, etc.) |
 
 **Sample Data**:
+
 ```
 date       | hour | temperature | humidity | wind_speed | precipitation | weather
 -----------|------|-------------|----------|------------|---------------|--------
@@ -663,6 +674,7 @@ date       | hour | temperature | humidity | wind_speed | precipitation | weathe
 ```
 
 **Statistics**:
+
 - Time Period: January 1 - June 30, 2015
 - Total Records: ~4,380 (181 days × 24 hours)
 - Temperature Range: -10°C to 35°C
@@ -672,23 +684,24 @@ date       | hour | temperature | humidity | wind_speed | precipitation | weathe
 
 Individual Uber trip records.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `trip_id` | INT | PRIMARY KEY, AUTO_INCREMENT | Unique trip identifier |
-| `dispatching_base_num` | VARCHAR(50) | | Uber base dispatch number |
-| `affiliated_base_num` | VARCHAR(50) | | Affiliated base number |
-| `pickup_location_id` | INT | FOREIGN KEY → taxi_zones | Pickup zone ID |
-| `dropoff_location_id` | INT | FOREIGN KEY → taxi_zones | Dropoff zone ID |
-| `pickup_date` | DATE | NOT NULL, INDEXED | Date of pickup |
-| `pickup_time` | TIME | NOT NULL | Time of pickup |
-| `pickup_day_of_week` | VARCHAR(10) | NOT NULL | Day name (Monday-Sunday) |
-| `passenger_count` | INT | | Number of passengers |
-| `trip_distance` | FLOAT | | Trip distance in miles |
-| `fare_amount` | DECIMAL(7,2) | | Base fare amount |
-| `tip_amount` | DECIMAL(7,2) | | Tip amount |
-| `total_amount` | DECIMAL(7,2) | | Total fare (fare + tip + fees) |
+| Column                 | Type         | Constraints                 | Description                    |
+| ---------------------- | ------------ | --------------------------- | ------------------------------ |
+| `trip_id`              | INT          | PRIMARY KEY, AUTO_INCREMENT | Unique trip identifier         |
+| `dispatching_base_num` | VARCHAR(50)  |                             | Uber base dispatch number      |
+| `affiliated_base_num`  | VARCHAR(50)  |                             | Affiliated base number         |
+| `pickup_location_id`   | INT          | FOREIGN KEY → taxi_zones    | Pickup zone ID                 |
+| `dropoff_location_id`  | INT          | FOREIGN KEY → taxi_zones    | Dropoff zone ID                |
+| `pickup_date`          | DATE         | NOT NULL, INDEXED           | Date of pickup                 |
+| `pickup_time`          | TIME         | NOT NULL                    | Time of pickup                 |
+| `pickup_day_of_week`   | VARCHAR(10)  | NOT NULL                    | Day name (Monday-Sunday)       |
+| `passenger_count`      | INT          |                             | Number of passengers           |
+| `trip_distance`        | FLOAT        |                             | Trip distance in miles         |
+| `fare_amount`          | DECIMAL(7,2) |                             | Base fare amount               |
+| `tip_amount`           | DECIMAL(7,2) |                             | Tip amount                     |
+| `total_amount`         | DECIMAL(7,2) |                             | Total fare (fare + tip + fees) |
 
 **Indexes**:
+
 - PRIMARY KEY on `trip_id`
 - FOREIGN KEY on `pickup_location_id` → `taxi_zones(LocationID)`
 - FOREIGN KEY on `dropoff_location_id` → `taxi_zones(LocationID)`
@@ -696,6 +709,7 @@ Individual Uber trip records.
 - INDEX on `dropoff_location_id` for fast lookups
 
 **Sample Data**:
+
 ```
 trip_id | pickup_location_id | pickup_date | pickup_time | distance | fare
 --------|-------------------|-------------|-------------|----------|------
@@ -704,6 +718,7 @@ trip_id | pickup_location_id | pickup_date | pickup_time | distance | fare
 ```
 
 **Statistics**:
+
 - Total Trips: 14,276,367
 - Date Range: January 1 - June 30, 2015
 - Average Trip Distance: 3.2 miles
@@ -721,13 +736,14 @@ trip_id | pickup_location_id | pickup_date | pickup_time | distance | fare
 
 **Models Implemented**:
 
-| Model | Algorithm | Hyperparameters | Training Time |
-|-------|-----------|-----------------|---------------|
-| Random Forest | Ensemble of decision trees | n_estimators=200, max_depth=20 | ~5 min |
-| Gradient Boosting | Sequential boosting | n_estimators=200, learning_rate=0.1 | ~10 min |
-| XGBoost | Optimized gradient boosting | n_estimators=200, max_depth=10 | ~8 min |
+| Model             | Algorithm                   | Hyperparameters                     | Training Time |
+| ----------------- | --------------------------- | ----------------------------------- | ------------- |
+| Random Forest     | Ensemble of decision trees  | n_estimators=200, max_depth=20      | ~5 min        |
+| Gradient Boosting | Sequential boosting         | n_estimators=200, learning_rate=0.1 | ~10 min       |
+| XGBoost           | Optimized gradient boosting | n_estimators=200, max_depth=10      | ~8 min        |
 
 **Input Features (15)**:
+
 - **Spatial**: latitude, longitude, borough_encoded
 - **Temporal**: hour, day_of_week, is_weekend, shift_of_day
 - **Weather**: temperature, humidity, precipitation, wind_speed
@@ -736,12 +752,14 @@ trip_id | pickup_location_id | pickup_date | pickup_time | distance | fare
 **Target Variable**: `trip_count` (number of trips per hour per location)
 
 **Evaluation Metrics**:
+
 - **MAE** (Mean Absolute Error): Average prediction error
 - **RMSE** (Root Mean Squared Error): Penalizes large errors
 - **R²** (Coefficient of Determination): Proportion of variance explained
 - **MAPE** (Mean Absolute Percentage Error): Percentage error
 
 **Results**:
+
 ```
 Model              MAE    RMSE    R²     MAPE
 ────────────────────────────────────────────
@@ -757,6 +775,7 @@ XGBoost           38.2   53.7   0.891  16.8%  ← Best
 **Approach**: Train regression models with weather-focused features
 
 **Key Insights**:
+
 - **Temperature**: Moderate correlation (r=0.35)
   - Demand increases 5% per 10°C rise
   - Peak demand at 20-25°C
@@ -778,15 +797,16 @@ XGBoost           38.2   53.7   0.891  16.8%  ← Best
 
 **Models Implemented**:
 
-| Model | Algorithm | Best Parameters | Accuracy |
-|-------|-----------|----------------|----------|
-| Logistic Regression | Linear classifier | C=1.0, penalty='l2' | 85.2% |
-| Random Forest | Ensemble trees | n_estimators=200, max_depth=15 | 89.7% |
-| Gradient Boosting | Boosted trees | n_estimators=200, lr=0.1 | 91.3% |
-| XGBoost | Optimized boosting | n_estimators=200, max_depth=8 | 92.8% ← Best |
-| Neural Network | MLP | hidden_layers=(100,50), alpha=0.01 | 90.1% |
+| Model               | Algorithm          | Best Parameters                    | Accuracy     |
+| ------------------- | ------------------ | ---------------------------------- | ------------ |
+| Logistic Regression | Linear classifier  | C=1.0, penalty='l2'                | 85.2%        |
+| Random Forest       | Ensemble trees     | n_estimators=200, max_depth=15     | 89.7%        |
+| Gradient Boosting   | Boosted trees      | n_estimators=200, lr=0.1           | 91.3%        |
+| XGBoost             | Optimized boosting | n_estimators=200, max_depth=8      | 92.8% ← Best |
+| Neural Network      | MLP                | hidden_layers=(100,50), alpha=0.01 | 90.1%        |
 
 **Input Features (12)**:
+
 - hour, day_of_week, is_weekend
 - temperature, precipitation
 - location_density
@@ -811,6 +831,7 @@ Actual  Non-Peak  2,845   123
 ```
 
 **Feature Importance (XGBoost)**:
+
 1. hour (35.2%)
 2. day_of_week (18.7%)
 3. historical_avg_demand (15.3%)
@@ -835,6 +856,7 @@ models/
 ```
 
 **Metadata Includes**:
+
 ```json
 {
   "model_name": "XGBoost Regressor",
@@ -892,12 +914,14 @@ print(f"Predicted demand: {prediction[0]:.0f} trips")
 **Objective**: Establish baseline model performance across all algorithms
 
 **Methodology**:
+
 1. Train 10+ models on standardized dataset
 2. Evaluate using consistent metrics
 3. Generate comparison visualizations
 4. Identify best-performing algorithm
 
 **Models Evaluated**:
+
 - Linear Regression
 - Ridge Regression
 - Lasso Regression
@@ -910,6 +934,7 @@ print(f"Predicted demand: {prediction[0]:.0f} trips")
 - Neural Network (MLP)
 
 **Outputs**:
+
 - `base_performance_analysis_comparison.png`: Bar chart comparing all models
 - `base_performance_analysis_xgboost_confusion_matrix.png`: Best model CM
 - `model_performance_comparison.json`: Detailed metrics
@@ -919,6 +944,7 @@ print(f"Predicted demand: {prediction[0]:.0f} trips")
 **Objective**: Predict trip demand by location with high accuracy
 
 **Analysis Steps**:
+
 1. **Data Aggregation**: Group trips by location and hour
 2. **Feature Creation**: Engineer location-specific features
 3. **Model Training**: Train regression models
@@ -926,12 +952,14 @@ print(f"Predicted demand: {prediction[0]:.0f} trips")
 5. **Visualization**: Create demand heatmaps
 
 **Key Findings**:
+
 - **Hotspots**: Times Square, Penn Station, East Village
 - **Temporal Patterns**: 6-9 AM and 5-8 PM peaks
 - **Spatial Patterns**: Manhattan has 60% of all trips
 - **Predictability**: 89% variance explained by model
 
 **Outputs**:
+
 - `location_demand_prediction_mae_comparison.png`
 - `location_demand_prediction_r2_comparison.png`
 - `task1_location_comparison.png`: Top 20 locations
@@ -941,12 +969,14 @@ print(f"Predicted demand: {prediction[0]:.0f} trips")
 
 **Objective**: Accurately identify peak demand hours
 
-**Peak Hour Definition**: 
+**Peak Hour Definition**:
+
 - Hours with trip count > 80th percentile
 - Typically 7-9 AM and 5-7 PM on weekdays
 - All day Friday and Saturday evenings
 
 **Analysis Approach**:
+
 1. **Label Creation**: Binary labels (peak/non-peak)
 2. **Class Balancing**: Handle imbalanced dataset (30% peak, 70% non-peak)
 3. **Model Training**: Train multiple classifiers
@@ -954,16 +984,19 @@ print(f"Predicted demand: {prediction[0]:.0f} trips")
 5. **Feature Analysis**: Identify key predictors
 
 **Results**:
+
 - **Best Model**: XGBoost with 92.8% accuracy
 - **False Positive Rate**: 4.3% (acceptable for planning)
 - **False Negative Rate**: 5.8% (important for resource allocation)
 
 **Business Impact**:
+
 - Better driver allocation during peak hours
 - Dynamic pricing optimization
 - Reduced wait times for customers
 
 **Outputs**:
+
 - `peak_time_classification_accuracy_comparison.png`
 - `peak_time_classification_gradientboosting_confusion_matrix.png`
 - `peak_time_classification_feature_importance.png`
@@ -973,6 +1006,7 @@ print(f"Predicted demand: {prediction[0]:.0f} trips")
 **Objective**: Understand how weather affects ride demand
 
 **Analysis Methods**:
+
 1. **Correlation Analysis**: Pearson and Spearman correlations
 2. **Regression Models**: Weather-focused predictions
 3. **Segmentation**: Analyze by weather conditions
@@ -980,22 +1014,24 @@ print(f"Predicted demand: {prediction[0]:.0f} trips")
 
 **Key Findings**:
 
-| Weather Condition | Demand Change | Explanation |
-|-------------------|---------------|-------------|
-| Light Rain (0.1-2.5mm) | +8% | People avoid walking |
-| Heavy Rain (>2.5mm) | -15% | People stay indoors |
-| Temperature 20-25°C | Baseline | Comfortable weather |
-| Temperature <5°C | +12% | Too cold to walk |
-| Temperature >30°C | +5% | Too hot to walk |
-| Clear Sky | Baseline | Normal demand |
-| Snow | +25% | Difficult to walk/drive |
+| Weather Condition      | Demand Change | Explanation             |
+| ---------------------- | ------------- | ----------------------- |
+| Light Rain (0.1-2.5mm) | +8%           | People avoid walking    |
+| Heavy Rain (>2.5mm)    | -15%          | People stay indoors     |
+| Temperature 20-25°C    | Baseline      | Comfortable weather     |
+| Temperature <5°C       | +12%          | Too cold to walk        |
+| Temperature >30°C      | +5%           | Too hot to walk         |
+| Clear Sky              | Baseline      | Normal demand           |
+| Snow                   | +25%          | Difficult to walk/drive |
 
 **Practical Applications**:
+
 - Weather-based surge pricing
 - Proactive driver deployment
 - Marketing campaigns tied to weather
 
 **Outputs**:
+
 - `weather-demand_correlation_heatmap.png`
 - `weather-demand_correlation_by_condition.png`
 - `weather-demand_time_series.png`
@@ -1006,11 +1042,13 @@ print(f"Predicted demand: {prediction[0]:.0f} trips")
 **Objective**: Granular analysis of model predictions
 
 **Outputs**:
+
 - `task1_detailed_predictions.csv`: Per-zone hourly predictions
 - `task1_detailed_prediction_analysis.png`: Residual plots
 - `prediction_error_analysis.png`: Error distribution
 
 **Metrics**:
+
 - Mean Absolute Error by zone
 - Prediction confidence intervals
 - Error patterns by time of day
@@ -1027,6 +1065,7 @@ cp .env.example .env
 ```
 
 **Database Configuration**:
+
 ```bash
 DB_HOST=localhost          # Database host (use 'db' in Docker)
 DB_PORT=3307              # External port (3306 internal in Docker)
@@ -1037,12 +1076,14 @@ MYSQL_ROOT_PASSWORD=rootpass  # MySQL root password
 ```
 
 **Application Settings**:
+
 ```bash
 ENVIRONMENT=production    # production, development, testing
 LOG_LEVEL=INFO           # DEBUG, INFO, WARNING, ERROR
 ```
 
 **Service Ports**:
+
 ```bash
 PHPMYADMIN_PORT=8080     # phpMyAdmin web interface
 JUPYTER_PORT=8888        # Jupyter Lab server
@@ -1050,6 +1091,7 @@ JUPYTER_TOKEN=your_token # Jupyter authentication token
 ```
 
 **Model Training**:
+
 ```bash
 RANDOM_STATE=42          # Random seed for reproducibility
 TEST_SIZE=0.2            # Train/test split ratio
@@ -1057,6 +1099,7 @@ CV_FOLDS=5              # Cross-validation folds
 ```
 
 **Performance Tuning**:
+
 ```bash
 CHUNK_SIZE=50000         # Database chunk size
 MAX_WORKERS=4            # Parallel processing workers
@@ -1122,12 +1165,14 @@ python pipeline.py
 ```
 
 **Pipeline Steps**:
+
 1. Load data from database (2-5 minutes)
 2. Preprocess data (1-2 minutes)
 3. Engineer features (2-3 minutes)
 4. Save processed data (3-5 minutes)
 
 **Expected Output**:
+
 ```
 🎉 Starting the data pipeline...
 --- Step 1: Loading data ---
@@ -1175,7 +1220,7 @@ engine = connect_to_database()
 
 # Custom query
 query = """
-SELECT 
+SELECT
     tz.Zone,
     COUNT(*) as trip_count,
     AVG(ut.fare_amount) as avg_fare
@@ -1231,6 +1276,7 @@ joblib.dump(model, 'models/my_model.joblib')
 **Purpose**: Import raw data into MySQL database
 
 **Contents**:
+
 - Load CSV files
 - Create database tables
 - Insert data in chunks
@@ -1243,6 +1289,7 @@ joblib.dump(model, 'models/my_model.joblib')
 **Purpose**: Comprehensive exploratory data analysis
 
 **Contents**:
+
 - Dataset overview and statistics
 - Distribution analysis
 - Correlation matrices
@@ -1252,6 +1299,7 @@ joblib.dump(model, 'models/my_model.joblib')
 - Spatial patterns
 
 **Key Visualizations** (30+):
+
 - Trip distribution by day/hour
 - Fare amount distribution
 - Distance vs. fare scatter plots
@@ -1263,6 +1311,7 @@ joblib.dump(model, 'models/my_model.joblib')
 **Purpose**: Scrape weather data from OpenMeteo API
 
 **Contents**:
+
 - API connection setup
 - Historical data retrieval
 - Data cleaning
@@ -1275,6 +1324,7 @@ joblib.dump(model, 'models/my_model.joblib')
 **Purpose**: Experiment with different feature engineering approaches
 
 **Contents**:
+
 - Temporal feature creation
 - Spatial feature engineering
 - Weather feature transformations
@@ -1289,6 +1339,7 @@ joblib.dump(model, 'models/my_model.joblib')
 **Purpose**: Train and evaluate all machine learning models
 
 **Contents**:
+
 - Data splitting
 - Model training (15+ models)
 - Hyperparameter tuning
@@ -1305,6 +1356,7 @@ joblib.dump(model, 'models/my_model.joblib')
 **Purpose**: Deep dive into weather-demand relationships
 
 **Contents**:
+
 - Weather patterns analysis
 - Correlation with demand
 - Seasonal trends
@@ -1374,6 +1426,7 @@ plt.close()
 **File**: `.github/workflows/pipeline.yml`
 
 **Trigger Events**:
+
 - Push to `main` branch
 - Pull requests to `main` branch
 - Manual workflow dispatch
@@ -1384,7 +1437,7 @@ plt.close()
 pipeline-check:
   runs-on: ubuntu-latest
   timeout-minutes: 20
-  
+
   services:
     mysql:
       image: mysql:8.0
@@ -1393,9 +1446,8 @@ pipeline-check:
         MYSQL_DATABASE: ds_project
         MYSQL_USER: ds_user
         MYSQL_PASSWORD: userpass
-  
-  steps:
-    1. Checkout code (with Git LFS)
+
+  steps: 1. Checkout code (with Git LFS)
     2. Set up Python 3.12
     3. Install dependencies
     4. Wait for MySQL
@@ -1406,12 +1458,14 @@ pipeline-check:
 ```
 
 **Artifacts**:
+
 - Pipeline logs
 - Generated visualizations
 - Model files
 - Performance metrics
 
 **Status Checks**:
+
 - ✅ Code checkout successful
 - ✅ Dependencies installed
 - ✅ Database connection established
@@ -1419,6 +1473,7 @@ pipeline-check:
 - ✅ Pipeline completed without errors
 
 **Notifications**:
+
 - Email on failure
 - Slack integration (optional)
 - GitHub commit status
@@ -1445,16 +1500,17 @@ pytest tests/ -v --cov=scripts --cov=src
 
 ### Model Performance Summary
 
-| Task | Best Model | Primary Metric | Score | Training Time |
-|------|------------|----------------|-------|---------------|
-| Location Demand | XGBoost | R² | 0.891 | 8 min |
-| Peak Time Classification | XGBoost | Accuracy | 92.8% | 6 min |
-| Weather Correlation | Gradient Boosting | R² | 0.847 | 10 min |
-| Base Performance | XGBoost | F1-Score | 0.928 | 7 min |
+| Task                     | Best Model        | Primary Metric | Score | Training Time |
+| ------------------------ | ----------------- | -------------- | ----- | ------------- |
+| Location Demand          | XGBoost           | R²             | 0.891 | 8 min         |
+| Peak Time Classification | XGBoost           | Accuracy       | 92.8% | 6 min         |
+| Weather Correlation      | Gradient Boosting | R²             | 0.847 | 10 min        |
+| Base Performance         | XGBoost           | F1-Score       | 0.928 | 7 min         |
 
 ### System Performance
 
 **Pipeline Execution**:
+
 - Total Runtime: ~10-15 minutes (full pipeline)
 - Data Loading: 2-5 minutes
 - Preprocessing: 1-2 minutes
@@ -1462,11 +1518,13 @@ pytest tests/ -v --cov=scripts --cov=src
 - Data Saving: 3-5 minutes
 
 **Database Performance**:
+
 - Query Time (avg): <100ms for simple queries
 - Complex Join Queries: 1-3 seconds
 - Bulk Insert: ~50,000 rows/second
 
 **Resource Usage**:
+
 - Memory: ~4-6 GB peak
 - CPU: 60-80% utilization during training
 - Disk: ~10 GB total (including data)
@@ -1567,6 +1625,7 @@ python -m pdb pipeline.py
 **Symptom**: CSV files show as text pointers
 
 **Solution**:
+
 ```bash
 git lfs install
 git lfs pull
@@ -1577,6 +1636,7 @@ git lfs pull
 **Symptom**: `Can't connect to MySQL server on 'db'`
 
 **Solutions**:
+
 ```bash
 # Check if MySQL is running
 docker-compose ps
@@ -1596,6 +1656,7 @@ docker-compose restart
 **Symptom**: `MemoryError` or container killed
 
 **Solutions**:
+
 ```bash
 # Increase Docker memory limit
 # Docker Desktop → Settings → Resources → Memory: 8GB+
@@ -1611,6 +1672,7 @@ docker-compose restart
 **Symptom**: `Permission denied` when running Docker
 
 **Solution**:
+
 ```bash
 chmod +x docker-entrypoint.sh
 ```
@@ -1620,6 +1682,7 @@ chmod +x docker-entrypoint.sh
 **Symptom**: `Port 3307 is already allocated`
 
 **Solution**:
+
 ```bash
 # Change port in .env file
 DB_PORT=3308
@@ -1634,6 +1697,7 @@ kill -9 <PID>
 **Symptom**: GitHub Actions job exceeds 20 minutes
 
 **Solutions**:
+
 - Increase timeout in workflow file
 - Optimize feature engineering (vectorize operations)
 - Use data sampling for CI/CD testing
@@ -1644,6 +1708,7 @@ kill -9 <PID>
 **Symptom**: `ModuleNotFoundError: No module named 'scripts'`
 
 **Solution**:
+
 ```bash
 # Ensure you're in project root
 cd Data_Science_Project
@@ -1693,6 +1758,7 @@ We welcome contributions! Please follow these guidelines:
 ### Commit Messages
 
 Follow conventional commits:
+
 ```
 feat: Add weather-based demand prediction
 fix: Correct timezone handling in data loading
@@ -1754,6 +1820,7 @@ Data Science Course Project, Phase 2.
 ### Reporting Bugs
 
 When reporting bugs, please include:
+
 1. Clear description of the issue
 2. Steps to reproduce
 3. Expected vs. actual behavior
@@ -1764,6 +1831,7 @@ When reporting bugs, please include:
 ### Feature Requests
 
 We welcome feature suggestions! Please:
+
 1. Check existing issues first
 2. Describe the feature and its benefits
 3. Provide use case examples
