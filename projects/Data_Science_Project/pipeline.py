@@ -61,10 +61,16 @@ def main():
         # by other scripts, consider a faster format like Parquet (`.to_parquet()`).
         logging.info("--- Step 4: Saving processed data ---")
         step_start_time = time.time()
-        uber_trips.to_csv('processed_uber_trips.csv', index=False)
-        weather_data.to_csv('processed_weather_data.csv', index=False)
-        taxi_zones.to_csv('processed_taxi_zones.csv', index=False)
-        logging.info(f"Processed data saved in {time.time() - step_start_time:.2f} seconds.")
+        
+        # Create output directory if it doesn't exist
+        import os
+        os.makedirs('output', exist_ok=True)
+        
+        # Save processed data to output folder
+        uber_trips.to_csv('output/processed_uber_trips.csv', index=False)
+        weather_data.to_csv('output/processed_weather_data.csv', index=False)
+        taxi_zones.to_csv('output/processed_taxi_zones.csv', index=False)
+        logging.info(f"Processed data saved to 'output/' directory in {time.time() - step_start_time:.2f} seconds.")
         
         pipeline_duration = time.time() - pipeline_start_time
         logging.info(f"✅✅✅ Pipeline completed successfully in {pipeline_duration:.2f} seconds! ✅✅✅")
