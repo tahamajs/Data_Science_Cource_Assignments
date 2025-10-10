@@ -1,216 +1,190 @@
-# آزمایش اول: استنتاج آماری و شبیه‌سازی مونت کارلو
-
-## Statistical Inference & Monte Carlo Simulation
+# Assignment 0: Statistical Inference & Monte Carlo Simulation
 
 ---
 
-## 📊 نمای کلی پروژه
+## 📊 Project Overview
 
-این پروژه به بررسی و پیاده‌سازی مفاهیم اساسی **استنتاج آماری**، **شبیه‌سازی مونت کارلو** و **روش‌های نمونه‌برداری پیشرفته** می‌پردازد. پروژه شامل سه بخش اصلی است که هر کدام به یکی از مفاهیم کلیدی علوم داده اختصاص دارد.
-
----
-
-## 🎯 اهداف آموزشی
-
-### بخش 1: شبیه‌سازی رولت و قانون اعداد بزرگ
-
-- درک عملی **قانون اعداد بزرگ (Law of Large Numbers)**
-- پیاده‌سازی شبیه‌سازی مونت کارلو برای بازی رولت
-- بررسی **قضیه حد مرکزی (Central Limit Theorem)**
-- محاسبه فاصله اطمینان و خطای استاندارد
-
-### بخش 2: تحلیل داده‌های انتخاباتی
-
-- کاربرد استنتاج آماری در دنیای واقعی
-- محاسبه **فواصل اطمینان (Confidence Intervals)**
-- انجام **آزمون فرضیه (Hypothesis Testing)**
-- مقایسه نتایج تئوری با شبیه‌سازی
-
-### بخش 3: آزمون ایمنی دارو
-
-- آزمون **t مستقل (Independent t-test)**
-- مقایسه گروه‌های کنترل و آزمایش
-- تفسیر **p-value** و اهمیت آماری
-- تحلیل عوارض جانبی دارو
+This project explores fundamental concepts of **statistical inference**, **Monte Carlo simulation**, and **hypothesis testing**. The assignment consists of three major parts, each focusing on critical data science concepts: probability theory, confidence intervals, and hypothesis testing.
 
 ---
 
-## 🔬 مفاهیم و تکنیک‌های اصلی
+## 🎯 Learning Objectives
 
-### 1. مبانی آمار و احتمال
+### Part 1: Roulette Simulation & Law of Large Numbers
+- Understand the **Law of Large Numbers** through practical simulation
+- Implement Monte Carlo simulation for a roulette game
+- Explore the **Central Limit Theorem (CLT)**
+- Calculate confidence intervals and standard errors
 
-- **توزیع نرمال (Gaussian Distribution)**
-- **قانون اعداد بزرگ**: همگرایی میانگین نمونه به میانگین جامعه
-- **قضیه حد مرکزی**: توزیع میانگین نمونه‌ها نرمال می‌شود
-- **خطای استاندارد**: معیار پراکندگی برآوردها
+### Part 2: Electoral Data Analysis (2016 US Election)
+- Apply statistical inference to real-world polling data
+- Calculate **confidence intervals** for population proportions
+- Perform **hypothesis testing** for statistical significance
+- Compare theoretical results with Monte Carlo simulations
 
-### 2. فاصله اطمینان
+### Part 3: Drug Safety Testing
+- Conduct **independent t-tests** for clinical trial data
+- Compare treatment vs. control groups
+- Interpret **p-values** and statistical significance
+- Analyze adverse effects and safety metrics
 
+---
+
+## 🔬 Core Concepts & Techniques
+
+### 1. Probability Foundations
+- **Gaussian Distribution**: Bell curve and normal probability
+- **Law of Large Numbers**: Sample mean converges to population mean
+- **Central Limit Theorem**: Distribution of sample means becomes normal
+- **Standard Error**: Measure of estimate variability
+
+### 2. Confidence Intervals
 ```
 CI = μ̂ ± z × SE
 ```
+- **z**: Critical value from standard normal distribution
+- **SE**: Standard error of the estimate
+- **95% Confidence Interval**: Contains true parameter with 95% probability
 
-- **z**: مقدار بحرانی از توزیع نرمال استاندارد
-- **SE**: خطای استاندارد
-- **فاصله اطمینان 95%**: احتمال 95% شامل پارامتر واقعی
+### 3. Hypothesis Testing
+- **Null Hypothesis (H₀)**: Assumption of no difference
+- **Alternative Hypothesis (H₁)**: Assumption of a difference
+- **p-value**: Probability of observing results under H₀
+- **Significance Level (α)**: Typically 0.05
 
-### 3. آزمون فرضیه
-
-- **فرض صفر (H₀)**: فرض عدم تفاوت
-- **فرض جایگزین (H₁)**: فرض وجود تفاوت
-- **p-value**: احتمال مشاهده نتیجه فعلی تحت فرض صفر
-- **سطح معناداری (α)**: معمولاً 0.05
-
-### 4. شبیه‌سازی مونت کارلو
-
-- استفاده از نمونه‌برداری تصادفی
-- تکرار آزمایش‌ها برای برآورد توزیع
-- مقایسه نتایج تجربی با نتایج تئوری
+### 4. Monte Carlo Simulation
+- Use random sampling to estimate distributions
+- Repeat experiments many times
+- Compare empirical results with theoretical predictions
 
 ---
 
-## 📁 ساختار پروژه
+## 📁 Project Structure
 
 ```
 Statistical_Inference_Monte_Carlo/
 ├── codes/
-│   └── notebook.ipynb          # نوتبوک اصلی پروژه
+│   └── notebook.ipynb          # Main project notebook
 ├── datasets/
 │   ├── 2016-general-election-trump-vs-clinton.csv
 │   └── drug_safety.csv
 ├── description/
-│   └── CA0.pdf                 # توضیحات تمرین
-└── README.md                   # این فایل
+│   └── CA0.pdf                 # Assignment description
+└── README.md                   # This file
 ```
 
 ---
 
-## 🛠️ تکنولوژی‌ها و کتابخانه‌ها
+## 🛠️ Technologies & Libraries
 
 ### Python Libraries
-
 ```python
-numpy                 # محاسبات عددی
-pandas                # پردازش داده
-matplotlib            # رسم نمودار
-scipy.stats           # توابع آماری
-random                # تولید اعداد تصادفی
+numpy                 # Numerical computations
+pandas                # Data manipulation
+matplotlib            # Plotting and visualization
+scipy.stats           # Statistical functions
+random                # Random number generation
 ```
 
-### تکنیک‌های آماری
-
+### Statistical Techniques
 - **Monte Carlo Simulation**
 - **Confidence Intervals**
 - **Hypothesis Testing**
-- **t-tests (Independent)**
+- **Independent t-tests**
 - **Central Limit Theorem**
 - **Law of Large Numbers**
 
 ---
 
-## 📊 مسائل حل شده
+## 📊 Problems Solved
 
-### مسئله 1: شبیه‌سازی رولت (6 سوال)
+### Problem 1: Roulette Simulation (6 Questions)
 
-#### 1.1: تابع شبیه‌سازی
+#### 1.1: Simulation Function
+Implemented roulette game with 18 red, 18 black, and 2 green slots
 
-پیاده‌سازی بازی رولت با 18 خانه قرمز، 18 سیاه و 2 سبز
+#### 1.2: Analysis with Variable N
+Simulated for N = {10, 25, 100, 1000}
+- Convergence to normal distribution
+- Standard error decreases as N increases
 
-#### 1.2: تحلیل با N متغیر
+#### 1.3: Average Winnings Distribution
+Calculated \( S_N/N \) and analyzed convergence
 
-شبیه‌سازی برای N = {10, 25, 100, 1000}
-
-- بررسی همگرایی به توزیع نرمال
-- کاهش خطای استاندارد با افزایش N
-
-#### 1.3: توزیع میانگین برد
-
-محاسبه \( S_N/N \) و بررسی همگرایی
-
-#### 1.4: مقایسه با نتایج تئوری
-
+#### 1.4: Comparison with Theoretical Results
 ```
 E[X] = -1/19 ≈ -0.0526
 Var[X] = E[X²] - (E[X])²
 ```
 
-#### 1.5: احتمال باخت کازینو
+#### 1.5: Probability of Casino Loss
+Used CLT to calculate probabilities
 
-استفاده از CLT برای محاسبه احتمال
-
-#### 1.6: نمودار احتمال بر حسب N
-
-چرا کازینوها بازیکنان را تشویق به ادامه بازی می‌کنند؟
+#### 1.6: Probability vs. N Plot
+Why do casinos encourage continued play?
 
 ---
 
-### مسئله 2: تحلیل انتخابات 2016 آمریکا (9 سوال)
+### Problem 2: 2016 US Election Analysis (9 Questions)
 
-#### داده‌ها
+#### Dataset
+Polling data for Trump vs. Clinton election
 
-نظرسنجی‌های انتخاباتی ترامپ در مقابل کلینتون
-
-#### تحلیل‌های انجام شده
-
-1. **محاسبه فاصله اطمینان** برای نسبت حمایت از هر کاندیدا
-2. **شبیه‌سازی مونت کارلو** برای تأیید فواصل اطمینان
-3. **پردازش و تمیزسازی داده** با حذف مقادیر گمشده
-4. **رسم سری زمانی** حمایت از کاندیداها
-5. **محاسبه برآورد نسبت** کل رأی‌ها
-6. **فاصله اطمینان 95%** برای هر کاندیدا
-7. **محاسبه اختلاف (spread)**: \( d = 2p - 1 \)
-8. **آزمون فرضیه** برای معناداری اختلاف
-9. **تفسیر نتایج** و مقایسه با نتیجه واقعی
+#### Analyses Performed
+1. **Confidence intervals** for candidate support proportions
+2. **Monte Carlo simulation** to validate CI coverage
+3. **Data cleaning** with missing value removal
+4. **Time series plots** of candidate support
+5. **Proportion estimates** across all polls
+6. **95% confidence intervals** for each candidate
+7. **Spread calculation**: \( d = 2p - 1 \)
+8. **Hypothesis testing** for significance of spread
+9. **Results interpretation** and comparison with actual outcome
 
 ---
 
-### مسئله 3: آزمون ایمنی دارو (Clinical Trial)
+### Problem 3: Drug Safety Testing (Clinical Trial)
 
-#### طراحی آزمایش
+#### Experimental Design
+- **Treatment Group (Drug)** vs **Control Group (Placebo)**
+- Measured variables:
+  - White Blood Cell count (WBC)
+  - Red Blood Cell count (RBC)
+  - Number of Adverse Effects
 
-- **گروه آزمایش (Drug)** vs **گروه کنترل (Placebo)**
-- متغیرهای اندازه‌گیری شده:
-  - تعداد گلبول‌های سفید خون (WBC)
-  - تعداد گلبول‌های قرمز خون (RBC)
-  - تعداد عوارض جانبی (Adverse Effects)
-
-#### آزمون‌های آماری انجام شده
+#### Statistical Tests Performed
 
 ```python
-# آزمون t مستقل
+# Independent t-test
 from scipy.stats import ttest_ind
 
-# مقایسه گروه دارو با پلاسبو
-t_stat, p_value = ttest_ind(drug_group, placebo_group,
-                             equal_var=False,
+# Compare drug group with placebo
+t_stat, p_value = ttest_ind(drug_group, placebo_group, 
+                             equal_var=False, 
                              alternative='two-sided')
 ```
 
-#### سناریوهای آزمون شده
+#### Test Scenarios
+1. **Two-sided** with α = 0.05
+2. **One-sided (less)** with α = 0.05
+3. **One-sided (greater)** with α = 0.05
+4. **Two-sided** with α = 0.1 (higher significance level)
 
-1. **دوطرفه (two-sided)** با α = 0.05
-2. **یک‌طرفه کمتر (less)** با α = 0.05
-3. **یک‌طرفه بیشتر (greater)** با α = 0.05
-4. **دوطرفه** با α = 0.1 (سطح معناداری بالاتر)
-
-#### نتایج کلیدی
-
-- در اکثر متغیرها تفاوت معنادار مشاهده نشد
-- تنها در RBC با آزمون یک‌طرفه و α=0.1 تفاوت معنادار بود
-- تفسیر: دارو احتمالاً ایمن است
+#### Key Results
+- No significant differences in most variables
+- RBC showed significance only with one-sided test at α=0.1
+- Interpretation: Drug appears to be safe
 
 ---
 
-## 🚀 نحوه اجرا
+## 🚀 How to Run
 
-### پیش‌نیازها
-
+### Prerequisites
 ```bash
 pip install numpy pandas matplotlib scipy
 ```
 
-### اجرای نوتبوک
-
+### Run the Notebook
 ```bash
 cd codes/
 jupyter notebook notebook.ipynb
@@ -218,119 +192,102 @@ jupyter notebook notebook.ipynb
 
 ---
 
-## 📈 نتایج و یافته‌ها
+## 📈 Results & Findings
 
-### یافته‌های کلیدی
+### Key Findings
 
-#### 1. شبیه‌سازی رولت
+#### 1. Roulette Simulation
+- As number of rounds increases, results approach **expected value**
+- Distribution of average winnings becomes **normal** with larger N
+- Standard error decreases with \( \sqrt{N} \)
+- Casino profit probability **increases** with N
 
-- با افزایش تعداد دورها، نتایج به **ارزش مورد انتظار** نزدیک می‌شود
-- توزیع میانگین سود با N بزرگ‌تر **نرمال** می‌شود
-- خطای استاندارد با \( \sqrt{N} \) **کاهش می‌یابد**
-- احتمال سود کازینو با افزایش N **افزایش می‌یابد**
+#### 2. Election Analysis
+- 95% confidence intervals calculated from polling data
+- Monte Carlo results **matched** theoretical calculations
+- Spread between candidates was **statistically significant**
+- However, final outcome **differed** from predictions (sampling error)
 
-#### 2. تحلیل انتخاباتی
-
-- فواصل اطمینان 95% محاسبه شده با داده‌های نظرسنجی
-- نتایج مونت کارلو با محاسبات تئوری **مطابقت دارد**
-- اختلاف بین کاندیداها از نظر آماری **معنادار بود**
-- اما نتیجه نهایی با پیش‌بینی‌ها **متفاوت بود** (نقش خطای نمونه‌برداری)
-
-#### 3. آزمون دارو
-
-- در اکثر معیارها تفاوت معنادار بین دارو و پلاسبو مشاهده نشد
-- این نتیجه نشان‌دهنده **ایمنی نسبی دارو** است
-- اهمیت انتخاب σطح معناداری مناسب
+#### 3. Drug Trial
+- No significant differences in most metrics between drug and placebo
+- This indicates **relative safety** of the drug
+- Importance of choosing appropriate significance level
 
 ---
 
-## 📚 مفاهیم آموزشی پیشرفته
+## 📚 Advanced Concepts Covered
 
-### 1. خطای نوع اول و دوم
+### 1. Type I and Type II Errors
+- **Type I Error (α)**: Rejecting true null hypothesis
+- **Type II Error (β)**: Accepting false null hypothesis
+- **Statistical Power**: \( 1 - β \)
 
-- **خطای نوع I (α)**: رد فرض صفر درحالی که درست است
-- **خطای نوع II (β)**: پذیرش فرض صفر درحالی که غلط است
-- **قدرت آزمون (Power)**: \( 1 - β \)
-
-### 2. اندازه اثر (Effect Size)
-
+### 2. Effect Size
 ```
 Cohen's d = (μ₁ - μ₂) / σ
 ```
 
-### 3. فواصل اطمینان در مقابل آزمون فرضیه
-
-- فاصله اطمینان: **دامنه مقادیر محتمل**
-- آزمون فرضیه: **تصمیم‌گیری دوتایی**
-
----
-
-## 🎓 یادگیری‌های کلیدی
-
-1. **قانون اعداد بزرگ** تضمین می‌کند که با داده بیشتر به واقعیت نزدیک‌تریم
-2. **قضیه حد مرکزی** به ما اجازه می‌دهد از توزیع نرمال برای استنتاج استفاده کنیم
-3. **شبیه‌سازی مونت کارلو** ابزار قدرتمندی برای درک مفاهیم آماری است
-4. **p-value** معیار تصمیم‌گیری است، اما **نه** معیار اندازه اثر
-5. **فواصل اطمینان** اطلاعات بیشتری نسبت به آزمون فرضیه می‌دهند
+### 3. Confidence Intervals vs. Hypothesis Tests
+- Confidence intervals: **Range of plausible values**
+- Hypothesis tests: **Binary decision**
 
 ---
 
-## 🔍 موارد استفاده در دنیای واقعی
+## 🎓 Key Takeaways
 
-- **کنترل کیفیت**: آزمون محصولات
-- **داروسازی**: کارآزمایی بالینی
-- **مالی**: ارزیابی ریسک
-- **نظرسنجی**: تحلیل افکار عمومی
-- **A/B Testing**: بهینه‌سازی محصول
+1. **Law of Large Numbers** guarantees convergence to truth with more data
+2. **Central Limit Theorem** allows us to use normal distribution for inference
+3. **Monte Carlo simulation** is a powerful tool for understanding statistical concepts
+4. **p-value** is a decision metric, **not** a measure of effect size
+5. **Confidence intervals** provide more information than hypothesis tests
 
 ---
 
-## 📖 منابع و مراجع
+## 🔍 Real-World Applications
 
-### کتاب‌ها
+- **Quality Control**: Product testing
+- **Pharmaceuticals**: Clinical trials
+- **Finance**: Risk assessment
+- **Polling**: Public opinion analysis
+- **A/B Testing**: Product optimization
 
-- _All of Statistics_ by Larry Wasserman
-- _Statistical Inference_ by Casella & Berger
-- _Probability and Statistics_ by DeGroot & Schervish
+---
 
-### دوره‌ها
+## 📖 References & Resources
 
+### Books
+- *All of Statistics* by Larry Wasserman
+- *Statistical Inference* by Casella & Berger
+- *Probability and Statistics* by DeGroot & Schervish
+
+### Courses
 - MIT OpenCourseWare: Introduction to Probability and Statistics
 - Stanford CS109: Probability for Computer Scientists
 
-### ابزارها
-
+### Tools
 - [SciPy Stats Documentation](https://docs.scipy.org/doc/scipy/reference/stats.html)
 - [NumPy Documentation](https://numpy.org/doc/)
 
 ---
 
-## 👥 اعضای تیم
+## 👥 Team Members
 
-- محمدطاها مجلسی - 810101504
-- محمدحسین مظهری - 810101520
-- علیرضا کریمی - 810101492
-
----
-
-## 📝 یادداشت‌های مهم
-
-⚠️ **نکات کلیدی**:
-
-- همیشه **سطح معناداری** را قبل از تحلیل تعیین کنید
-- **فواصل اطمینان** را همراه با نقطه‌برآوردها گزارش دهید
-- **اندازه نمونه** تأثیر مستقیم بر دقت برآوردها دارد
-- **فرضیات آزمون** (مثل نرمال بودن) را بررسی کنید
+- Mohammad Taha Majlesi - 810101504
+- Mohammad Hossein Mazhari - 810101520
+- Alireza Karimi - 810101492
 
 ---
 
-## 📧 تماس و سؤالات
+## 📝 Important Notes
 
-برای سؤالات و پیشنهادات می‌توانید با استادان و دستیاران درس تماس بگیرید.
-
-**استادان**: Dr. Bahrak, Dr. Yaghoobzadeh
+⚠️ **Key Points**:
+- Always **set significance level** before analysis
+- Report **confidence intervals** along with point estimates
+- **Sample size** directly impacts estimation accuracy
+- Check **test assumptions** (e.g., normality)
 
 ---
 
-**تاریخ ایجاد**: نیمسال اول 1404-1403  
-**آخرین به‌روزرسانی**: دی‌ماه 1404
+**Created**: Fall 2024-2025  
+**Last Updated**: January 2025
+
