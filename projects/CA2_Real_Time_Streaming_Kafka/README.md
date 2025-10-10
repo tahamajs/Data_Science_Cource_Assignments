@@ -1,6 +1,7 @@
 # پروژه CA2: پردازش جریانی داده‌های تراکنش‌های مالی با Kafka
 
 ## 📋 توضیحات پروژه
+
 این پروژه یک سیستم پردازش جریانی و batch برای تحلیل تراکنش‌های مالی با استفاده از Apache Kafka است. سیستم قادر به تولید، پردازش و تحلیل real-time داده‌های تراکنش است.
 
 ## 📁 ساختار پروژه
@@ -60,11 +61,13 @@ CA2_Real_Time_Streaming_Kafka/
 ## 🚀 نحوه استفاده
 
 ### 1. راه‌اندازی Producer
+
 ```bash
 python producers/darooghe_pulse.py
 ```
 
 ### 2. اجرای Consumers
+
 ```bash
 # Consumer اصلی
 python consumers/transaction_validator.py
@@ -77,21 +80,25 @@ python consumers/fraud_alerts_consumer.py
 ```
 
 ### 3. پردازش Streaming
+
 ```bash
 python streaming/streaming_app.py
 ```
 
 ### 4. پردازش Batch
+
 ```bash
 python batch/batch_processing.py
 ```
 
 ### 5. نظارت بر سیستم
+
 ```bash
 python monitoring/kafka_consumer_monitor.py
 ```
 
 ## 🔧 پیش‌نیازها
+
 - Apache Kafka
 - Python 3.8+
 - confluent-kafka
@@ -99,6 +106,7 @@ python monitoring/kafka_consumer_monitor.py
 - Prometheus (برای monitoring)
 
 ## 📊 ویژگی‌های اصلی
+
 - ✅ تولید real-time تراکنش‌های مالی
 - ✅ پردازش جریانی با Kafka Streams
 - ✅ تشخیص تقلب به صورت real-time
@@ -109,6 +117,7 @@ python monitoring/kafka_consumer_monitor.py
 - ✅ Dashboard تحلیلی
 
 ## 📈 معماری سیستم
+
 1. **Producer Layer**: تولید داده‌های تراکنش
 2. **Kafka Layer**: صف پیام‌رسانی و توزیع داده
 3. **Consumer Layer**: دریافت و پردازش اولیه
@@ -118,8 +127,9 @@ python monitoring/kafka_consumer_monitor.py
 7. **Monitoring Layer**: نظارت بر عملکرد سیستم
 
 ## 👨‍💻 نویسندگان
+
 پروژه درس علوم داده - دانشگاه
 
 ## 📄 مجوز
-این پروژه برای اهداف آموزشی ایجاد شده است.
 
+این پروژه برای اهداف آموزشی ایجاد شده است.
