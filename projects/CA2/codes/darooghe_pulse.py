@@ -9,6 +9,8 @@ from datetime import timedelta
 from confluent_kafka import Producer, Consumer, TopicPartition
 from confluent_kafka.admin import AdminClient
 
+# kafka_broker = "localhost:9092"
+
 log_level_str = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
     level=getattr(logging, log_level_str, logging.INFO),
@@ -29,7 +31,7 @@ FAILURE_REASONS = ["cancelled", "insufficient_funds", "system_error", "fraud_pre
 DEVICE_INFO_LIBRARY = [
     {"os": "Android", "app_version": "2.4.1", "device_model": "Samsung Galaxy S25"},
     {"os": "iOS", "app_version": "3.1.0", "device_model": "iPhone 15"},
-    {"os": "Android", "app_version": "1.9.5", "device_model": "Google Pixel 6"},
+    {"os": "Windows", "app_version": "1.9.5", "device_model": "Google Pixel 6"}, ##################### I change it from android to windows to see if it works
 ]
 
 
@@ -49,12 +51,12 @@ def generate_transaction_event(is_historical=False, timestamp_override=None):
     merchant_category = random.choice(MERCHANT_CATEGORIES)
     payment_method = random.choice(PAYMENT_METHODS)
     amount = random.randint(50000, 2000000)
-    base = merchant_bases[merchant_id]
+    base_lat = 35.7219
+    base_lng = 51.3347
     location = {
-           "lat": base["lat"] + random.uniform(-0.005, 0.005),
-           "lng": base["lng"] + random.uniform(-0.005, 0.005),
+        "lat": base_lat + random.uniform(-0.05, 0.05),
+        "lng": base_lng + random.uniform(-0.05, 0.05),
     }
-
     device_info = (
         random.choice(DEVICE_INFO_LIBRARY)
         if payment_method in ["online", "mobile"]
@@ -173,15 +175,9 @@ if __name__ == "__main__":
     fraud_rate = float(os.getenv("FRAUD_RATE", 0.02))
     declined_rate = float(os.getenv("DECLINED_RATE", 0.05))
     merchant_count = int(os.getenv("MERCHANT_COUNT", 50))
-    merchant_bases = {
-        f"merch_{i}": {
-            "lat": 35.7219 + random.uniform(-0.1, 0.1),
-            "lng": 51.3347 + random.uniform(-0.1, 0.1),
-        }
-        for i in range(1, merchant_count + 1)
-    }
     customer_count = int(os.getenv("CUSTOMER_COUNT", 1000))
-    kafka_broker = os.getenv("KAFKA_BROKER", "kafka:9092")
+    # kafka_broker = os.getenv("KAFKA_BROKER", "kafka:9092")
+    kafka_broker = os.getenv("KAFKA_BROKER", "localhost:9092")
     topic = "darooghe.transactions"
     event_init_mode = os.getenv("EVENT_INIT_MODE", "flush").lower()
     skip_initial = False
