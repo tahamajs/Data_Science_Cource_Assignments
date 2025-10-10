@@ -11,9 +11,11 @@
 ## روش ۱: استفاده از Docker (توصیه می‌شود) 🐳
 
 ### گام ۱: نصب Docker
+
 اگر Docker ندارید، از [اینجا](https://www.docker.com/get-started) دانلود کنید.
 
 ### گام ۲: اجرا
+
 ```bash
 cd docker
 docker-compose up --build
@@ -60,6 +62,7 @@ jupyter notebook notebooks/import.ipynb
 ```
 
 یا استفاده از اسکریپت SQL:
+
 ```bash
 mysql -u ds_user -p ds_project < queries/Queries.sql
 ```
@@ -96,6 +99,7 @@ ls -lh output/
 ```
 
 شامل:
+
 - `processed_uber_trips.csv`
 - `processed_weather_data.csv`
 - `processed_taxi_zones.csv`
@@ -105,31 +109,37 @@ ls -lh output/
 ## مشکلات رایج
 
 ### خطای اتصال به دیتابیس
+
 ```
 ❌ Error: Can't connect to MySQL server
 ```
 
 **راه حل:**
+
 - مطمئن شوید MySQL در حال اجرا است
 - بررسی کنید که username/password صحیح است
 - بررسی کنید پورت 3306 آزاد است
 
 ### خطای import ماژول
+
 ```
 ❌ ModuleNotFoundError: No module named 'pandas'
 ```
 
 **راه حل:**
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### خطای مجوز اجرا
+
 ```
 ❌ Permission denied: ./run.sh
 ```
 
 **راه حل:**
+
 ```bash
 chmod +x run.sh
 ```
@@ -173,4 +183,3 @@ git clone [repo] && cd phase2 && pip install -r requirements.txt && python pipel
 ```
 
 **موفق باشید! 🎓**
-

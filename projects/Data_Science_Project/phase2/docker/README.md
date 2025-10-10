@@ -12,6 +12,7 @@ docker-compose up --build
 ```
 
 این دستور موارد زیر را انجام می‌دهد:
+
 1. دیتابیس MySQL را راه‌اندازی می‌کند
 2. اپلیکیشن Python را build و اجرا می‌کند
 3. پایپلاین پردازش داده را اجرا می‌کند
@@ -19,26 +20,31 @@ docker-compose up --build
 ### دستورات مفید
 
 #### اجرا در پس‌زمینه
+
 ```bash
 docker-compose up -d
 ```
 
 #### نمایش لاگ‌ها
+
 ```bash
 docker-compose logs -f
 ```
 
 #### توقف سرویس‌ها
+
 ```bash
 docker-compose down
 ```
 
 #### حذف کامل (همراه با volumes)
+
 ```bash
 docker-compose down -v
 ```
 
 #### بازسازی تصاویر
+
 ```bash
 docker-compose build --no-cache
 ```
@@ -81,4 +87,3 @@ docker/
 1. دیتابیس MySQL روی پورت `3306` در دسترس است
 2. اپلیکیشن تا زمانی که دیتابیس آماده نباشد، شروع نمی‌شود
 3. فایل‌های خروجی در پوشه `output/` ذخیره می‌شوند
-

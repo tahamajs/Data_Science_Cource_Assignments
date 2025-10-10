@@ -5,11 +5,13 @@
 ## فایل‌ها
 
 ### 📝 `Queries.sql`
+
 فایل اصلی شامل تمام Query های پروژه
 
 ## Query ها
 
 ### Q1 - Q7
+
 هر یک از Query ها یک سوال تحلیلی خاص را پاسخ می‌دهند:
 
 - **Q1**: تحلیل تعداد سفرها به تفکیک روز هفته
@@ -70,6 +72,7 @@ result = pd.read_sql(query, con=engine)
 ## ساختار دیتابیس
 
 ### جدول `uber_trips`
+
 - trip_id
 - pickup_datetime
 - pickup_location_id
@@ -80,6 +83,7 @@ result = pd.read_sql(query, con=engine)
 - pickup_time
 
 ### جدول `weather_data`
+
 - date
 - temperature
 - humidity
@@ -88,6 +92,7 @@ result = pd.read_sql(query, con=engine)
 - weather_condition
 
 ### جدول `taxi_zones`
+
 - location_id
 - zone_name
 - borough
@@ -97,6 +102,7 @@ result = pd.read_sql(query, con=engine)
 ## نتایج تحلیل
 
 نتایج Query ها نشان می‌دهند:
+
 - الگوهای زمانی در استفاده از Uber
 - تأثیر شرایط آب و هوا بر تقاضا
 - محبوب‌ترین مناطق و مسیرها
@@ -108,4 +114,3 @@ result = pd.read_sql(query, con=engine)
 2. **DBeaver**: ابزار همه‌کاره مدیریت دیتابیس
 3. **phpMyAdmin**: رابط وب برای MySQL
 4. **DataGrip**: IDE قدرتمند برای SQL
-

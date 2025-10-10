@@ -15,9 +15,11 @@ data/
 ## داده‌های خام (raw/)
 
 ### 📍 `taxi_zone_lookup_coordinates.csv`
+
 اطلاعات مناطق تاکسی و مختصات جغرافیایی
 
 **ستون‌ها:**
+
 - `location_id`: شناسه منحصر به فرد منطقه
 - `zone_name`: نام منطقه
 - `borough`: بخش شهری (Manhattan, Brooklyn, Queens, ...)
@@ -29,9 +31,11 @@ data/
 ---
 
 ### 🌦️ `weather_data_cleaned.csv`
+
 داده‌های آب و هوای تمیز شده
 
 **ستون‌ها:**
+
 - `date`: تاریخ (YYYY-MM-DD)
 - `temperature`: دما (درجه سانتی‌گراد)
 - `humidity`: رطوبت (درصد)
@@ -49,11 +53,13 @@ data/
 برای پردازش داده‌های خام:
 
 ### روش ۱: استفاده از Pipeline
+
 ```bash
 python pipeline.py
 ```
 
 ### روش ۲: استفاده از Notebooks
+
 ```bash
 jupyter notebook notebooks/
 ```
@@ -69,14 +75,17 @@ jupyter notebook notebooks/
 ## منابع داده
 
 ### داده‌های Uber
+
 - منبع: NYC Taxi and Limousine Commission (TLC)
 - وب‌سایت: https://www1.nyc.gov/site/tlc/
 
 ### داده‌های آب و هوا
+
 - منبع: NOAA (National Oceanic and Atmospheric Administration)
 - وب‌سایت: https://www.ncdc.noaa.gov/
 
 ### مختصات جغرافیایی
+
 - منبع: NYC Open Data
 - وب‌سایت: https://opendata.cityofnewyork.us/
 
@@ -133,4 +142,3 @@ print(df.head())
 ```bash
 tar -czf data_backup_$(date +%Y%m%d).tar.gz raw/
 ```
-
