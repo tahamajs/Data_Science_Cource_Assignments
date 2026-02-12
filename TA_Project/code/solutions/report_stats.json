@@ -41,5 +41,15 @@
     "Sweden": 0.4010062148564664,
     "USA": 0.3994082840236686,
     "South Africa": 0.3941562313655337
-  }
+  },
+  "run_summary_version": 2,
+  "runtime_profile": "balanced",
+  "q6_model": "XGBoost",
+  "q6_auc": 0.5495109829186658,
+  "q18_status": "ok",
+  "q19_status": "ok",
+  "q20_status": "ok",
+  "latex_metrics_json_path": "/Users/tahamajs/Documents/uni/DS/TA_Project/code/solutions/latex_metrics.json",
+  "latex_metrics_tex_path": "/Users/tahamajs/Documents/uni/DS/TA_Project/code/solutions/latex_metrics.tex",
+  "metric_export_version": "2.0"
 }

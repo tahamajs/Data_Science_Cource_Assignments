@@ -11,6 +11,9 @@ from full_solution_pipeline import (
     run_q16_drift_monitoring,
     run_q17_recourse_analysis,
 )
+from q18_temporal import run_q18_temporal_backtesting
+from q19_uncertainty import run_q19_uncertainty_quantification
+from q20_fairness_mitigation import run_q20_fairness_mitigation
 
 
 def test_q15_calibration_threshold_outputs(tmp_path):
@@ -42,3 +45,17 @@ def test_q17_recourse_outputs(tmp_path):
     assert "successful_recourse_count" in result
     assert (tmp_path / "q17_recourse_examples.csv").exists()
     assert (tmp_path / "q17_recourse_median_deltas.png").exists()
+
+
+def test_q18_q19_q20_outputs(tmp_path):
+    df = generate_dataset(n_rows=1300, seed=24)
+    q18 = run_q18_temporal_backtesting(df, tmp_path, tmp_path, profile="fast")
+    q19 = run_q19_uncertainty_quantification(df, tmp_path, tmp_path, profile="fast")
+    q20 = run_q20_fairness_mitigation(df, tmp_path, tmp_path, profile="fast")
+
+    assert q18["status"] == "ok"
+    assert q19["status"] == "ok"
+    assert q20["status"] == "ok"
+    assert (tmp_path / "q18_temporal_backtest.csv").exists()
+    assert (tmp_path / "q19_uncertainty_coverage.csv").exists()
+    assert (tmp_path / "q20_fairness_mitigation_comparison.csv").exists()

@@ -1,7 +1,16 @@
 {
+  "run_summary_version": 2,
   "data_path": "data/GlobalTechTalent_50k.csv",
   "figures_dir": "figures",
   "solutions_dir": "solutions",
+  "runtime_profile": "balanced",
+  "data_split_strategy": {
+    "base_supervised": "stratified_train_test_80_20",
+    "q18_temporal": "fallback_userid_proxy",
+    "q19_uncertainty": "train/calibration/test = 60/20/20",
+    "q20_fairness": "stratified_train_test_80_20"
+  },
+  "metric_export_version": "2.0",
   "sql_path": "solutions/q1_moving_average.sql",
   "answer_key_path": "solutions/complete_solution_key.md",
   "q1_diagnostics": {
@@ -30,7 +39,7 @@
     "pca_pc1_pc2_ratio": 0.4223438599009942,
     "kmeans_elbow_k": 4.0,
     "kmeans_wcss_k1": 84795.20934385121,
-    "kmeans_wcss_k10": 41890.23751106793
+    "kmeans_wcss_kmax": 41890.23751106793
   },
   "q6": {
     "model_name": "XGBoost",
@@ -85,6 +94,66 @@
     "median_required_delta_Research_Citations": 50.0,
     "median_required_delta_Industry_Experience": 0.5
   },
+  "q18": {
+    "status": "ok",
+    "profile": "balanced",
+    "temporal_column": "UserID",
+    "split_strategy": "fallback_userid_proxy",
+    "fold_count": 4.0,
+    "auc_first_fold": 0.5144714407502131,
+    "auc_last_fold": 0.5622480397447587,
+    "auc_decay_absolute": 0.04777659899454556,
+    "f1_first_fold": 0.3568181818181818,
+    "f1_last_fold": 0.4252054794520548,
+    "f1_decay_absolute": 0.06838729763387297,
+    "mean_auc": 0.5427931947374791,
+    "mean_f1": 0.3743888985285606,
+    "mean_numeric_psi": 0.004604691737060762,
+    "backtest_table_path": "solutions/q18_temporal_backtest.csv",
+    "degradation_plot_path": "figures/q18_temporal_degradation.png",
+    "fallback_used": true
+  },
+  "q19": {
+    "status": "ok",
+    "profile": "balanced",
+    "method": "split_conformal_probability_interval",
+    "train_size": 12000.0,
+    "calibration_size": 4000.0,
+    "test_size": 4000.0,
+    "base_accuracy": 0.57575,
+    "base_auc": 0.5402296540864948,
+    "base_f1": 0.2507726269315673,
+    "max_under_coverage_gap": 0.0050000000000000044,
+    "mean_interval_width": 0.9864077717065811,
+    "coverage_table_path": "solutions/q19_uncertainty_coverage.csv",
+    "coverage_plot_path": "figures/q19_coverage_vs_alpha.png",
+    "coverage_at_80": 0.795,
+    "coverage_at_90": 0.9,
+    "coverage_at_95": 0.9515,
+    "coverage_at_98": 0.98075
+  },
+  "q20": {
+    "status": "ok",
+    "profile": "balanced",
+    "sensitive_feature": "Country_Origin",
+    "mitigation_method": "reweighing_with_group_label_tilt",
+    "baseline_roc_auc": 0.5495109829186658,
+    "mitigated_roc_auc": 0.556299952803746,
+    "baseline_f1": 0.24751580849141824,
+    "mitigated_f1": 0.2621057307863172,
+    "baseline_demographic_parity_gap": 0.1550234677913067,
+    "mitigated_demographic_parity_gap": 0.09778167890201085,
+    "baseline_equal_opportunity_gap": 0.18925925925925924,
+    "mitigated_equal_opportunity_gap": 0.16663716814159293,
+    "auc_drop_vs_baseline": -0.006788969885080154,
+    "f1_drop_vs_baseline": -0.014589922294898972,
+    "policy_constraint": "auc_drop<=0.03 AND f1_drop<=0.05 AND (dp_gap_improved OR eopp_gap_improved)",
+    "policy_pass": true,
+    "comparison_table_path": "solutions/q20_fairness_mitigation_comparison.csv",
+    "baseline_groups_table_path": "solutions/q20_fairness_groups_baseline.csv",
+    "mitigated_groups_table_path": "solutions/q20_fairness_groups_mitigated.csv",
+    "tradeoff_plot_path": "figures/q20_fairness_tradeoff.png"
+  },
   "xgboost_available": true,
   "shap_available": true,
   "xgboost_import_error": "",
@@ -94,5 +163,7 @@
     "    SELECT",
     "        UserID,",
     "        Country_Origin,"
-  ]
+  ],
+  "latex_metrics_json_path": "solutions/latex_metrics.json",
+  "latex_metrics_tex_path": "solutions/latex_metrics.tex"
 }

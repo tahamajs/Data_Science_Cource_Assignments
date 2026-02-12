@@ -181,6 +181,42 @@ Required analysis:
 
 High-quality answer must explicitly acknowledge that some features are not truly actionable in real policy settings.
 
+## Q18. Temporal Backtesting and Rolling Validation (New)
+
+Required analysis:
+- build chronological rolling folds when valid temporal signal exists
+- if no valid temporal field exists, document and justify fallback ordering
+- report fold-wise `AUC`/`F1` and decay versus first fold
+- add drift-aware interpretation (e.g., mean PSI per fold)
+
+Expected artifacts:
+- `code/solutions/q18_temporal_backtest.csv`
+- `code/figures/q18_temporal_degradation.png`
+
+## Q19. Uncertainty Quantification and Coverage (New)
+
+Required analysis:
+- implement split-conformal (or equivalent) interval/uncertainty method
+- evaluate empirical coverage for multiple confidence levels
+- report interval width and under-coverage gaps
+- provide decision policy for low-confidence predictions
+
+Expected artifacts:
+- `code/solutions/q19_uncertainty_coverage.csv`
+- `code/figures/q19_coverage_vs_alpha.png`
+
+## Q20. Fairness Mitigation Experiment (New)
+
+Required analysis:
+- compute baseline subgroup fairness metrics
+- apply one mitigation intervention (reweighing/thresholding/other justified method)
+- compare pre/post fairness and utility
+- enforce and report explicit policy constraints (e.g., maximum tolerable AUC drop)
+
+Expected artifacts:
+- `code/solutions/q20_fairness_mitigation_comparison.csv`
+- `code/figures/q20_fairness_tradeoff.png`
+
 ## Block J (Bonus): Advanced Extensions
 - Causal DAG with identifiability discussion and adjustment sets.
 - Conformal/uncertainty intervals with empirical coverage.

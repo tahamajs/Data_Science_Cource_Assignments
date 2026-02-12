@@ -18,10 +18,13 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+from report_metrics_export import export_metrics_files
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = PROJECT_ROOT / "data" / "GlobalTechTalent_50k.csv"
 FIGURES_DIR = PROJECT_ROOT / "figures"
 SOLUTIONS_DIR = PROJECT_ROOT / "solutions"
+RUN_SUMMARY_PATH = SOLUTIONS_DIR / "run_summary.json"
 
 
 def load_dataset(path: Path) -> pd.DataFrame:
@@ -146,6 +149,23 @@ def main() -> None:
     stats["country_migration_rates_top15"] = plot_country_migration_rate(
         df, FIGURES_DIR / "report_country_migration_rate.png"
     )
+
+    if RUN_SUMMARY_PATH.exists():
+        summary = json.loads(RUN_SUMMARY_PATH.read_text(encoding="utf-8"))
+        stats["run_summary_version"] = summary.get("run_summary_version", 1)
+        stats["runtime_profile"] = summary.get("runtime_profile", "unknown")
+        stats["q6_model"] = summary.get("q6", {}).get("model_name", "unknown")
+        stats["q6_auc"] = summary.get("q6", {}).get("roc_auc")
+        stats["q18_status"] = summary.get("q18", {}).get("status", "missing")
+        stats["q19_status"] = summary.get("q19", {}).get("status", "missing")
+        stats["q20_status"] = summary.get("q20", {}).get("status", "missing")
+
+        metric_paths = export_metrics_files(summary, SOLUTIONS_DIR)
+        stats["latex_metrics_json_path"] = metric_paths.get("latex_metrics_json", "")
+        stats["latex_metrics_tex_path"] = metric_paths.get("latex_metrics_tex", "")
+        stats["metric_export_version"] = metric_paths.get("metric_export_version", "")
+    else:
+        stats["run_summary_status"] = "missing: run pipeline first to export dynamic report metrics"
 
     with (SOLUTIONS_DIR / "report_stats.json").open("w", encoding="utf-8") as f:
         json.dump(stats, f, indent=2)

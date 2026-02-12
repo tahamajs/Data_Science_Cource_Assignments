@@ -1360,6 +1360,52 @@ Artifacts:
 - Recourse examples table: `{q17_info['recourse_examples_path']}`
 - Recourse effort plot: `{q17_info['recourse_plot_path']}`
 
+## Q18. Temporal Backtesting and Drift-aware Degradation (New)
+
+Run status: **{q18_info.get('status', 'not_run')}**
+- Split strategy: **{q18_info.get('split_strategy', 'N/A')}**
+- Temporal column: **{q18_info.get('temporal_column', 'N/A')}**
+- Folds evaluated: **{fmt(q18_info.get('fold_count'), 0)}**
+- AUC first fold: **{fmt(q18_info.get('auc_first_fold'), 3)}**
+- AUC last fold: **{fmt(q18_info.get('auc_last_fold'), 3)}**
+- AUC decay (last-first): **{fmt(q18_info.get('auc_decay_absolute'), 3)}**
+- Mean PSI across folds: **{fmt(q18_info.get('mean_numeric_psi'), 3)}**
+- Fallback temporal strategy used: **{q18_info.get('fallback_used', 'N/A')}**
+
+Artifacts:
+- Backtest table: `{q18_info.get('backtest_table_path', '')}`
+- Degradation plot: `{q18_info.get('degradation_plot_path', '')}`
+
+## Q19. Uncertainty Quantification and Coverage (New)
+
+Run status: **{q19_info.get('status', 'not_run')}**
+- Method: **{q19_info.get('method', 'N/A')}**
+- Coverage@90%: **{fmt(q19_info.get('coverage_at_90'), 3)}**
+- Coverage@95%: **{fmt(q19_info.get('coverage_at_95'), 3)}**
+- Max under-coverage gap: **{fmt(q19_info.get('max_under_coverage_gap'), 3)}**
+- Mean interval width: **{fmt(q19_info.get('mean_interval_width'), 3)}**
+
+Artifacts:
+- Coverage table: `{q19_info.get('coverage_table_path', '')}`
+- Coverage figure: `{q19_info.get('coverage_plot_path', '')}`
+
+## Q20. Fairness Mitigation Experiment (New)
+
+Run status: **{q20_info.get('status', 'not_run')}**
+- Sensitive feature: **{q20_info.get('sensitive_feature', 'N/A')}**
+- Mitigation method: **{q20_info.get('mitigation_method', 'N/A')}**
+- Baseline ROC-AUC: **{fmt(q20_info.get('baseline_roc_auc'), 3)}**
+- Mitigated ROC-AUC: **{fmt(q20_info.get('mitigated_roc_auc'), 3)}**
+- Baseline DP gap: **{fmt(q20_info.get('baseline_demographic_parity_gap'), 3)}**
+- Mitigated DP gap: **{fmt(q20_info.get('mitigated_demographic_parity_gap'), 3)}**
+- Baseline EOpp gap: **{fmt(q20_info.get('baseline_equal_opportunity_gap'), 3)}**
+- Mitigated EOpp gap: **{fmt(q20_info.get('mitigated_equal_opportunity_gap'), 3)}**
+- Policy pass: **{q20_info.get('policy_pass', 'N/A')}**
+
+Artifacts:
+- Comparison table: `{q20_info.get('comparison_table_path', '')}`
+- Tradeoff figure: `{q20_info.get('tradeoff_plot_path', '')}`
+
 ## Fairness note for grading discussion
 Even with strong predictive metrics, model decisions can mirror historical policy constraints. Country-level predicted positive rates should be audited against domain knowledge before any deployment.
 """
@@ -1368,7 +1414,19 @@ Even with strong predictive metrics, model decisions can mirror historical polic
     out_path.write_text(content, encoding="utf-8")
 
 
-def run_all(data_path: Path, figures_dir: Path, solutions_dir: Path) -> Dict[str, object]:
+def run_all(
+    data_path: Path,
+    figures_dir: Path,
+    solutions_dir: Path,
+    profile: str = "balanced",
+    enable_q18: bool = True,
+    enable_q19: bool = True,
+    enable_q20: bool = True,
+) -> Dict[str, object]:
+    if profile not in PROFILE_CONFIGS:
+        raise ValueError(f"Unknown profile '{profile}'. Choose from {sorted(PROFILE_CONFIGS.keys())}.")
+    cfg = PROFILE_CONFIGS[profile]
+
     figures_dir.mkdir(parents=True, exist_ok=True)
     solutions_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1383,18 +1441,72 @@ def run_all(data_path: Path, figures_dir: Path, solutions_dir: Path) -> Dict[str
     q3_info = plot_ravine_paths(paths, figures_dir / "q3_ravine_optimizers.png")
 
     # Q4
-    q4_info = run_q4_svm_and_pruning(df, figures_dir)
+    q4_info = run_q4_svm_and_pruning(
+        df,
+        figures_dir,
+        sample_size=int(cfg["q4_sample_size"]),
+        gamma_grid=list(cfg["q4_gamma_grid"]),
+        max_alpha_points=int(cfg["q4_max_alpha_points"]),
+    )
 
     # Q5
-    q5_info = run_q5_unsupervised(df, figures_dir)
+    q5_info = run_q5_unsupervised(
+        df,
+        figures_dir,
+        cluster_sample=int(cfg["q5_cluster_sample"]),
+        k_max=int(cfg["q5_k_max"]),
+    )
 
     # Q6
-    q6_info = run_q6_capstone(df, figures_dir, solutions_dir)
+    q6_info = run_q6_capstone(df, figures_dir, solutions_dir, sample_size=int(cfg["q6_sample_size"]))
 
     # Q15-Q17 (extended add-on)
-    q15_info = run_q15_calibration_threshold(df, figures_dir)
+    q15_info = run_q15_calibration_threshold(df, figures_dir, sample_size=int(cfg["q15_sample_size"]))
     q16_info = run_q16_drift_monitoring(df, figures_dir, solutions_dir)
-    q17_info = run_q17_recourse_analysis(df, figures_dir, solutions_dir)
+    q17_info = run_q17_recourse_analysis(
+        df,
+        figures_dir,
+        solutions_dir,
+        sample_size=int(cfg["q17_sample_size"]),
+        max_candidates=int(cfg["q17_max_candidates"]),
+    )
+
+    # Q18-Q20 (new required extension block)
+    q18_info: Dict[str, float | str]
+    q19_info: Dict[str, float | str]
+    q20_info: Dict[str, float | str]
+    if enable_q18:
+        q18_info = run_q18_temporal_backtesting(
+            df,
+            figures_dir=figures_dir,
+            solutions_dir=solutions_dir,
+            profile=profile,
+            random_state=RANDOM_STATE,
+        )
+    else:
+        q18_info = {"status": "disabled", "enabled": False}
+
+    if enable_q19:
+        q19_info = run_q19_uncertainty_quantification(
+            df,
+            figures_dir=figures_dir,
+            solutions_dir=solutions_dir,
+            profile=profile,
+            random_state=RANDOM_STATE,
+        )
+    else:
+        q19_info = {"status": "disabled", "enabled": False}
+
+    if enable_q20:
+        q20_info = run_q20_fairness_mitigation(
+            df,
+            figures_dir=figures_dir,
+            solutions_dir=solutions_dir,
+            profile=profile,
+            random_state=RANDOM_STATE,
+        )
+    else:
+        q20_info = {"status": "disabled", "enabled": False}
 
     # Full answer key
     answer_key_path = solutions_dir / "complete_solution_key.md"
@@ -1408,12 +1520,24 @@ def run_all(data_path: Path, figures_dir: Path, solutions_dir: Path) -> Dict[str
         q15_info,
         q16_info,
         q17_info,
+        q18_info,
+        q19_info,
+        q20_info,
     )
 
     summary = {
+        "run_summary_version": RUN_SUMMARY_VERSION,
         "data_path": _rel(data_path),
         "figures_dir": _rel(figures_dir),
         "solutions_dir": _rel(solutions_dir),
+        "runtime_profile": profile,
+        "data_split_strategy": {
+            "base_supervised": "stratified_train_test_80_20",
+            "q18_temporal": q18_info.get("split_strategy", "disabled"),
+            "q19_uncertainty": "train/calibration/test = 60/20/20" if enable_q19 else "disabled",
+            "q20_fairness": "stratified_train_test_80_20" if enable_q20 else "disabled",
+        },
+        "metric_export_version": METRIC_EXPORT_VERSION,
         "sql_path": _rel(solutions_dir / "q1_moving_average.sql"),
         "answer_key_path": _rel(answer_key_path),
         "q1_diagnostics": q1_diag,
@@ -1424,12 +1548,20 @@ def run_all(data_path: Path, figures_dir: Path, solutions_dir: Path) -> Dict[str
         "q15": q15_info,
         "q16": q16_info,
         "q17": q17_info,
+        "q18": q18_info,
+        "q19": q19_info,
+        "q20": q20_info,
         "xgboost_available": XGB_AVAILABLE,
         "shap_available": SHAP_AVAILABLE,
         "xgboost_import_error": XGB_IMPORT_ERROR,
         "shap_import_error": SHAP_IMPORT_ERROR,
         "q1_sql_preview": q1_sql.splitlines()[:4],
     }
+
+    metric_paths = export_metrics_files(summary, solutions_dir)
+    summary["metric_export_version"] = metric_paths["metric_export_version"]
+    summary["latex_metrics_json_path"] = _rel(metric_paths["latex_metrics_json"])
+    summary["latex_metrics_tex_path"] = _rel(metric_paths["latex_metrics_tex"])
 
     with (solutions_dir / "run_summary.json").open("w", encoding="utf-8") as fp:
         json.dump(summary, fp, indent=2)
@@ -1454,13 +1586,34 @@ def main() -> None:
         type=Path,
         default=DEFAULT_SOLUTIONS_DIR,
     )
+    parser.add_argument(
+        "--profile",
+        choices=sorted(PROFILE_CONFIGS.keys()),
+        default="balanced",
+        help="Runtime profile controlling sample sizes and tuning budgets.",
+    )
+    parser.add_argument("--enable-q18", dest="enable_q18", action="store_true", default=True)
+    parser.add_argument("--disable-q18", dest="enable_q18", action="store_false")
+    parser.add_argument("--enable-q19", dest="enable_q19", action="store_true", default=True)
+    parser.add_argument("--disable-q19", dest="enable_q19", action="store_false")
+    parser.add_argument("--enable-q20", dest="enable_q20", action="store_true", default=True)
+    parser.add_argument("--disable-q20", dest="enable_q20", action="store_false")
     args = parser.parse_args()
 
-    summary = run_all(args.data, args.figures_dir, args.solutions_dir)
+    summary = run_all(
+        args.data,
+        args.figures_dir,
+        args.solutions_dir,
+        profile=args.profile,
+        enable_q18=args.enable_q18,
+        enable_q19=args.enable_q19,
+        enable_q20=args.enable_q20,
+    )
 
     print("Full solution pipeline completed.")
     print(f"Answer key: {summary['answer_key_path']}")
     print(f"Q1 SQL: {summary['sql_path']}")
+    print(f"Runtime profile: {summary['runtime_profile']}")
     print(f"Q6 model: {summary['q6']['model_name']}")
 
 

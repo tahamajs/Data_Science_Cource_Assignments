@@ -195,5 +195,51 @@ Artifacts:
 - Recourse examples table: `solutions/q17_recourse_examples.csv`
 - Recourse effort plot: `figures/q17_recourse_median_deltas.png`
 
+## Q18. Temporal Backtesting and Drift-aware Degradation (New)
+
+Run status: **ok**
+- Split strategy: **fallback_userid_proxy**
+- Temporal column: **UserID**
+- Folds evaluated: **4**
+- AUC first fold: **0.514**
+- AUC last fold: **0.562**
+- AUC decay (last-first): **0.048**
+- Mean PSI across folds: **0.005**
+- Fallback temporal strategy used: **True**
+
+Artifacts:
+- Backtest table: `solutions/q18_temporal_backtest.csv`
+- Degradation plot: `figures/q18_temporal_degradation.png`
+
+## Q19. Uncertainty Quantification and Coverage (New)
+
+Run status: **ok**
+- Method: **split_conformal_probability_interval**
+- Coverage@90%: **0.900**
+- Coverage@95%: **0.952**
+- Max under-coverage gap: **0.005**
+- Mean interval width: **0.986**
+
+Artifacts:
+- Coverage table: `solutions/q19_uncertainty_coverage.csv`
+- Coverage figure: `figures/q19_coverage_vs_alpha.png`
+
+## Q20. Fairness Mitigation Experiment (New)
+
+Run status: **ok**
+- Sensitive feature: **Country_Origin**
+- Mitigation method: **reweighing_with_group_label_tilt**
+- Baseline ROC-AUC: **0.550**
+- Mitigated ROC-AUC: **0.556**
+- Baseline DP gap: **0.155**
+- Mitigated DP gap: **0.098**
+- Baseline EOpp gap: **0.189**
+- Mitigated EOpp gap: **0.167**
+- Policy pass: **True**
+
+Artifacts:
+- Comparison table: `solutions/q20_fairness_mitigation_comparison.csv`
+- Tradeoff figure: `figures/q20_fairness_tradeoff.png`
+
 ## Fairness note for grading discussion
 Even with strong predictive metrics, model decisions can mirror historical policy constraints. Country-level predicted positive rates should be audited against domain knowledge before any deployment.

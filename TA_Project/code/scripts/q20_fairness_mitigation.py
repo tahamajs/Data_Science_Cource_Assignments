@@ -179,7 +179,12 @@ def _evaluate(
 
 def _compute_reweighing_weights(y_train: pd.Series, groups_train: pd.Series) -> np.ndarray:
     eps = 1e-6
-    train_df = pd.DataFrame({"y": y_train.astype(int).to_numpy(), "g": groups_train.astype(str).fillna("UNKNOWN")})
+    train_df = pd.DataFrame(
+        {
+            "y": y_train.astype(int).to_numpy(),
+            "g": groups_train.astype(str).fillna("UNKNOWN").to_numpy(),
+        }
+    )
 
     p_y = train_df["y"].value_counts(normalize=True).to_dict()
     p_g = train_df["g"].value_counts(normalize=True).to_dict()
@@ -189,9 +194,10 @@ def _compute_reweighing_weights(y_train: pd.Series, groups_train: pd.Series) -> 
     group_pos = train_df.groupby("g")["y"].mean().to_dict()
 
     weights = np.ones(len(train_df), dtype=float)
-    for i, row in train_df.iterrows():
-        y_val = int(row["y"])
-        g_val = str(row["g"])
+    y_values = train_df["y"].to_numpy(dtype=int)
+    g_values = train_df["g"].astype(str).to_numpy()
+    for idx, (y_val, g_val) in enumerate(zip(y_values, g_values)):
+        g_val = str(g_val)
 
         base = p_y.get(y_val, eps) * p_g.get(g_val, eps) / max(float(p_yg.get((y_val, g_val), eps)), eps)
 
@@ -201,7 +207,7 @@ def _compute_reweighing_weights(y_train: pd.Series, groups_train: pd.Series) -> 
         else:
             tilt = (1.0 - overall_pos) / max(1.0 - g_pos, eps)
 
-        weights[i] = base * tilt
+        weights[idx] = base * tilt
 
     return np.clip(weights, 0.25, 6.0)
 

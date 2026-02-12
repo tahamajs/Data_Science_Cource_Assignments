@@ -1,0 +1,27 @@
+{
+  "metric_export_version": "2.0",
+  "runtime_profile": "balanced",
+  "data_split_strategy": {
+    "base_supervised": "stratified_train_test_80_20",
+    "q18_temporal": "fallback_userid_proxy",
+    "q19_uncertainty": "train/calibration/test = 60/20/20",
+    "q20_fairness": "stratified_train_test_80_20"
+  },
+  "q6_model": "XGBoost",
+  "q6_accuracy": 0.5835,
+  "q6_auc": 0.5495109829186658,
+  "q6_f1": 0.24751580849141824,
+  "q15_brier": 0.24357038736343384,
+  "q15_ece": 0.03270347037775951,
+  "q15_best_f1_threshold": 0.25,
+  "q16_top_feature": "Visa_Approval_Date",
+  "q16_top_psi": 0.001344555936898366,
+  "q17_recourse_rate": 1.0,
+  "q18_mean_auc": 0.5427931947374791,
+  "q18_auc_decay": 0.04777659899454556,
+  "q19_cov90": 0.9,
+  "q19_max_undercoverage": 0.0050000000000000044,
+  "q20_dp_gap_base": 0.1550234677913067,
+  "q20_dp_gap_mitigated": 0.09778167890201085,
+  "q20_policy_pass": true
+}
