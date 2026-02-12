@@ -6,7 +6,10 @@ import logging
 import os
 import shutil
 
-from common import build_consumer
+try:
+    from common import build_consumer
+except ImportError:  # pragma: no cover
+    from .common import build_consumer
 
 CHECKPOINT_DIR = os.getenv("FRAUD_CHECKPOINT", "/tmp/spark_checkpoint_fraud2")
 

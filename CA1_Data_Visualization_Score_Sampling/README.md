@@ -131,6 +131,14 @@ seaborn              # Advanced statistical plots
 pandas               # DataFrame manipulation
 ```
 
+**Quick start**
+```bash
+cd CA1_Data_Visualization_Score_Sampling/code
+python -m venv .venv && source .venv/bin/activate
+pip install pandas numpy matplotlib seaborn scipy scikit-learn
+jupyter notebook code.ipynb
+```
+
 ### Implemented Algorithms
 
 1. **Score Computation**
@@ -561,4 +569,3 @@ Consult instructors for conceptual clarification.
 ---
 
 > **Note**: This project provides foundation for understanding modern generative models like Stable Diffusion and DALL-E. Mastering these concepts enables working with more complex models.
-

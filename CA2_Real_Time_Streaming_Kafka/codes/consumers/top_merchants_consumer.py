@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from common import consume_to_dataframe
+try:
+    from common import consume_to_dataframe
+except ImportError:  # pragma: no cover
+    from .common import consume_to_dataframe
 
 
 def main() -> None:

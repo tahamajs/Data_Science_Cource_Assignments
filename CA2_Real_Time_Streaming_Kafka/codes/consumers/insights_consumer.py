@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from common import build_consumer
+try:
+    from common import build_consumer
+except ImportError:  # pragma: no cover
+    from .common import build_consumer
 
 
 def main() -> None:

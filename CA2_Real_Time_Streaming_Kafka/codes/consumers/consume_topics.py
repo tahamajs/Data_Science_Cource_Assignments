@@ -11,7 +11,10 @@ from typing import Dict, Iterable, Tuple
 
 import pandas as pd
 
-from common import consume_to_dataframe
+try:
+    from common import consume_to_dataframe
+except ImportError:  # pragma: no cover
+    from .common import consume_to_dataframe
 
 DEFAULT_TOPICS = [
     "darooghe.insights",

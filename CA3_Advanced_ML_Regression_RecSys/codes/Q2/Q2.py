@@ -714,19 +714,20 @@ if TENSORFLOW_AVAILABLE:
                 setattr(self, key, value)
             return self
 
-def get_args():
-    p=argparse.ArgumentParser("Bike Sharing Demand Regressor - Advanced v4 Optimized")
+def get_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+    """Parse CLI arguments for the bike sharing demand regressor."""
+    p = argparse.ArgumentParser("Bike Sharing Demand Regressor - Advanced v4 Optimized")
     p.add_argument("--data_dir", type=Path, default=Path("./dataset"))
     p.add_argument("--train_file", default="regression-dataset-train.csv")
-    p.add_argument("--test_file",  default="regression-dataset-test-unlabeled.csv")
-    p.add_argument("--out_path",   type=Path, default=Path("./submission_v4_enhanced_fe.csv")) # New output name
-    p.add_argument("--no_opt",     action="store_true", help="Disable Optuna even if installed")
-    p.add_argument("--fast",       action="store_true", help="Reduced optimization for faster running")
+    p.add_argument("--test_file", default="regression-dataset-test-unlabeled.csv")
+    p.add_argument("--out_path", type=Path, default=Path("./submission_v4_enhanced_fe.csv"))
+    p.add_argument("--no_opt", action="store_true", help="Disable Optuna even if installed")
+    p.add_argument("--fast", action="store_true", help="Reduced optimization for faster running")
     p.add_argument("--opt_trials", type=int, default=15, help="Number of Optuna trials per model")
-    p.add_argument("--no_nn",      action="store_true", help="Disable neural network even if TensorFlow is available")
+    p.add_argument("--no_nn", action="store_true", help="Disable neural network even if TensorFlow is available")
     p.add_argument("--select_features_threshold", type=str, default="median", help="Threshold for SelectFromModel")
     p.add_argument("--poly_degree", type=int, default=0, help="Degree for PolynomialFeatures on numeric cols. 0 to disable.")
-    return p.parse_args()
+    return p.parse_args(argv)
 
 def build_booster(name: str, cls, space: Dict, X_input_for_tuning, y_raw_for_tuning, args, out_dir_for_plots):
     # (Unchanged from previous correction for CatBoost verbosity)
@@ -771,8 +772,8 @@ def build_booster(name: str, cls, space: Dict, X_input_for_tuning, y_raw_for_tun
     
     print(f"[Optuna] {name} best CV RMSE: {-opt.best_score_:.4f}, Params: {opt.best_params_}")
     return opt.best_estimator_
-def main():
-    args = get_args()
+def main(argv: Optional[List[str]] = None):
+    args = get_args(argv)
     np.random.seed(SEED)
     random.seed(SEED)
 

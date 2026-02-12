@@ -739,6 +739,16 @@ jupyter notebook DS_CA56_final.ipynb
 - [Gensim Word2Vec Tutorial](https://radimrehurek.com/gensim/)
 - [Scikit-learn Semi-Supervised Learning](https://scikit-learn.org/stable/modules/semi_supervised.html)
 
+### Quick start
+```bash
+cd CA56_NLP_Semi_Supervised_Learning/code
+python -m venv .venv && source .venv/bin/activate
+pip install -U pip
+pip install numpy pandas scikit-learn gensim sentence-transformers nltk matplotlib seaborn
+jupyter notebook DS_CA56_final.ipynb
+```
+If using SentenceTransformers for the first time, the model download will happen on first run.
+
 ---
 
 ## 👥 Team Members

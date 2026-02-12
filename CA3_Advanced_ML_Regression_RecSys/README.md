@@ -49,6 +49,36 @@ Advanced_ML_Regression_RecSys/
 
 ---
 
+## ⚡ Quick Start
+
+Install core deps (CPU-friendly):
+
+```bash
+pip install -r <(cat <<'REQ'
+pandas numpy scikit-learn seaborn matplotlib lightgbm xgboost
+REQ
+)
+```
+
+- **Q1 (bike demand)**: unzip `codes/Q1.zip`, open the notebook/script inside, and run with the above deps.  
+- **Q2 (recsys, CLI)**:
+  ```bash
+  cd codes/Q2
+  python Q2.py --help
+  python Q2.py --data ./dataset --plots --models lightgbm xgboost random_forest
+  ```
+  Generated plots land in `codes/Q2/visualizations/`.
+- **Q3 (viz/stat analysis)**:
+  ```bash
+  cd codes/Q3
+  python Q3.py
+  ```
+  Outputs go to `codes/Q3/visualizations/`.
+
+All scripts set `SEED=9998` for reproducibility. Adjust dataset paths with `--data` flags if you relocate files.
+
+---
+
 ## 🚀 Question 1: Bike Sharing Demand Prediction
 
 ### Problem Statement
@@ -747,4 +777,3 @@ Individual assignment or team (depends on the specific assignment).
 
 **Created**: Fall 2024-2025  
 **Last Updated**: January 2025
-

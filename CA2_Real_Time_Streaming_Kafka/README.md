@@ -174,48 +174,57 @@ os                        # Environment variables
 
 ---
 
-## 💻 Implementation Details
+## ⚡ Quick Start (Local)
 
-### Producer Implementation
+```bash
+# 1) Start Kafka externally (e.g., docker-compose or local install)
 
-```python
-class TransactionProducer:
-    """
-    Generates and publishes transaction events to Kafka
-    """
-    
-    def __init__(self, broker, topic):
-        self.config = {'bootstrap.servers': broker}
-        self.producer = Producer(self.config)
-        self.topic = topic
-    
-    def generate_event(self):
-        """Generate realistic transaction event"""
-        return {
-            'transaction_id': str(uuid.uuid4()),
-            'timestamp': datetime.utcnow().isoformat() + 'Z',
-            'amount': random.randint(50000, 2000000),
-            'status': 'approved' if random.random() > 0.05 else 'declined',
-            # ... more fields
-        }
-    
-    def produce_event(self, event):
-        """Send event to Kafka"""
-        self.producer.produce(
-            self.topic,
-            key=event['customer_id'],
-            value=json.dumps(event),
-            callback=self.delivery_report
-        )
-        self.producer.poll(0)
-    
-    def delivery_report(self, err, msg):
-        """Callback for message delivery confirmation"""
-        if err:
-            logging.error(f"Delivery failed: {err}")
-        else:
-            logging.debug(f"Delivered to {msg.topic()}")
+# 2) Produce synthetic transactions
+cd codes/producers
+python darooghe_pulse.py --broker localhost:9092 --base-rate 120 --init-mode flush
+
+# 3) Run streaming analytics (separate terminals)
+cd ../streaming
+python streaming_app.py            # cleans/validates + writes darooghe.insights/error_logs
+python commission_analytics.py     # commission ratios + top merchants
+python fraud_detection.py          # velocity/geo/anomaly alerts
+
+# 4) Inspect results
+cd ../consumers
+python consume_topics.py --save-dir ./exports   # pulls insights/fraud/commission topics to CSV
+python transaction_validator.py                 # validates and writes transactions.jsonl
+
+# 5) Batch + storage (optional)
+cd ../batch && python load_data.py              # offline EDA on transactions.jsonl
+cd ../storage && python load_to_mongo.py        # load JSONL into MongoDB
 ```
+
+Environment toggles (defaults in parentheses):
+
+| Variable | Purpose |
+| --- | --- |
+| `KAFKA_BROKER` (`localhost:9092`) | Kafka bootstrap servers for all scripts |
+| `EVENT_RATE` (`100`) | Producer base events/min |
+| `PEAK_FACTOR` (`2.5`) | Peak-time multiplier (9am–6pm UTC) |
+| `EVENT_INIT_MODE` (`flush`) | `flush` \| `skip` \| `none` for history seeding |
+| `CHECKPOINT_BASE` (`/tmp`) | Root dir for Spark checkpoint folders |
+| `MONGO_URI` (`mongodb://localhost:27017/`) | Target Mongo for storage loader |
+
+## 🗂️ Key Scripts (cleaned)
+
+- **Producer**: `codes/producers/darooghe_pulse.py` — CLI + env-driven synthetic data generator with optional historical backfill.
+- **Streaming (Spark)**:
+  - `streaming_app.py` — validation + sliding-window insights + error logs.
+  - `commission_analytics.py` — commission totals/ratios + top merchants.
+  - `fraud_detection.py` — velocity, geo-impossibility, and amount-anomaly alerts.
+- **Consumers** (`codes/consumers/`):
+  - `consume_topics.py` — one-stop pull of insights/fraud/commission topics to DataFrames/CSV.
+  - `commission_*_consumer.py`, `top_merchants_consumer.py`, `insights_consumer.py`, `fraud_alerts_consumer.py` — focused previews.
+  - `transaction_validator.py` — validates incoming events and writes `transactions.jsonl`.
+  - `kafka_consumer_monitor.py` — exposes consumer lag via Prometheus.
+- **Batch/Storage**:
+  - `batch/load_data.py`, `batch/batch_processing.py` — offline EDA with Spark; configurable data path.
+  - `storage/load_to_mongo.py` — enrich + load `transactions.jsonl` into MongoDB with basic retention.
 
 ---
 
@@ -778,4 +787,3 @@ For questions and support, contact course instructors and TAs.
 ---
 
 > **Note**: This project demonstrates fundamental concepts of distributed streaming systems. Production deployments require additional considerations like security (SSL/SASL), monitoring, and high availability configurations.
-

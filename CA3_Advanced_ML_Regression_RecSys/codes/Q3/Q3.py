@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 """
-Efficient Ensemble Recommender – **v2.1 (bagging‑fix)**
-======================================================
-Fix: copying the tuned SVD hyper‑params for bagging previously failed
-because we passed the whole `__dict__`, which contains internal attrs
-(e.g. `bsl_options`) that `SVD.__init__` doesn’t accept.  We now build a
-clean param‑dict with only the allowed keys.
+Efficient Ensemble Recommender – v2.1 (bagging‑fix)
+
+CLI-friendly and typed. Includes a fast grid mode for quick iteration.
+Fix: copying tuned SVD hyper‑params for bagging now uses a whitelist to avoid
+passing internal attrs (e.g. ``bsl_options``) that ``SVD`` rejects.
 """
 from __future__ import annotations
 
@@ -25,18 +24,21 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 # ---------------------------------------------------------------------------
 
 def load_data(dir_: Path) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Read training and test CSVs from a directory."""
     ratings = pd.read_csv(dir_ / "train_data_movie_rate.csv")
     test = pd.read_csv(dir_ / "test_data.csv")
     return ratings, test
 
 
 def clean_ratings(df: pd.DataFrame) -> pd.DataFrame:
+    """Drop bad rows and average duplicate user–item labels."""
     df = df.dropna(subset=["user_id", "item_id", "label"]).copy()
     df["label"] = df["label"].astype(float)
     return df.groupby(["user_id", "item_id"], as_index=False)["label"].mean()
 
 
 def build_dataset(ratings: pd.DataFrame) -> Dataset:
+    """Build a Surprise Dataset from ratings."""
     reader = Reader(rating_scale=(ratings.label.min(), ratings.label.max()))
     return Dataset.load_from_df(ratings[["user_id", "item_id", "label"]], reader)
 
@@ -44,8 +46,9 @@ def build_dataset(ratings: pd.DataFrame) -> Dataset:
 # CV tuning helper
 # ---------------------------------------------------------------------------
 
-def tune_algo(algo_cls, grid: Dict, data: Dataset, name: str):
-    gs = GridSearchCV(algo_cls, grid, measures=["rmse"], cv=3, n_jobs=-1)
+def tune_algo(algo_cls, grid: Dict, data: Dataset, name: str, n_jobs: int = -1):
+    """Grid-search RMSE for a Surprise algorithm and return the fitted model plus params/score."""
+    gs = GridSearchCV(algo_cls, grid, measures=["rmse"], cv=3, n_jobs=n_jobs)
     gs.fit(data)
     print(f"✓ {name} best RMSE {gs.best_score['rmse']:.4f} params {gs.best_params['rmse']}")
     model = algo_cls(**gs.best_params["rmse"])
@@ -56,7 +59,7 @@ def tune_algo(algo_cls, grid: Dict, data: Dataset, name: str):
 # Metric helper
 # ---------------------------------------------------------------------------
 
-def metric_dict(y_true, y_pred):
+def metric_dict(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
     mse = mean_squared_error(y_true, y_pred)
 
     return {
@@ -70,10 +73,16 @@ def metric_dict(y_true, y_pred):
 # Main
 # ---------------------------------------------------------------------------
 
-def main():
-    ap = argparse.ArgumentParser(description="Efficient ensemble recommender v2.1")
-    ap.add_argument("--data_dir", type=Path, default=Path("./dataset/"))
-    args = ap.parse_args()
+def parse_args(argv: List[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Efficient ensemble recommender v2.1")
+    parser.add_argument("--data_dir", type=Path, default=Path("./dataset/"), help="Directory containing train/test CSV files.")
+    parser.add_argument("--fast", action="store_true", help="Use smaller grids for faster tuning.")
+    parser.add_argument("--n_jobs", type=int, default=-1, help="Parallelism for grid search.")
+    return parser.parse_args(argv)
+
+
+def main(argv: List[str] | None = None) -> None:
+    args = parse_args(argv)
 
     ratings, test_df = load_data(args.data_dir)
     ratings = clean_ratings(ratings)
@@ -81,13 +90,18 @@ def main():
     rmin, rmax = ratings.label.min(), ratings.label.max()
 
     # ---------------- Hyper‑param grids ----------------------------------
-    svd_grid = {"n_factors": [120, 160, 200], "lr_all": [0.003, 0.005, 0.007], "reg_all": [0.01, 0.02, 0.04], "n_epochs": [60, 80]}
-    svdpp_grid = {"n_factors": [120, 160], "lr_all": [0.003, 0.005, 0.007], "reg_all": [0.03, 0.05], "n_epochs": [40, 60]}
-    knn_grid = {"k": [40, 60, 80], "min_k": [3, 5], "sim_options": {"name": ["pearson_baseline"], "user_based": [False]}}
+    if args.fast:
+        svd_grid = {"n_factors": [160], "lr_all": [0.005], "reg_all": [0.02], "n_epochs": [40]}
+        svdpp_grid = {"n_factors": [160], "lr_all": [0.005], "reg_all": [0.05], "n_epochs": [40]}
+        knn_grid = {"k": [60], "min_k": [3], "sim_options": {"name": ["pearson_baseline"], "user_based": [False]}}
+    else:
+        svd_grid = {"n_factors": [120, 160, 200], "lr_all": [0.003, 0.005, 0.007], "reg_all": [0.01, 0.02, 0.04], "n_epochs": [60, 80]}
+        svdpp_grid = {"n_factors": [120, 160], "lr_all": [0.003, 0.005, 0.007], "reg_all": [0.03, 0.05], "n_epochs": [40, 60]}
+        knn_grid = {"k": [40, 60, 80], "min_k": [3, 5], "sim_options": {"name": ["pearson_baseline"], "user_based": [False]}}
 
-    svd_best, svd_params, svd_cv = tune_algo(SVD, svd_grid, data, "SVD")
-    svdpp_best, svdpp_params, svdpp_cv = tune_algo(SVDpp, svdpp_grid, data, "SVD++")
-    knn_best, _, knn_cv = tune_algo(KNNBaseline, knn_grid, data, "KNN‑Baseline")
+    svd_best, svd_params, svd_cv = tune_algo(SVD, svd_grid, data, "SVD", n_jobs=args.n_jobs)
+    svdpp_best, svdpp_params, svdpp_cv = tune_algo(SVDpp, svdpp_grid, data, "SVD++", n_jobs=args.n_jobs)
+    knn_best, _, knn_cv = tune_algo(KNNBaseline, knn_grid, data, "KNN‑Baseline", n_jobs=args.n_jobs)
 
     # ---------------- Bagging SVDs --------------------------------------
     bagging_seeds = [7, 42, 2025]

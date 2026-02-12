@@ -86,6 +86,14 @@ scipy.stats           # Statistical functions
 random                # Random number generation
 ```
 
+**Quick start**
+```bash
+cd CA0_Statistical_Inference_Monte_Carlo/codes
+python -m venv .venv && source .venv/bin/activate
+pip install numpy pandas matplotlib scipy
+jupyter notebook notebook.ipynb
+```
+
 ### Statistical Techniques
 - **Monte Carlo Simulation**
 - **Confidence Intervals**
@@ -290,4 +298,3 @@ Cohen's d = (μ₁ - μ₂) / σ
 
 **Created**: Fall 2024-2025  
 **Last Updated**: January 2025
-

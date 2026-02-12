@@ -659,6 +659,13 @@ tensorboard >= 2.8     # Training monitoring
 pip install torch torchvision numpy pandas matplotlib seaborn scikit-learn
 ```
 
+### Quick start
+```bash
+cd CA4_Deep_Learning_Neural_Networks/codes
+python -m venv .venv && source .venv/bin/activate
+pip install torch torchvision numpy pandas matplotlib seaborn scikit-learn
+```
+
 ### Task 1: MLP
 ```bash
 cd codes/Task1/
@@ -676,6 +683,8 @@ jupyter notebook Task2_CNNs.ipynb
 cd codes/Task3/
 jupyter notebook Task3_RNNs.ipynb
 ```
+
+GPU is optional but recommended for the CNN/RNN notebooks; set the PyTorch device inside the notebooks if available.
 
 ---
 
@@ -771,4 +780,3 @@ Individual or team assignment (check specific requirements).
 ---
 
 > **Note**: Deep learning requires significant computational resources. Using Google Colab or similar platforms with GPU acceleration is recommended for faster training.
-

@@ -1575,6 +1575,10 @@ mypy scripts/ src/
 
 # Security audit
 bandit -r scripts/ src/
+
+# Or from repo root (uses black + ruff targets)
+make lint      # ruff check across CA2/CA3/capstone
+make fmt       # black format across the same
 ```
 
 ### Testing
