@@ -1,0 +1,254 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{xepersian}
+
+\settextfont{Times New Roman}
+\setlatintextfont{Times New Roman}
+\geometry{margin=1in}
+\setlist[itemize]{leftmargin=1.8em}
+\setlist[enumerate]{leftmargin=1.8em}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+\title{دانشگاه تهران -- دانشکده مهندسی برق و کامپیوتر\\
+\textbf{درس علم داده: تمرین نهایی جامع (نسخه حرفه‌ای توسعه‌یافته)}}
+\author{تیم درس علم داده -- بهار ۱۴۰۴}
+\date{ویرایش ۲.۰}
+
+\begin{document}
+\maketitle
+
+\begin{tcolorbox}
+\textbf{عنوان پروژه:} تحلیل مهاجرت جهانی استعدادهای فنی با رویکرد داده‌محور\\
+\textbf{داده اصلی:} \lr{GlobalTechTalent\_50k.csv} (۵۰٬۰۰۰ رکورد)\\
+\textbf{مسئله اصلی:} پیش‌بینی \lr{Migration\_Status} (۱=مهاجرت، ۰=عدم مهاجرت)
+\end{tcolorbox}
+
+\section*{۱) هدف آموزشی و فلسفه ارزیابی}
+این تمرین نهایی برای سنجش هم‌زمان \textbf{درک ریاضی، پیاده‌سازی مهندسی، تحلیل انتقادی، و گزارش‌نویسی حرفه‌ای} طراحی شده است.
+انتظار می‌رود دانشجو در این پروژه نشان دهد که می‌تواند:
+\begin{itemize}
+    \item مسئله واقعی را به یک مسئله داده‌محور قابل ارزیابی تبدیل کند؛
+    \item از داده خام تا استقرار پیشنهادی، یک خط لوله کامل و بازتولیدپذیر بسازد؛
+    \item از مدل‌های ساده تا مدل‌های غیرخطی/پیشرفته را با استدلال علمی مقایسه کند؛
+    \item با روش‌های \lr{XAI} و تحلیل عدالت، خروجی مدل را قابل حسابرسی نماید.
+\end{itemize}
+
+\section*{۲) اقلام تحویلی الزامی}
+\begin{enumerate}
+    \item \textbf{نوت‌بوک اصلی پروژه} با ساختار \lr{Q1} تا \lr{Q14} و بخش \lr{Capstone}.
+    \item \textbf{گزارش نهایی} (حداکثر ۲۵ صفحه بدون پیوست) شامل شکل‌ها، جدول‌ها، تفسیرها و محدودیت‌ها.
+    \item \textbf{بسته کد} شامل اسکریپت‌های قابل اجرا، فایل وابستگی‌ها، و راهنمای اجرای کامل.
+    \item \textbf{پاسخ‌نامه تشریحی} برای همه سوالات (فرمول، استدلال، خروجی).
+    \item \textbf{خلاصه مدیریتی} ۱ تا ۲ صفحه برای مخاطب غیرتخصصی.
+\end{enumerate}
+
+\textbf{حداقل استاندارد فنی:}
+\begin{itemize}
+    \item ثبت \lr{random seed} در تمام بخش‌های تصادفی.
+    \item تفکیک شفاف \lr{train/validation/test}.
+    \item کنترل صریح نشت داده و نشت زمانی.
+    \item ثبت نسخه کتابخانه‌ها و محیط اجرا.
+    \item توان بازتولید نتایج صرفاً با اجرای دستورات اعلام‌شده.
+\end{itemize}
+
+\section*{۳) ساختار نمره‌دهی (۲۰۰ نمره)}
+\begin{center}
+\begin{tabular}{@{}p{1.7cm}p{7.8cm}p{2cm}@{}}
+\toprule
+بلوک & حوزه مهارتی & نمره \\
+\midrule
+A & مبانی: چرخه عمر علم داده، عملیات پایتونی، EDA & ۲۰ \\
+B & استنباط آماری، طراحی بصری و روایت داده & ۲۰ \\
+C & SQL پیشرفته و مهندسی داده در مقیاس & ۲۵ \\
+D & مدل‌سازی نظارت‌شده و بهینه‌سازی & ۴۵ \\
+E & یادگیری بدون نظارت و کاهش بُعد & ۲۰ \\
+F & یادگیری عمیق، NLP، مدل‌های زبانی/عامل‌ها & ۳۰ \\
+G & عدالت، سوگیری، حاکمیت و استقرار مسئولانه & ۱۵ \\
+H & کپستون یکپارچه (پیاده‌سازی + تبیین + گزارش) & ۲۵ \\
+\midrule
+\textbf{جمع کل} &  & \textbf{۲۰۰} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{۴) صورت سوال توسعه‌یافته}
+
+\subsection*{بلوک A -- مبانی (۲۰ نمره)}
+
+\subsubsection*{Q1) چرخه عمر علم داده و صورت‌بندی مسئله (۱۰ نمره)}
+یک سند فنی کوتاه ارائه دهید که شامل موارد زیر باشد:
+\begin{enumerate}
+    \item تعریف مسئله، ذی‌نفعان، و تصمیم‌هایی که مدل قرار است پشتیبانی کند.
+    \item تعریف \lr{KPI}‌های فنی (مثل \lr{AUC}، \lr{Recall@K}، \lr{Calibration}) و عملیاتی.
+    \item فهرست ریسک‌ها (نشت داده، \lr{drift}، تغییر سیاست مهاجرت، خطای برچسب).
+    \item برنامه پایش پس از استقرار (آستانه هشدار، فرکانس بازآموزی، مسیر ارجاع انسانی).
+\end{enumerate}
+\textbf{خروجی مورد انتظار:} نمودار چرخه عمر + یک جدول ریسک.
+
+\subsubsection*{Q2) عملیات پایتونی، کنترل کیفیت و EDA (۱۰ نمره)}
+\begin{enumerate}
+    \item پروفایل‌گیری داده: نوع ستون‌ها، مقادیر گمشده، تکراری، بازه‌های نامعتبر.
+    \item شناسایی پرت‌ها با حداقل دو روش (مثلاً \lr{IQR} و \lr{z-score}) و تحلیل پیامد.
+    \item حداقل ۸ نمودار اکتشافی با تفسیر کاربردی.
+    \item پیاده‌سازی یک تابع پیش‌پردازش ماژولار و قابل آزمون.
+\end{enumerate}
+
+\subsection*{بلوک B -- استنباط آماری و مصورسازی (۲۰ نمره)}
+
+\subsubsection*{Q3) طراحی مطالعه و استنباط (۱۰ نمره)}
+\begin{itemize}
+    \item تفکیک مطالعه مشاهده‌ای از ادعای علّی برای این مسئله.
+    \item ارائه حداقل یک بازه اطمینان معتبر و تفسیر دقیق آن.
+    \item تعریف یک آزمون فرض با \lr{H0/H1}، سطح معنی‌داری، کنترل خطای نوع اول.
+    \item بررسی اعتبار پیش‌فرض‌ها (نرمال‌بودن تقریبی/حجم نمونه/استقلال).
+\end{itemize}
+
+\subsubsection*{Q4) طراحی بصری و روایت برای تصمیم‌گیر (۱۰ نمره)}
+\begin{itemize}
+    \item طراحی یک بخش داشبوردی برای مخاطب غیرتخصصی.
+    \item توجیه انتخاب رنگ، مقیاس، ترتیب، و \lr{annotation}ها.
+    \item ارائه حداقل یک مثال نمودار گمراه‌کننده + نسخه اصلاح‌شده.
+\end{itemize}
+
+\subsection*{بلوک C -- SQL و مهندسی داده (۲۵ نمره)}
+
+\subsubsection*{Q5) SQL پیشرفته (۱۵ نمره)}
+سه کوئری مستقل ارائه دهید:
+\begin{enumerate}
+    \item میانگین متحرک ۳ساله \lr{Research\_Citations} با \lr{window frame}.
+    \item رتبه‌بندی/دهک‌بندی کشورها یا کاربران با \lr{RANK/DENSE\_RANK/NTILE}.
+    \item یک تحلیل \lr{cohort} با \lr{CTE} (ماندگاری یا انتقال وضعیت در زمان).
+\end{enumerate}
+
+\subsubsection*{Q6) نشت داده و معماری داده در مقیاس (۱۰ نمره)}
+\begin{itemize}
+    \item ویژگی‌های نشت‌دهنده را شناسایی و با منطق زمانی حذف کنید.
+    \item معماری \lr{Bronze/Silver/Gold} یا معادل آن را برای داده آفلاین/آنلاین پیشنهاد دهید.
+    \item راهکار \lr{train-serving consistency} با \lr{feature store} توضیح دهید.
+\end{itemize}
+
+\subsection*{بلوک D -- مدل‌سازی نظارت‌شده و بهینه‌سازی (۴۵ نمره)}
+
+\subsubsection*{Q7) مدل‌های خطی/لجستیک + \lr{Elastic Net} (۱۵ نمره)}
+\begin{enumerate}
+    \item مدل پایه خطی/لجستیک را اجرا کنید.
+    \item تابع هزینه \lr{Elastic Net} را بنویسید و گرادیان/زیرگرادیان را استخراج کنید.
+    \item تفسیر ضریب، \lr{p-value}، بازه اطمینان، و پایداری ضرایب را ارائه دهید.
+\end{enumerate}
+
+\subsubsection*{Q8) تحلیل بهینه‌سازی در \lr{Ravine} (۱۰ نمره)}
+\begin{itemize}
+    \item رفتار \lr{SGD}، \lr{Momentum}، و \lr{Adam} را روی یک تابع دره‌ای مقایسه کنید.
+    \item مسیر همگرایی و نوسان را رسم و تحلیل کنید.
+    \item برای ناهمگنی مقیاس ویژگی‌ها پیشنهاد عملی بدهید.
+\end{itemize}
+
+\subsubsection*{Q9) مقایسه خانواده مدل‌های غیرخطی (۲۰ نمره)}
+\begin{itemize}
+    \item \lr{SVM} و \lr{KNN}
+    \item \lr{Decision Tree} و \lr{Random Forest}
+    \item یک مدل \lr{Boosting} (ترجیحاً \lr{XGBoost})
+\end{itemize}
+الزامات:
+\begin{enumerate}
+    \item پروتکل \lr{cross-validation} و تنظیم ابرپارامتر.
+    \item جدول متریک‌ها (حداقل: \lr{Accuracy, ROC-AUC, F1, Precision, Recall}).
+    \item تحلیل خطا (الگوهای اشتباه، ماتریس درهم‌ریختگی، حساسیت تصمیم).
+\end{enumerate}
+
+\subsection*{بلوک E -- بدون نظارت (۲۰ نمره)}
+
+\subsubsection*{Q10) کاهش بُعد (۱۰ نمره)}
+\begin{itemize}
+    \item \lr{PCA}: محاسبه و تفسیر \lr{Explained Variance Ratio}.
+    \item یک روش مکمل (\lr{Random Projection}/\lr{t-SNE}/\lr{UMAP}).
+    \item تفسیر هندسی ابعاد نهفته.
+\end{itemize}
+
+\subsubsection*{Q11) خوشه‌بندی (۱۰ نمره)}
+\begin{itemize}
+    \item \lr{KMeans} + \lr{Elbow} + \lr{Silhouette}.
+    \item \lr{DBSCAN} یا روش چگالی‌محور معادل.
+    \item تحلیل پایداری خوشه‌ها و معنای کاربردی آن‌ها.
+\end{itemize}
+
+\subsection*{بلوک F -- یادگیری عمیق، \lr{NLP} و مدل‌های زبانی (۳۰ نمره)}
+
+\subsubsection*{Q12) مدل عصبی جدولی و مدل توالی/متن (۱۵ نمره)}
+\begin{itemize}
+    \item یک \lr{MLP} روی داده جدولی آموزش دهید.
+    \item یک مدل توالی/متنی (\lr{RNN/LSTM/GRU/CNN}) اجرا کنید.
+    \item عملکرد را با \lr{baseline} کلاسیک مقایسه کنید.
+\end{itemize}
+
+\subsubsection*{Q13) مدل‌های زبانی و \lr{LLM Agent} (۱۵ نمره)}
+جریان عامل‌محور طراحی کنید:
+\begin{center}
+\lr{plan -> retrieve -> reason -> verify}
+\end{center}
+و برای آن:
+\begin{itemize}
+    \item معیار ارزیابی صحت/وفاداری/ایمنی تعریف کنید.
+    \item سیاست مهار \lr{hallucination} و محدودیت دسترسی ابزارها مشخص کنید.
+\end{itemize}
+
+\subsection*{بلوک G -- اخلاق، عدالت و حاکمیت (۱۵ نمره)}
+
+\subsubsection*{Q14) عدالت، سوگیری، و استقرار مسئولانه (۱۵ نمره)}
+\begin{itemize}
+    \item تحلیل زیرگروهی بر اساس کشور/تحصیلات/سابقه.
+    \item بررسی \lr{proxy discrimination} و سوگیری تاریخی سیاست‌ها.
+    \item ارائه سیاست \lr{human-in-the-loop} و مسیر اعتراض/بازبینی.
+\end{itemize}
+
+\subsection*{بلوک H -- کپستون یکپارچه (۲۵ نمره)}
+خروجی کپستون باید شامل موارد زیر باشد:
+\begin{enumerate}
+    \item خط لوله کامل داده تا پیش‌بینی با کنترل نشت.
+    \item یک گزارش \lr{model card} شامل مفروضات، محدودیت‌ها، متریک‌ها.
+    \item تبیین محلی و سراسری با \lr{SHAP}.
+    \item جدول عدالت زیرگروهی + توصیه استقرار + مانیتورینگ.
+\end{enumerate}
+
+\section*{۵) قالب‌های تحویل و استاندارد مستندسازی}
+\begin{itemize}
+    \item همه شکل‌ها باید عنوان، واحد، و \lr{caption} دقیق داشته باشند.
+    \item تمام ادعاها باید با خروجی کد/جدول پشتیبانی شوند.
+    \item کد باید ماژولار، دارای نام‌گذاری استاندارد، و قابل اجرا با دستور واحد باشد.
+    \item گزارش باید شامل بخش «محدودیت‌ها» و «کارهای آینده» باشد.
+\end{itemize}
+
+\section*{۶) معیار کسر نمره}
+\begin{itemize}
+    \item وجود نشت داده بدون گزارش: تا ۵۰\% کسر در بخش مرتبط.
+    \item نبود بازتولیدپذیری: تا ۳۰\% کسر در پروژه.
+    \item تفسیر نادرست آماری (مثلاً برداشت اشتباه از \lr{p-value}): کسر ۲۰\% در سوال.
+    \item فقدان تحلیل عدالت یا اخلاق: کسر کامل نمره بلوک \lr{G}.
+\end{itemize}
+
+\section*{۷) امتیاز تشویقی (تا +۱۰ نمره)}
+\begin{itemize}
+    \item توسعه تحلیل علّی با \lr{DAG} و بحث شناسایی.
+    \item افزودن \lr{temporal validation} و تحلیل \lr{drift} بین سال‌ها.
+    \item اضافه‌کردن \lr{conformal prediction} یا برآورد عدم‌قطعیت پیشرفته.
+\end{itemize}
+
+\section*{۸) اصول اخلاق علمی}
+\begin{itemize}
+    \item استفاده از منبع بیرونی بدون ارجاع، تخلف آموزشی محسوب می‌شود.
+    \item نتایج ضعیف/منفی نیز باید صادقانه گزارش شوند.
+    \item استفاده از مدل‌های زبانی باید شفاف و مستند باشد.
+\end{itemize}
+
+\begin{tcolorbox}
+\textbf{جمع‌بندی:} این تمرین صرفاً «ساخت مدل» نیست؛ هدف، ارائه یک \textbf{سامانه تصمیم‌یار قابل دفاع} است که از نظر فنی، آماری، اخلاقی و مهندسی در سطح حرفه‌ای دانشگاهی قابل ارزیابی باشد.
+\end{tcolorbox}
+
+\end{document}

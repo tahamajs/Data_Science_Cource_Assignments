@@ -5,6 +5,7 @@
 This directory contains a full professional implementation of the Spring 2025 final assessment pipeline, including:
 
 - executable solutions for all six questions
+- an extended assignment pack covering full Spring 2024/2025 topic breadth
 - a reproducible notebook
 - generated grading artifacts (SQL/figures/answer key)
 - tests and CI-ready structure
@@ -21,6 +22,11 @@ This directory contains a full professional implementation of the Spring 2025 fi
 - `figures/`: generated figures from solution runs
 - `latex/assignment.tex`: assignment handout
 - `latex/solution_manual.tex`: TA grading solution manual
+- `latex/assignment_extended.tex`: long-form comprehensive assignment
+- `latex/solution_manual_extended.tex`: extended TA solution guide
+- `latex/assignment_fa.tex`: Persian comprehensive assignment
+- `latex/solution_manual_fa.tex`: Persian TA solution guide
+- `latex/project_report_full_fa.tex`: Persian full report with figures
 - `tests/`: unit and smoke tests
 - `docs/`: report-quality documentation
 
@@ -59,6 +65,24 @@ Run tests:
 make test
 ```
 
+Build the complete report with figures:
+
+```bash
+make report
+```
+
+Build Persian LaTeX assignment + solution:
+
+```bash
+make latex-fa
+```
+
+Build Persian full report with figures:
+
+```bash
+make report-fa
+```
+
 ## Main Generated Outputs
 
 - `solutions/q1_moving_average.sql`
@@ -81,5 +105,11 @@ make test
 ## Documentation
 
 - `docs/PROJECT_REPORT.md`: full technical report
+- `docs/ASSIGNMENT_FA.md`: full Persian assignment specification
+- `solutions/SOLUTION_KEY_FA.md`: full Persian answer key
+- `docs/PROJECT_REPORT_FA.md`: full Persian report (markdown)
 - `docs/DATA_DICTIONARY.md`: feature-level schema and leakage notes
 - `docs/REPRODUCIBILITY.md`: exact commands and environment guidance
+- `docs/TOPIC_COVERAGE_FROM_UT_REPOS.md`: mapping from UT public repos to this extended assignment
+- `latex/project_report_full.pdf`: compiled full report with embedded figures
+- `latex/project_report_full_fa.pdf`: compiled Persian full report with embedded figures

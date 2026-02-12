@@ -1,0 +1,45 @@
+{
+  "dataset_rows": 50000.0,
+  "dataset_columns": 15.0,
+  "class_0_count": 29467.0,
+  "class_1_count": 20533.0,
+  "class_1_rate": 0.41066,
+  "missingness_top10": {
+    "Visa_Approval_Date": 58.934,
+    "UserID": 0.0,
+    "Country_Origin": 0.0,
+    "Education_Level": 0.0,
+    "Field": 0.0,
+    "GitHub_Activity": 0.0,
+    "Research_Citations": 0.0,
+    "Industry_Experience": 0.0,
+    "Publications": 0.0,
+    "Remote_Work": 0.0
+  },
+  "top_correlated_features": [
+    "GitHub_Activity",
+    "Research_Citations",
+    "Remote_Work",
+    "Publications",
+    "Years_Since_Degree",
+    "Industry_Experience",
+    "Age"
+  ],
+  "country_migration_rates_top15": {
+    "India": 0.423444976076555,
+    "Iran": 0.42014210688909487,
+    "Canada": 0.41755238384451865,
+    "Netherlands": 0.41745498931949954,
+    "UK": 0.4168646080760095,
+    "Australia": 0.41366055588409223,
+    "Germany": 0.4131861575178998,
+    "China": 0.4107090320682554,
+    "Brazil": 0.40980573543015725,
+    "France": 0.40911799761620976,
+    "UAE": 0.40781296241491566,
+    "Singapore": 0.40620202640466685,
+    "Sweden": 0.4010062148564664,
+    "USA": 0.3994082840236686,
+    "South Africa": 0.3941562313655337
+  }
+}

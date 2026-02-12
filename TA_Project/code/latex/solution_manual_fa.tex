@@ -1,0 +1,270 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{xepersian}
+
+\settextfont{Times New Roman}
+\setlatintextfont{Times New Roman}
+\geometry{margin=1in}
+\setlist[itemize]{leftmargin=1.8em}
+\setlist[enumerate]{leftmargin=1.8em}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+\title{دانشگاه تهران -- دانشکده مهندسی برق و کامپیوتر\\
+\textbf{راهنمای حل تشریحی کامل (نسخه دستیار آموزشی)}}
+\author{درس علم داده -- بهار ۱۴۰۴}
+\date{ویرایش ۲.۰}
+
+\begin{document}
+\maketitle
+
+\begin{tcolorbox}
+\textbf{هدف این سند:} یکدست‌سازی نمره‌دهی، تعریف معیارهای علمی، و ارائه پاسخ مرجع برای تمام سوالات تمرین نهایی توسعه‌یافته.
+\end{tcolorbox}
+
+\section*{فلسفه نمره‌دهی}
+\begin{itemize}
+    \item \textbf{صحت علمی:} فرمول، استدلال و تفسیر باید دقیق باشند.
+    \item \textbf{کیفیت مهندسی:} کد ماژولار، قابل اجرا، و بازتولیدپذیر باشد.
+    \item \textbf{شفافیت:} مفروضات، محدودیت‌ها و ریسک‌ها صریح بیان شوند.
+    \item \textbf{مسئولیت‌پذیری:} تحلیل عدالت و سیاست مداخله انسانی الزامی است.
+\end{itemize}
+
+\section*{Q1) چرخه عمر علم داده و صورت‌بندی مسئله}
+\textbf{حد انتظار پاسخ عالی:}
+\begin{enumerate}
+    \item تعریف روشن مسئله: «پیش‌بینی احتمال مهاجرت برای پشتیبانی تصمیم‌یار».
+    \item تعریف متریک‌ها: \lr{ROC-AUC} برای رتبه‌بندی، \lr{Recall@K} برای یافتن موارد حساس، و کالیبراسیون برای قابلیت اتکا.
+    \item چرخه کامل: \lr{framing -> data -> validation -> modeling -> deployment -> monitoring}.
+    \item ثبت ریسک‌ها: نشت داده، \lr{concept drift}، تغییر سیاست، و کیفیت برچسب.
+\end{enumerate}
+
+\textbf{خطاهای متداول:}
+\begin{itemize}
+    \item ادعای علّی از داده مشاهده‌ای بدون قیود.
+    \item نبود برنامه پایش پس از استقرار.
+\end{itemize}
+
+\section*{Q2) عملیات داده و EDA}
+\textbf{پاسخ مرجع:}
+\begin{itemize}
+    \item حسابرسی \lr{dtype/null/duplicate/range}.
+    \item حداقل ۶ تا ۸ نمودار معنادار با تفسیر تصمیم‌محور.
+    \item پیاده‌سازی تابع پیش‌پردازش تکرارپذیر (ترجیحاً با آزمون واحد).
+\end{itemize}
+
+\textbf{حداقل نمودارهای پیشنهادی:}
+\begin{enumerate}
+    \item توزیع متغیر هدف.
+    \item توزیع ویژگی‌های کلیدی (\lr{GitHub\_Activity, Research\_Citations}).
+    \item هم‌بستگی ویژگی‌های عددی.
+    \item نرخ مهاجرت به تفکیک کشور.
+    \item اثر \lr{Education\_Level} بر هدف.
+    \item نمودار پرت‌ها برای ۲ ویژگی حساس.
+\end{enumerate}
+
+\section*{Q3) استنباط آماری}
+\textbf{الگوی پاسخ معتبر:}
+\begin{itemize}
+    \item تعریف فرض صفر/مقابل.
+    \item انتخاب آزمون متناسب با نوع داده (مثلاً آزمون دو نمونه‌ای یا \lr{chi-square}).
+    \item تفسیر صحیح \lr{p-value}: احتمال مشاهده داده (یا شدیدتر) تحت درست‌بودن \lr{H0}.
+    \item تفسیر بازه اطمینان: بازه‌ای از مقادیر سازگار با داده در سطح اطمینان مشخص.
+\end{itemize}
+
+\textbf{نکته نمره‌دهی:} اگر دانشجو \lr{p-value} را احتمال درست‌بودن \lr{H0} تفسیر کند، کسر نمره قابل توجه اعمال شود.
+
+\section*{Q4) طراحی بصری و روایت داده}
+\textbf{شاخص‌های پاسخ قوی:}
+\begin{itemize}
+    \item \lr{KPI}ها به تصمیم واقعی متصل باشند (مثلاً نرخ موفقیت دعوت به برنامه مهاجرت).
+    \item استفاده درست از ادراک بصری (\lr{position/length} بهتر از \lr{area/color}).
+    \item نمایش حداقل یک خطای طراحی (مثل قطع محور y) و نسخه اصلاح‌شده.
+\end{itemize}
+
+\section*{Q5) SQL پیشرفته}
+\textbf{الگوی مرجع میانگین متحرک و رتبه‌بندی:}
+\begin{verbatim}
+WITH citation_velocity AS (
+  SELECT UserID, Country_Origin, Year, Research_Citations,
+         AVG(Research_Citations) OVER (
+           PARTITION BY Country_Origin
+           ORDER BY Year
+           ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+         ) AS moving_avg_citations
+  FROM Professionals_Data
+)
+SELECT *, DENSE_RANK() OVER (
+  PARTITION BY Country_Origin ORDER BY moving_avg_citations DESC
+) AS country_rank
+FROM citation_velocity;
+\end{verbatim}
+
+\textbf{معیارهای نمره‌دهی:}
+\begin{itemize}
+    \item استفاده صحیح از \lr{PARTITION BY/ORDER BY/window frame}.
+    \item رعایت منطق زمانی و جلوگیری از نشت آینده.
+    \item کیفیت کوئری \lr{cohort} با \lr{CTE}.
+\end{itemize}
+
+\section*{Q6) نشت داده و معماری کلان‌داده}
+\textbf{تشخیص نشت:}
+\begin{itemize}
+    \item \texttt{Visa\_Approval\_Date}: نشت مستقیم (پسارویدادی).
+    \item \texttt{Last\_Login\_Region}: نشت زمانی بالقوه.
+    \item \texttt{Passport\_Renewal\_Status}: پراکسی زمانی بالقوه.
+    \item \texttt{Years\_Since\_Degree}: در صورت محاسبه \textbf{نقطه‌به‌نقطه زمانی} قابل قبول.
+\end{itemize}
+
+\textbf{معماری مورد قبول:}
+\begin{itemize}
+    \item لایه‌های \lr{Bronze/Silver/Gold}.
+    \item \lr{feature store} با \lr{point-in-time join}.
+    \item هم‌خوانی \lr{offline/online features}.
+    \item پایش \lr{drift} و صحت داده ورودی.
+\end{itemize}
+
+\section*{Q7) \lr{Elastic Net} و تفسیر آماری}
+تابع هزینه:
+\[
+J(\theta)=\frac{1}{2m}\sum_{i=1}^{m}(h_\theta(x^{(i)})-y^{(i)})^2
++\lambda_1\sum_{j=1}^{n}|\theta_j|+\frac{\lambda_2}{2}\sum_{j=1}^{n}\theta_j^2
+\]
+
+مشتق مختصه‌ای:
+\[
+\nabla_{\theta_j}J=\frac{1}{m}\sum_{i=1}^{m}(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}
++\lambda_1\partial|\theta_j|+\lambda_2\theta_j
+\]
+
+زیرگرادیان \( |\theta_j| \):
+\[
+\partial|\theta_j|=
+\begin{cases}
+1 & \theta_j>0\\
+-1 & \theta_j<0\\
+[-1,1] & \theta_j=0
+\end{cases}
+\]
+
+\textbf{تفسیر آماری نمونه:}
+اگر \lr{p-value=0.003} و بازه اطمینان \([0.18,0.86]\) باشد:
+\begin{itemize}
+    \item فرض صفر $H_0:\beta=0$ رد می‌شود.
+    \item چون صفر داخل بازه نیست، اثر مثبت معنی‌دار است.
+\end{itemize}
+
+\section*{Q8) بهینه‌سازی: \lr{SGD} در برابر \lr{Momentum} و \lr{Adam}}
+\textbf{پدیده \lr{ravine}:} خمیدگی زیاد در یک محور و کم در محور دیگر باعث نوسان \lr{SGD} می‌شود.
+
+\textbf{Momentum:}
+\[
+v_t=\beta v_{t-1}+\eta g_t,\quad \theta_{t+1}=\theta_t-v_t
+\]
+میانگین‌گیری زمانی از گرادیان، نوسان‌های علامت‌عوض‌کن را می‌کاهد و حرکت در جهت پایدار را تقویت می‌کند.
+
+\textbf{Adam:}
+\begin{itemize}
+    \item ممان اول و دوم گرادیان را نگه می‌دارد.
+    \item نرخ یادگیری موثر را به‌صورت پارامتری تنظیم می‌کند.
+    \item در ناهمگنی مقیاس ویژگی‌ها معمولاً پایدارتر است.
+\end{itemize}
+
+\section*{Q9) مدل‌های غیرخطی و تنظیم پیچیدگی}
+\subsection*{الف) \lr{SVM-RBF}}
+اگر مدل بیش‌برازش دارد، \(\gamma\) باید \textbf{کاهش} یابد تا حوزه اثر هر نقطه آموزشی بزرگ‌تر شده و مرز تصمیم هموارتر شود.
+
+\subsection*{ب) هرس درخت}
+\[
+R_\alpha(T)=R(T)+\alpha|T|
+\]
+با افزایش \(\alpha\)، جریمه پیچیدگی بزرگ‌تر شده و درخت کوچک‌تر می‌شود (بایاس بیشتر، واریانس کمتر).
+
+\section*{Q10) کاهش بُعد و \lr{PCA}}
+برای مقادیر ویژه \(\lambda_1,\lambda_2,\lambda_3\):
+\[
+\mathrm{EVR}_k=\frac{\lambda_k}{\lambda_1+\lambda_2+\lambda_3}
+\]
+نسبت واریانس دو مولفه اول:
+\[
+\mathrm{EVR}_{1,2}=\frac{\lambda_1+\lambda_2}{\sum_i\lambda_i}
+\]
+
+\textbf{تفسیر:} مقدار ویژه، واریانس توضیح‌داده‌شده توسط آن مولفه اصلی است.
+
+\section*{Q11) خوشه‌بندی و \lr{Elbow}}
+\textbf{دلیل هندسی/تحلیلی:}
+\begin{itemize}
+    \item \lr{WCSS} با افزایش \(K\) همواره کاهش می‌یابد.
+    \item نرخ کاهش \lr{WCSS} به‌تدریج کم می‌شود (بازده نزولی).
+    \item نقطه آرنج، جایی است که افزایش \(K\) بهبود معنادار نسبت به هزینه پیچیدگی ندارد.
+\end{itemize}
+
+\section*{Q12) شبکه‌های عصبی و مدل توالی}
+\textbf{پاسخ کامل باید شامل:}
+\begin{itemize}
+    \item معماری، تابع زیان، \lr{optimizer} و برنامه آموزش.
+    \item راهکار کنترل بیش‌برازش (\lr{dropout/early stopping/weight decay}).
+    \item مقایسه با \lr{baseline} کلاسیک و تحلیل خطا.
+\end{itemize}
+
+\section*{Q13) مدل زبانی و \lr{LLM Agent}}
+\textbf{طرح پیشنهادی:}
+\begin{itemize}
+    \item \lr{Plan}: شکستن مسئله به گام‌های قابل کنترل.
+    \item \lr{Retrieve}: بازیابی شواهد معتبر.
+    \item \lr{Reason}: استدلال کنترل‌شده بر اساس شواهد.
+    \item \lr{Verify}: راستی‌آزمایی خروجی و ثبت عدم‌قطعیت.
+\end{itemize}
+
+\textbf{شاخص‌های ارزیابی:}
+\begin{itemize}
+    \item \lr{Faithfulness}
+    \item نرخ \lr{Hallucination}
+    \item ایمنی محتوایی و انطباق سیاستی
+\end{itemize}
+
+\section*{Q14) عدالت، سوگیری و حاکمیت}
+\textbf{انتظارات اصلی:}
+\begin{itemize}
+    \item گزارش متریک زیرگروهی (کشور/تحصیلات/...).
+    \item تحلیل خطر \lr{proxy} و بازتولید سوگیری تاریخی.
+    \item طراحی مسیر \lr{human override} و بازبینی پرونده.
+\end{itemize}
+
+\section*{Capstone) تبیین‌پذیری \lr{SHAP}}
+\textbf{مفاهیم کلیدی:}
+\begin{itemize}
+    \item \lr{base\_value}: مقدار پایه مدل (میانگین خروجی در داده مرجع).
+    \item \lr{output\_value}: خروجی نهایی برای نمونه خاص.
+    \item مجموع مقادیر \lr{SHAP} برابر اختلاف این دو مقدار است.
+\end{itemize}
+
+\textbf{تفسیر سناریوی نمونه:}
+اگر داوطلب با \lr{Research\_Citations} بالا پیش‌بینی «عدم مهاجرت» بگیرد، باید نشان داده شود کدام ویژگی‌های منفی (مثلاً الگوهای تجربه/کشور/سایر عوامل) اثر مثبت استنادات را خنثی کرده‌اند.
+
+\section*{جدول راهنمای سریع کسر/اعطای نمره}
+\begin{center}
+\begin{tabular}{@{}p{4.8cm}p{8.4cm}@{}}
+\toprule
+وضعیت پاسخ & سیاست نمره‌دهی \\
+\midrule
+فرمول درست + تفسیر دقیق + پیاده‌سازی بازتولیدپذیر & نمره کامل \\
+فرمول درست ولی تفسیر آماری ناقص & کسر ۲۰ تا ۴۰ درصد همان سوال \\
+عدم کنترل نشت داده & کسر سنگین (تا ۵۰ درصد بلوک مرتبط) \\
+نتیجه خوب بدون شواهد اجرای کد & کسر ۳۰ درصد \\
+تحلیل عدالت ناقص/حذف‌شده & کسر کامل بلوک اخلاق \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{tcolorbox}
+\textbf{توصیه به تصحیح‌کنندگان:} اگر دانشجو فرضیات را شفاف کرده، محدودیت‌ها را صادقانه گزارش داده و مسیر مهندسی قابل بازتولید ارائه کرده است، حتی با متریک متوسط نیز پاسخ باکیفیت محسوب می‌شود.
+\end{tcolorbox}
+
+\end{document}

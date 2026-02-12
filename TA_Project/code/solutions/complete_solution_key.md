@@ -24,24 +24,25 @@ Dataset evidence from this run:
 ### Q2A. Elastic Net gradient derivation
 For
 \[
-J(\theta)=\frac{1}{2m}\sum_{i=1}^m (h_\theta(x^{(i)})-y^{(i)})^2 + \lambda_1\sum_{j=1}^n|\theta_j| + \frac{\lambda_2}{2}\sum_{j=1}^n\theta_j^2,
+J(	heta)=rac{1}{2m}\sum_{i=1}^m (h_	heta(x^{(i)})-y^{(i)})^2 + \lambda_1\sum_{j=1}^n|	heta_j| + rac{\lambda_2}{2}\sum_{j=1}^n	heta_j^2,
 \]
-for parameter \(\theta_j\):
+for parameter \(	heta_j\):
 \[
-\nabla_{\theta_j}J(\theta)=\frac{1}{m}\sum_{i=1}^m (h_\theta(x^{(i)})-y^{(i)})x_j^{(i)} + \lambda_1\,\partial|\theta_j| + \lambda_2\theta_j,
+
+abla_{	heta_j}J(	heta)=rac{1}{m}\sum_{i=1}^m (h_	heta(x^{(i)})-y^{(i)})x_j^{(i)} + \lambda_1\,\partial|	heta_j| + \lambda_2	heta_j,
 \]
 where
 \[
-\partial|\theta_j|=\begin{cases}
-+1 & \theta_j>0\\
--1 & \theta_j<0\\
-[-1,1] & \theta_j=0
+\partial|	heta_j|=egin{cases}
++1 & 	heta_j>0\
+-1 & 	heta_j<0\
+[-1,1] & 	heta_j=0
 \end{cases}
 \]
-At \(\theta_j=0\), coordinate-descent solvers use this subgradient set and can keep coefficients exactly at zero (feature selection).
+At \(	heta_j=0\), coordinate-descent solvers use this subgradient set and can keep coefficients exactly at zero (feature selection).
 
-### Q2B. Interpretation of \(\beta=0.52\), p-value \(=0.003\), 95% CI \([0.18, 0.86]\)
-- Because p-value < 0.05, reject \(H_0: \beta=0\).
+### Q2B. Interpretation of \(eta=0.52\), p-value \(=0.003\), 95% CI \([0.18, 0.86]\)
+- Because p-value < 0.05, reject \(H_0: eta=0\).
 - The confidence interval excludes 0, confirming statistical significance.
 - The positive interval implies higher `GitHub_Activity` is associated with higher migration propensity (under model assumptions and conditioning on other covariates).
 
@@ -69,22 +70,22 @@ If the model overfits, **decrease \(\gamma\)**.
 
 Run metrics:
 - Best validation gamma: **0.005**
-- Best validation accuracy: **0.600**
-- Worst validation accuracy: **0.591**
+- Best validation accuracy: **0.581**
+- Worst validation accuracy: **0.574**
 
 Figure: `code/figures/q4_svm_gamma_sweep.png`
 
 ### Q4B. Cost-complexity pruning
 \[
-R_\alpha(T)=R(T)+\alpha|T|
+R_lpha(T)=R(T)+lpha|T|
 \]
-- Increasing \(\alpha\) increases penalty for leaf count, producing smaller trees.
-- Small \(\alpha\): low bias, high variance.
-- Large \(\alpha\): higher bias, lower variance.
+- Increasing \(lpha\) increases penalty for leaf count, producing smaller trees.
+- Small \(lpha\): low bias, high variance.
+- Large \(lpha\): higher bias, lower variance.
 
 Run metrics:
-- Best \(\alpha\): **0.009639**
-- Best validation accuracy after pruning: **0.600**
+- Best \(lpha\): **0.006833**
+- Best validation accuracy after pruning: **0.581**
 
 Figure: `code/figures/q4_tree_pruning_curve.png`
 
@@ -93,7 +94,7 @@ Figure: `code/figures/q4_tree_pruning_curve.png`
 ### Q5A. PCA explained variance ratio
 For covariance matrix eigenvalues \(\lambda_1, \lambda_2, \lambda_3\):
 \[
-\text{EVR}_k = \frac{\lambda_k}{\lambda_1+\lambda_2+\lambda_3}
+	ext{EVR}_k = rac{\lambda_k}{\lambda_1+\lambda_2+\lambda_3}
 \]
 Eigenvalue interpretation: variance captured along principal component \(k\).
 
@@ -114,19 +115,18 @@ Figure: `code/figures/q5_kmeans_elbow.png`
 
 ## Q6. Capstone Explainability (SHAP)
 
-Model used in this run: **XGBoost**
-- Accuracy: **0.584**
-- ROC-AUC: **0.550**
-- F1: **0.248**
+Model used in this run: **RandomForest (XGBoost fallback)**
+- Accuracy: **0.594**
+- ROC-AUC: **0.573**
+- F1: **0.261**
 
 Candidate explanation details:
-- Candidate index: **27343**
-- Predicted migration probability: **0.389**
+- Candidate index: **13530**
+- Predicted migration probability: **0.509**
 - SHAP status: **ok**
-- Base value: **-0.34942**
-- Output value: **-0.45072**
-- Output space: **log_odds**
-- Probability implied by SHAP output: **0.38919**
+- Base value: **0.50000**
+- Output value: **0.50857**
+- Sigmoid(output value): **0.62447**
 
 Interpretation:
 - `base_value` is the model's average output over the background set.
@@ -135,9 +135,9 @@ Interpretation:
 - Positive SHAP values push toward migration; negative values push toward no migration.
 
 Artifacts:
-- Local force/waterfall plot: `figures/q6_shap_force_plot.png`
-- Global SHAP summary plot: `figures/q6_shap_summary.png`
-- Country fairness slice: `solutions/q6_fairness_country_rates.csv`
+- Local force/waterfall plot: `/Users/tahamajs/Documents/uni/DS/TA_Project/code/figures/q6_shap_force_plot.png`
+- Global SHAP summary plot: `/Users/tahamajs/Documents/uni/DS/TA_Project/code/figures/q6_shap_summary.png`
+- Country fairness slice: `/Users/tahamajs/Documents/uni/DS/TA_Project/code/solutions/q6_fairness_country_rates.csv`
 
 ## Fairness note for grading discussion
 Even with strong predictive metrics, model decisions can mirror historical policy constraints. Country-level predicted positive rates should be audited against domain knowledge before any deployment.

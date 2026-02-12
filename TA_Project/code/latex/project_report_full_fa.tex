@@ -1,0 +1,242 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xepersian}
+
+\settextfont{Times New Roman}
+\setlatintextfont{Times New Roman}
+\geometry{margin=1in}
+\setlist[itemize]{leftmargin=1.8em}
+\setlist[enumerate]{leftmargin=1.8em}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+\title{گزارش نهایی کامل پروژه\\
+\textbf{تحلیل مهاجرت جهانی استعدادهای فنی با رویکرد داده‌محور}}
+\author{دانشگاه تهران -- دانشکده مهندسی برق و کامپیوتر\\بسته حرفه‌ای درس علم داده}
+\date{بهار ۱۴۰۴}
+
+\begin{document}
+\maketitle
+
+\section*{خلاصه اجرایی}
+این گزارش، اجرای \textbf{کامل، بازتولیدپذیر و قابل داوری} پروژه نهایی علم داده را ارائه می‌کند.
+پوشش پروژه شامل مهندسی داده، استنباط آماری، بهینه‌سازی، مدل‌های غیرخطی، یادگیری بدون نظارت، \lr{XAI} با \lr{SHAP}، و تحلیل عدالت است.
+
+\textbf{نتایج اجرای فعلی کپستون (در محیط فعلی):}
+\begin{itemize}
+    \item مدل: \lr{RandomForest (XGBoost fallback)}
+    \item \lr{Accuracy}: 0.5944
+    \item \lr{ROC-AUC}: 0.5727
+    \item \lr{F1}: 0.2609
+\end{itemize}
+
+\section*{۱) تعریف مسئله و داده}
+\textbf{داده:} \lr{code/data/GlobalTechTalent\_50k.csv}\\
+\textbf{حجم:} ۵۰٬۰۰۰ سطر و ۱۵ ستون\\
+\textbf{هدف:} \lr{Migration\_Status}
+
+\subsection*{۱-۱) توازن کلاس‌ها}
+\begin{itemize}
+    \item تعداد کلاس ۰: 29467
+    \item تعداد کلاس ۱: 20533
+    \item نرخ کلاس مثبت: 0.41066
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\linewidth]{../figures/report_target_balance.png}
+\caption{توزیع متغیر هدف.}
+\end{figure}
+
+\subsection*{۱-۲) داده‌های گمشده}
+بیشترین مقدار داده گمشده مربوط به \lr{Visa\_Approval\_Date} با حدود 58.934\% است که هم‌زمان یک ویژگی نشت‌زا نیز محسوب می‌شود.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{../figures/report_missingness_top10.png}
+\caption{ده ستون با بیشترین نرخ گمشده.}
+\end{figure}
+
+\subsection*{۱-۳) هم‌بستگی و الگوهای اولیه}
+ویژگی‌های عددی با هم‌بستگی بالاتر نسبت به هدف شامل \lr{GitHub\_Activity}، \lr{Research\_Citations} و \lr{Remote\_Work} هستند.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.79\linewidth]{../figures/report_numeric_correlation.png}
+\caption{هم‌بستگی ویژگی‌های عددی کلیدی با هدف.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.79\linewidth]{../figures/report_country_migration_rate.png}
+\caption{مقایسه نرخ مهاجرت بین کشورها (با آستانه حداقل نمونه).}
+\end{figure}
+
+\section*{۲) مهندسی داده و کنترل نشت}
+\subsection*{۲-۱) خروجی SQL}
+کوئری میانگین متحرک سه‌ساله و رتبه‌بندی کشوری در فایل زیر تولید شده است:
+\begin{center}
+\lr{code/solutions/q1\_moving\_average.sql}
+\end{center}
+
+\subsection*{۲-۲) تشخیص نشت داده}
+شاخص‌های تشخیصی اجرای فعلی:
+\begin{itemize}
+    \item \lr{corr(visa\_present, target)} = 1.000
+    \item \lr{P(Migration=1 | visa\_present)} = 1.000
+    \item \lr{P(Migration=1 | visa\_absent)} = 0.000
+\end{itemize}
+نتیجه: \lr{Visa\_Approval\_Date} حتماً باید قبل از آموزش حذف شود.
+
+\section*{۳) استنباط آماری و مدل‌های خطی}
+در این بسته، مشتق \lr{Elastic Net} و تفسیر آزمون معنی‌داری با جزئیات در اسناد زیر آمده است:
+\begin{itemize}
+    \item \lr{code/solutions/complete\_solution\_key.md}
+    \item \lr{code/solutions/extended\_solution\_key.md}
+    \item \lr{code/latex/solution\_manual.tex}
+    \item \lr{code/latex/solution\_manual\_fa.tex}
+\end{itemize}
+
+هسته ریاضی:
+\[
+\nabla_{\theta_j}J = \frac{1}{m}\sum_i(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)} + \lambda_1\partial|\theta_j| + \lambda_2\theta_j
+\]
+
+\section*{۴) تحلیل بهینه‌سازی}
+مقایسه روی تابع \lr{ravine} نشان می‌دهد که روش‌های تطبیقی/شتاب‌دار رفتار همگرایی بهتری از \lr{SGD} خام دارند.
+
+\begin{center}
+\begin{tabular}{@{}lc@{}}
+\toprule
+بهینه‌ساز & مقدار نهایی زیان \\
+\midrule
+\lr{SGD} & 0.403329 \\
+\lr{Momentum} & 0.000823 \\
+\lr{Adam} & 0.000034 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{../figures/q3_ravine_optimizers.png}
+\caption{مقایسه مسیر بهینه‌سازها روی تابع دره‌ای.}
+\end{figure}
+
+\section*{۵) مدل‌های غیرخطی و کنترل پیچیدگی}
+\subsection*{۵-۱) \lr{SVM-RBF}}
+خروجی جست‌وجوی \(\gamma\):
+\begin{itemize}
+    \item بهترین \(\gamma\): 0.005
+    \item بهترین دقت اعتبارسنجی: 0.5813
+    \item بدترین دقت اعتبارسنجی: 0.5740
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{../figures/q4_svm_gamma_sweep.png}
+\caption{رفتار دقت اعتبارسنجی در تغییر \(\gamma\).}
+\end{figure}
+
+\subsection*{۵-۲) هرس \lr{Decision Tree}}
+\begin{itemize}
+    \item بهترین \lr{ccp\_alpha}: 0.006833
+    \item بهترین دقت اعتبارسنجی: 0.5813
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{../figures/q4_tree_pruning_curve.png}
+\caption{منحنی مصالحه خطا-پیچیدگی در هرس درخت.}
+\end{figure}
+
+\section*{۶) یادگیری بدون نظارت}
+\subsection*{۶-۱) \lr{PCA}}
+\begin{itemize}
+    \item \lr{EVR(PC1)}: 0.2775
+    \item \lr{EVR(PC2)}: 0.1449
+    \item \lr{EVR(PC1+PC2)}: 0.4223
+\end{itemize}
+
+\subsection*{۶-۲) \lr{KMeans Elbow}}
+\begin{itemize}
+    \item \lr{K} منتخب: 4
+    \item \lr{WCSS(K=1)}: 84795.2093
+    \item \lr{WCSS(K=10)}: 41890.2375
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.74\linewidth]{../figures/q5_kmeans_elbow.png}
+\caption{تشخیص نقطه آرنج برای انتخاب تعداد خوشه‌ها.}
+\end{figure}
+
+\section*{۷) کپستون تبیین‌پذیری با \lr{SHAP}}
+\subsection*{۷-۱) خروجی محلی نمونه}
+\begin{itemize}
+    \item \lr{Candidate index}: 13530
+    \item \lr{Predicted probability}: 0.5086
+    \item \lr{base\_value}: 0.5000
+    \item \lr{output\_value}: 0.5086
+    \item مهم‌ترین ویژگی محلی: \lr{num\_\_Research\_Citations}
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\linewidth]{../figures/q6_shap_force_plot.png}
+\caption{توضیح محلی \lr{SHAP} برای داوطلب منتخب.}
+\end{figure}
+
+\subsection*{۷-۲) نمای سراسری اهمیت ویژگی‌ها}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\linewidth]{../figures/q6_shap_summary.png}
+\caption{اهمیت سراسری ویژگی‌ها بر اساس \lr{SHAP}.}
+\end{figure}
+
+\section*{۸) عدالت، اخلاق و حاکمیت}
+خروجی تحلیل زیرگروهی بر اساس کشور در فایل زیر ثبت شده است:
+\begin{center}
+\lr{code/solutions/q6\_fairness\_country\_rates.csv}
+\end{center}
+
+سیاست پیشنهادی استقرار:
+\begin{itemize}
+    \item استفاده تصمیم‌یار (نه تصمیم‌گیر خودکار نهایی).
+    \item بازبینی انسانی برای موارد اثرگذار.
+    \item پایش دوره‌ای \lr{data drift}، \lr{label drift} و تغییرات سیاستی.
+\end{itemize}
+
+\section*{۹) بازتولیدپذیری و کیفیت مهندسی}
+\begin{itemize}
+    \item اجرای کامل پایپ‌لاین: \lr{make run}
+    \item اجرای آزمون‌ها: \lr{make test}
+    \item بررسی کامپایل پایتون: \lr{make compile}
+    \item ساخت گزارش: \lr{make report}
+    \item ساخت نسخه‌های فارسی \LaTeX: \lr{make latex-fa} و \lr{make report-fa}
+\end{itemize}
+
+\section*{۱۰) محدودیت‌ها}
+\begin{itemize}
+    \item داده همه محرک‌های اجتماعی/ژئوپولیتیکی مهاجرت را پوشش نمی‌دهد.
+    \item \lr{SHAP} تبیین توصیفی ارائه می‌دهد و جایگزین استنتاج علّی نیست.
+    \item نتایج کپستون به در دسترس بودن کتابخانه \lr{xgboost} وابسته است.
+\end{itemize}
+
+\section*{۱۱) کارهای آینده}
+\begin{enumerate}
+    \item افزودن اعتبارسنجی زمانی و تحلیل پایداری بین‌سال.
+    \item پیاده‌سازی کالیبراسیون احتمال و سیاست آستانه تصمیم.
+    \item توسعه تحلیل عدالت با معیارهای حساس به آستانه.
+    \item گسترش عامل \lr{LLM} با نرده‌های ایمنی و راستی‌آزمایی شواهد.
+\end{enumerate}
+
+\section*{نتیجه‌گیری}
+این بسته پروژه، تمام ابعاد کلیدی یک تحویل حرفه‌ای دانشگاهی را پوشش می‌دهد: تعریف مسئله، مهندسی داده، مدل‌سازی، ارزیابی، تبیین‌پذیری، عدالت، و مستندسازی بازتولیدپذیر. نسخه فارسی این گزارش برای ارائه رسمی و داوری آموزشی آماده است.
+
+\end{document}

@@ -1,0 +1,192 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\geometry{margin=1in}
+\setlist[itemize]{leftmargin=1.4em}
+\setlist[enumerate]{leftmargin=1.6em}
+
+\title{UT-ECE Data Science -- Extended Final \\
+\textbf{Comprehensive Solution Manual (TA Edition)}}
+\author{Course Staff}
+\date{Spring 2025}
+
+\begin{document}
+\maketitle
+
+\section*{Scoring Philosophy}
+Use evidence-based grading: correctness, rigor, reproducibility, and interpretation quality.
+Prefer transparent assumptions and explicit limitations over overconfident claims.
+
+\section*{Q1. Lifecycle and Problem Framing}
+\textbf{High-quality answer includes:}
+\begin{itemize}
+    \item clear business target (e.g., early identification of migration propensity),
+    \item operational metric (AUC, recall@k, calibration, fairness constraints),
+    \item lifecycle phases: framing -> collection -> validation -> modeling -> deployment -> monitoring,
+    \item risk register (leakage, drift, policy shift, proxy bias).
+\end{itemize}
+
+\section*{Q2. Python/EDA}
+\textbf{Expected components:}
+\begin{itemize}
+    \item dtype audit, null profile, duplicate checks, range sanity checks,
+    \item at least six meaningful visualizations with non-trivial interpretation,
+    \item modular preprocessing function with unit tests.
+\end{itemize}
+
+\section*{Q3. Scientific Studies and Inference}
+\textbf{Key grading points:}
+\begin{itemize}
+    \item distinguishes observational limits from causal claims,
+    \item states assumptions for CI/hypothesis testing,
+    \item interprets p-values and confidence intervals correctly.
+\end{itemize}
+
+\textbf{Example framing:}
+\begin{itemize}
+    \item Null: $H_0: \Delta\mu=0$ for migration propensity proxy between cohorts.
+    \item Use two-sample test with variance assumptions checked.
+\end{itemize}
+
+\section*{Q4. Visualization and Storytelling}
+\textbf{Strong solution:}
+\begin{itemize}
+    \item KPI definitions tied to stakeholder decisions,
+    \item perceptual design rationale (position/length over area/color where possible),
+    \item explicit warning about misleading axis truncation or inappropriate color scales.
+\end{itemize}
+
+\section*{Q5. SQL Advanced Querying}
+\textbf{Canonical moving-average query pattern:}
+\begin{verbatim}
+WITH citation_velocity AS (
+  SELECT UserID, Country_Origin, Year, Research_Citations,
+         AVG(Research_Citations) OVER (
+           PARTITION BY Country_Origin
+           ORDER BY Year
+           ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+         ) AS moving_avg_citations
+  FROM Professionals_Data
+)
+SELECT *, DENSE_RANK() OVER (
+  PARTITION BY Country_Origin ORDER BY moving_avg_citations DESC
+) AS country_rank
+FROM citation_velocity;
+\end{verbatim}
+
+\textbf{Additional SQL expectations:}
+\begin{itemize}
+    \item percentile bucketing (e.g., NTILE or percentile window),
+    \item cohort/transition query via CTE.
+\end{itemize}
+
+\section*{Q6. Leakage and Big-Data Architecture}
+\textbf{Leakage decisions:}
+\begin{itemize}
+    \item \texttt{Visa\_Approval\_Date}: direct leakage (post-outcome),
+    \item \texttt{Last\_Login\_Region}: potential temporal leakage,
+    \item \texttt{Passport\_Renewal\_Status}: possible temporal proxy leakage,
+    \item \texttt{Years\_Since\_Degree}: acceptable if computed pre-inference.
+\end{itemize}
+
+\textbf{Architecture answer (acceptable):}
+Bronze/Silver/Gold tables, feature store with point-in-time joins, online/offline feature parity, periodic drift checks.
+
+\section*{Q7. Regression and Elastic Net}
+For
+\[
+J(\theta)=\frac{1}{2m}\sum_{i=1}^m (h_\theta(x^{(i)})-y^{(i)})^2 + \lambda_1\sum_j|\theta_j| + \frac{\lambda_2}{2}\sum_j\theta_j^2,
+\]
+\[
+\nabla_{\theta_j}J = \frac{1}{m}\sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)} + \lambda_1\partial|\theta_j| + \lambda_2\theta_j,
+\]
+\[
+\partial|\theta_j|=
+\begin{cases}
++1 & \theta_j>0\\
+-1 & \theta_j<0\\
+[-1,1] & \theta_j=0
+\end{cases}
+\]
+
+\section*{Q8. Optimization}
+\textbf{Ravine intuition:}
+steep curvature in one axis and shallow curvature in another causes SGD oscillation.
+
+\textbf{Momentum:}
+\[
+v_t=\beta v_{t-1}+\eta g_t,\quad \theta_{t+1}=\theta_t-v_t
+\]
+Damps sign-flipping gradients and accelerates consistent directions.
+
+\textbf{Adam:}
+first and second moments with bias correction, parameter-wise scaling.
+
+\section*{Q9. Model Family Comparison}
+\textbf{Minimum expected protocol:}
+\begin{itemize}
+    \item fixed train/validation/test split with stratification,
+    \item CV and hyperparameter tuning for each model family,
+    \item metric table with at least AUC, F1, calibration/error analysis,
+    \item interpretability discussion.
+\end{itemize}
+
+\section*{Q10. Dimensionality Reduction}
+\textbf{PCA explained variance ratio:}
+\[
+\mathrm{EVR}_k = \frac{\lambda_k}{\sum_i\lambda_i}
+\]
+where $\lambda_k$ is variance captured by component $k$.
+
+\section*{Q11. Clustering}
+\textbf{K-Means elbow rationale:}
+WCSS decreases monotonically with $K$, but marginal gain diminishes.
+
+\textbf{Density alternative:}
+DBSCAN robustness to non-spherical clusters and noise points.
+
+\section*{Q12. Neural Networks and Sequence Models}
+\textbf{Expected answer characteristics:}
+\begin{itemize}
+    \item clear architecture choice and training setup,
+    \item baseline comparison against classical model,
+    \item overfitting control (dropout/early stopping/regularization).
+\end{itemize}
+
+\section*{Q13. LMs and LLM Agents}
+\textbf{Strong answer includes:}
+\begin{itemize}
+    \item agent workflow (plan -> retrieve -> reason -> verify),
+    \item evaluation: faithfulness, hallucination, safety,
+    \item governance boundaries and fallback logic.
+\end{itemize}
+
+\section*{Q14. Ethics and Fairness}
+\textbf{Expected:}
+\begin{itemize}
+    \item subgroup metrics (e.g., by country/education),
+    \item recognition of historical policy bias and proxy discrimination,
+    \item mitigation and human override policy.
+\end{itemize}
+
+\section*{Capstone}
+\textbf{Minimum complete capstone output:}
+\begin{enumerate}
+    \item leakage-safe preprocessing,
+    \item best model with validated metrics,
+    \item SHAP local explanation for high-citation no-migration case,
+    \item global importance plot,
+    \item fairness slice and deployment recommendation.
+\end{enumerate}
+
+\section*{Rubric Notes for TAs}
+\begin{itemize}
+    \item Deduct for hidden leakage or unjustified assumptions.
+    \item Deduct for non-reproducible code.
+    \item Reward honest limitations and rigorous diagnostics.
+\end{itemize}
+
+\end{document}

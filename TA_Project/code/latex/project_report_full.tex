@@ -1,0 +1,214 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\geometry{margin=1in}
+\setlist[itemize]{leftmargin=1.4em}
+\setlist[enumerate]{leftmargin=1.6em}
+
+\title{Complete Project Report \\
+\textbf{Global Tech Talent Migration Assessment}}
+\author{UT-ECE Data Science -- Professional Project Package}
+\date{Spring 2025}
+
+\begin{document}
+\maketitle
+
+\section*{Executive Summary}
+This report documents a complete end-to-end data science implementation for predicting migration status on \texttt{GlobalTechTalent\_50k.csv}. The project covers data engineering, leakage controls, statistical inference, optimization analysis, non-linear modeling, unsupervised learning, explainability, and fairness slices.
+
+\textbf{Latest capstone model (XGBoost):}
+\begin{itemize}
+    \item Accuracy: 0.5835
+    \item ROC-AUC: 0.5495
+    \item F1: 0.2475
+\end{itemize}
+
+\section*{1. Dataset and Problem}
+\textbf{Dataset:} \texttt{code/data/GlobalTechTalent\_50k.csv} \\
+\textbf{Rows:} 50,000 \quad \textbf{Columns:} 15 \quad \textbf{Target:} \texttt{Migration\_Status}
+
+Target balance:
+\begin{itemize}
+    \item Class 0: 29,467
+    \item Class 1: 20,533
+    \item Positive rate: 41.07\%
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\linewidth]{../figures/report_target_balance.png}
+\caption{Target distribution.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{../figures/report_missingness_top10.png}
+\caption{Top missingness profile by column.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{../figures/report_numeric_correlation.png}
+\caption{Correlation matrix for target and top numeric predictors.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{../figures/report_country_migration_rate.png}
+\caption{Country-level migration rate comparison (sample threshold applied).}
+\end{figure}
+
+\section*{2. Data Engineering and Leakage Control}
+The SQL moving-average deliverable is provided in \texttt{code/solutions/q1\_moving\_average.sql}.
+
+Leakage diagnostics show \texttt{Visa\_Approval\_Date} is a direct post-outcome feature:
+\begin{itemize}
+    \item corr(visa present, migration target) = 1.000
+    \item P(Migration=1 $|$ visa present) = 1.000
+    \item P(Migration=1 $|$ visa absent) = 0.000
+\end{itemize}
+
+Therefore this feature is excluded from training.
+
+\section*{3. Statistical Inference and Linear Modeling}
+The package includes Elastic Net gradient derivation with proper L1 subgradient handling at zero, and inference interpretation guidance (coefficient, p-value, confidence interval) in:
+\begin{itemize}
+    \item \texttt{code/solutions/complete\_solution\_key.md}
+    \item \texttt{code/solutions/extended\_solution\_key.md}
+    \item \texttt{code/latex/solution\_manual.tex}
+\end{itemize}
+
+\section*{4. Optimization Analysis}
+A ravine objective compares SGD, Momentum, and Adam dynamics.
+
+Final losses:
+\begin{itemize}
+    \item SGD: 0.403329
+    \item Momentum: 0.000823
+    \item Adam: 0.000034
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{../figures/q3_ravine_optimizers.png}
+\caption{Optimization trajectories on a ravine objective.}
+\end{figure}
+
+\section*{5. Non-Linear Models}
+\textbf{SVM gamma sweep:}
+\begin{itemize}
+    \item Best gamma: 0.005
+    \item Best validation accuracy: 0.600
+    \item Worst validation accuracy: 0.591
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{../figures/q4_svm_gamma_sweep.png}
+\caption{Validation behavior under gamma changes.}
+\end{figure}
+
+\textbf{Cost-complexity pruning:}
+\begin{itemize}
+    \item Best \(\alpha\): 0.009639
+    \item Best validation accuracy: 0.600
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\linewidth]{../figures/q4_tree_pruning_curve.png}
+\caption{Decision tree pruning tradeoff curve.}
+\end{figure}
+
+\section*{6. Unsupervised Learning}
+\textbf{PCA explained variance ratios:}
+\begin{itemize}
+    \item PC1: 0.277
+    \item PC2: 0.145
+    \item PC1 + PC2: 0.422
+\end{itemize}
+
+\textbf{KMeans elbow estimate:} K = 4
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.74\linewidth]{../figures/q5_kmeans_elbow.png}
+\caption{KMeans elbow diagnostic plot.}
+\end{figure}
+
+\section*{7. Explainability (SHAP)}
+Capstone explanation outputs:
+\begin{itemize}
+    \item Candidate index: 27343
+    \item Predicted probability: 0.3892
+    \item Base value: -0.3494 (log-odds)
+    \item Output value: -0.4507 (log-odds)
+    \item Top local contributor: \texttt{num\_\_Research\_Citations}
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{../figures/q6_shap_force_plot.png}
+\caption{Local SHAP explanation for selected candidate.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\linewidth]{../figures/q6_shap_summary.png}
+\caption{Global importance view for the capstone model.}
+\end{figure}
+
+\section*{8. Fairness and Governance}
+Country-level fairness slice output is exported to:
+\url{code/solutions/q6_fairness_country_rates.csv}
+
+Governance policy in this package:
+\begin{itemize}
+    \item predictive use only (non-causal claims),
+    \item subgroup audit before deployment,
+    \item human-in-the-loop override for high-impact decisions,
+    \item periodic drift and policy-shift monitoring.
+\end{itemize}
+
+\section*{9. Reproducibility and Tooling}
+\begin{itemize}
+    \item Full run: \texttt{make run}
+    \item Tests: \texttt{make test}
+    \item Compile checks: \texttt{make compile}
+    \item LaTeX builds: \texttt{make latex}
+\end{itemize}
+
+CI pipeline: \texttt{.github/workflows/ci.yml}
+
+\section*{10. Extended Curriculum Coverage}
+An extended assignment package was added to cover the full UT-ECE Spring 2024/2025 topic range (including dashboards/storytelling, big data framing, deep learning, NLP, and LLM agents):
+\begin{itemize}
+    \item \texttt{code/latex/assignment\_extended.tex}
+    \item \texttt{code/latex/solution\_manual\_extended.tex}
+    \item \texttt{code/solutions/extended\_solution\_key.md}
+    \item \texttt{code/notebooks/Extended\_Assignment\_Workbook.ipynb}
+\end{itemize}
+
+Coverage mapping references:
+\begin{itemize}
+    \item \url{https://github.com/DataScience-ECE-UniversityOfTehran/DataScience-Spring2024}
+    \item \url{https://github.com/DataScience-ECE-UniversityOfTehran/DataScience-Spring2025}
+\end{itemize}
+
+\section*{11. Limitations and Next Steps}
+\begin{itemize}
+    \item The dataset cannot represent all social/geopolitical migration drivers.
+    \item Explainability is descriptive and should not be used as causal proof.
+    \item Future upgrades: temporal validation, calibration-driven thresholds, causal sensitivity analysis, and richer fairness intervention policy.
+\end{itemize}
+
+\section*{Conclusion}
+This project report is complete across data, modeling, evaluation, explainability, ethics, reproducibility, and curriculum alignment dimensions, with all major figures and artifacts included for professional university-level submission.
+
+\end{document}

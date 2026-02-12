@@ -1,0 +1,241 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\geometry{margin=1in}
+\setlist[itemize]{leftmargin=1.4em}
+\setlist[enumerate]{leftmargin=1.6em}
+
+\title{University of Tehran -- ECE Department \\
+\textbf{Data Science Comprehensive Final Assessment (Extended Edition)}}
+\author{Course Staff (Spring 2025) -- Professional Assignment Pack}
+\date{Version 1.0}
+
+\begin{document}
+\maketitle
+
+\begin{tcolorbox}
+\textbf{Course Context:} This extended final integrates the full UT-ECE Data Science track seen in Spring 2024/2025 repositories, from Python and scientific studies to SQL engineering, ML, deep learning, NLP, and LLM agents.
+\end{tcolorbox}
+
+\section*{1. Assessment Overview}
+
+\textbf{Primary dataset:} \texttt{GlobalTechTalent\_50k.csv} (50,000 rows). \\
+\textbf{Primary target:} \texttt{Migration\_Status} (binary).
+
+\textbf{Additional allowed datasets:}
+\begin{itemize}
+    \item Course assignment datasets from the UT-ECE repos (where relevant).
+    \item Public benchmark datasets with proper citation.
+\end{itemize}
+
+\textbf{Required submission artifacts:}
+\begin{enumerate}
+    \item One reproducible notebook with clear sectioning (Q1--Q14 + Capstone).
+    \item One PDF report (max 20 pages excluding appendix).
+    \item One code package with scripts/modules and dependency file.
+    \item One presentation deck (10--15 slides).
+    \item One ethics/fairness memo (1--2 pages).
+\end{enumerate}
+
+\textbf{Reproducibility requirements:}
+\begin{itemize}
+    \item Fix random seeds where applicable.
+    \item State train/validation/test splitting strategy.
+    \item Log software environment and package versions.
+    \item No leakage from post-outcome variables.
+\end{itemize}
+
+\section*{2. Grading Distribution (200 points)}
+
+\begin{center}
+\begin{tabular}{@{}llc@{}}
+\toprule
+Block & Focus & Points \\
+\midrule
+A & Foundations: lifecycle, Python, EDA, scientific studies & 20 \\
+B & Inference + visualization design and storytelling & 20 \\
+C & SQL engineering + big-data systems thinking & 25 \\
+D & Supervised ML + optimization + model selection & 45 \\
+E & Unsupervised learning + dimensionality reduction & 20 \\
+F & Deep learning + NLP + LMs/LLM agents & 30 \\
+G & Ethics, fairness, robustness, governance & 15 \\
+H & Integrated capstone implementation + communication & 25 \\
+\midrule
+Total &  & 200 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Block A -- Foundations (20 points)}
+
+\subsection*{Q1. Data Science Lifecycle and Problem Framing (10 pts)}
+Define an end-to-end lifecycle for this migration prediction problem:
+\begin{itemize}
+    \item business objective and measurable success criteria,
+    \item data assumptions and potential failure modes,
+    \item deployment setting and monitoring plan.
+\end{itemize}
+
+\textbf{Deliverable:} 1-page structured problem statement with a lifecycle diagram.
+
+\subsection*{Q2. Python Data Operations and EDA (10 pts)}
+Using Pandas/NumPy/Matplotlib/Seaborn:
+\begin{enumerate}
+    \item perform robust schema checks (types, nulls, outliers),
+    \item produce at least six EDA plots with interpretation,
+    \item implement one reusable preprocessing function with tests.
+\end{enumerate}
+
+\textbf{Deliverable:} EDA section in notebook + tested utility function.
+
+\section*{Block B -- Inference and Visualization (20 points)}
+
+\subsection*{Q3. Scientific Studies and Inference (10 pts)}
+Address the following:
+\begin{itemize}
+    \item observational vs experimental framing for migration analysis,
+    \item sampling bias risks,
+    \item one confidence interval and one hypothesis test with assumptions.
+\end{itemize}
+
+\subsection*{Q4. Visualization Design + Storytelling (10 pts)}
+Create a narrative dashboard (or notebook dashboard section) for non-technical stakeholders.
+Must include:
+\begin{itemize}
+    \item clear KPI definitions,
+    \item color and preattentive design rationale,
+    \item one misleading-visualization pitfall and correction.
+\end{itemize}
+
+\section*{Block C -- SQL and Data Engineering (25 points)}
+
+\subsection*{Q5. SQL-1/SQL-2 Advanced Querying (15 pts)}
+Write SQL for:
+\begin{enumerate}
+    \item 3-year moving average citations by country (window function),
+    \item top decile ranking and percentile bucketing,
+    \item one CTE-based cohort retention/transition style query.
+\end{enumerate}
+
+\subsection*{Q6. Data Leakage and Big-Data Architecture (10 pts)}
+\begin{itemize}
+    \item Identify leaky features and defend exclusions.
+    \item Propose a scalable batch + streaming architecture (Bronze/Silver/Gold or equivalent).
+    \item Explain feature store design for training-serving consistency.
+\end{itemize}
+
+\section*{Block D -- Supervised Learning and Optimization (45 points)}
+
+\subsection*{Q7. Linear/Logistic Models + Regularization (15 pts)}
+\begin{itemize}
+    \item Fit baseline linear and logistic models.
+    \item Derive and implement Elastic Net objective gradients (or use validated library implementation with derivation in report).
+    \item Interpret coefficients, p-values/intervals (where applicable), and calibration.
+\end{itemize}
+
+\subsection*{Q8. Optimization Deep Dive (10 pts)}
+Compare SGD, Momentum, and Adam on a ravine-style objective.
+\begin{itemize}
+    \item show trajectories,
+    \item discuss curvature and oscillation,
+    \item recommend optimizer under feature-scale heterogeneity.
+\end{itemize}
+
+\subsection*{Q9. Model Family Comparison (20 pts)}
+Train and compare:
+\begin{itemize}
+    \item SVM/KNN,
+    \item Decision Tree/Random Forest,
+    \item one boosting model (XGBoost/GradientBoosting/CatBoost if available).
+\end{itemize}
+Required:
+\begin{enumerate}
+    \item cross-validation protocol,
+    \item hyperparameter search strategy,
+    \item error analysis and confusion patterns.
+\end{enumerate}
+
+\section*{Block E -- Unsupervised Learning (20 points)}
+
+\subsection*{Q10. Dimensionality Reduction (10 pts)}
+\begin{itemize}
+    \item PCA with explained variance ratio,
+    \item one additional method (random projection, t-SNE, or UMAP),
+    \item interpretation of latent dimensions.
+\end{itemize}
+
+\subsection*{Q11. Clustering (10 pts)}
+\begin{itemize}
+    \item K-Means with elbow and silhouette analysis,
+    \item DBSCAN (or equivalent density method),
+    \item compare cluster stability and practical meaning.
+\end{itemize}
+
+\section*{Block F -- Deep Learning, NLP, and LMs (30 points)}
+
+\subsection*{Q12. Neural Networks and Sequence Models (15 pts)}
+Complete one tabular NN and one sequence/NLP model experiment:
+\begin{itemize}
+    \item MLP or shallow feed-forward network for tabular task,
+    \item CNN or RNN/LSTM/GRU for text/sequence variant,
+    \item compare against classical baseline.
+\end{itemize}
+
+\subsection*{Q13. Language Models and LLM Agents (15 pts)}
+\begin{itemize}
+    \item design a small agentic workflow (retrieval/planning/tool-use pseudocode acceptable),
+    \item define evaluation criteria (faithfulness, hallucination rate, safety),
+    \item discuss governance constraints for academic/enterprise deployment.
+\end{itemize}
+
+\section*{Block G -- Ethics and Governance (15 points)}
+
+\subsection*{Q14. Fairness, Bias, and Responsible Deployment (15 pts)}
+\begin{itemize}
+    \item evaluate subgroup metrics (e.g., by country/education),
+    \item discuss historical-policy bias and proxy discrimination,
+    \item propose human-in-the-loop and override policy.
+\end{itemize}
+
+\section*{Block H -- Integrated Capstone (25 points)}
+
+\subsection*{Capstone Task}
+Deliver a full-stack implementation that includes:
+\begin{enumerate}
+    \item data preprocessing and leakage-safe training,
+    \item model card and experiment tracking summary,
+    \item SHAP-based local and global explainability,
+    \item deployment recommendation with monitoring thresholds.
+\end{enumerate}
+
+\textbf{Required capstone outputs:}
+\begin{itemize}
+    \item one local explanation for a high-citation candidate predicted as no-migration,
+    \item one global feature-importance plot,
+    \item one fairness slice table,
+    \item one executive summary for non-technical stakeholders.
+\end{itemize}
+
+\section*{3. Academic Integrity and Professional Standards}
+
+\begin{itemize}
+    \item Cite all external resources and model-generated assistance.
+    \item Any copied code without attribution is a violation.
+    \item Report negative results honestly.
+    \item Prefer interpretable, audited pipelines over leaderboard-only optimization.
+\end{itemize}
+
+\section*{4. Bonus (up to +10 points)}
+
+\begin{itemize}
+    \item Causal inference extension (DAG + identification discussion).
+    \item Real-time pipeline prototype for streaming updates.
+    \item Advanced uncertainty quantification (conformal or Bayesian approximation).
+\end{itemize}
+
+\end{document}
