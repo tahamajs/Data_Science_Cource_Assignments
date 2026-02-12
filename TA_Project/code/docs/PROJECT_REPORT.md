@@ -165,7 +165,37 @@ Report policy:
 - keep human review for high-impact decisions
 - monitor for data/label/policy drift
 
-## 11. Reproducibility and Engineering Quality
+## 11. Calibration and Threshold Policy (Q15)
+- Calibration curve and metrics (current run):
+  - Brier: `0.2436`
+  - ECE: `0.0327`
+  - Best threshold (F1): `0.25` (F1=`0.585`)
+  - Best threshold (asymmetric cost): `0.25`
+- Figures:
+  - `code/figures/q15_calibration_curve.png`
+  - `code/figures/q15_threshold_tradeoff.png`
+
+## 12. Drift Monitoring (Q16)
+- Split rule (this run): `random half split`
+- Top drift feature (PSI): `Visa_Approval_Date` (`0.0013`)
+- JS divergence for country distribution: `0.0002`
+- Artifacts:
+  - `code/solutions/q16_drift_psi.csv`
+  - `code/figures/q16_drift_psi_top12.png`
+
+## 13. Counterfactual Recourse (Q17)
+- Decision threshold: `0.50`
+- Candidates considered: `120`
+- Recourse success rate: `1.000`
+- Median required deltas:
+  - GitHub_Activity: `2.0`
+  - Research_Citations: `50.0`
+  - Industry_Experience: `0.5`
+- Artifacts:
+  - `code/solutions/q17_recourse_examples.csv`
+  - `code/figures/q17_recourse_median_deltas.png`
+
+## 14. Reproducibility and Engineering Quality
 
 ### 11.1 Execution
 - Full pipeline: `make run`
@@ -186,18 +216,18 @@ Core outputs:
 CI workflow validates install, compilation, and tests:
 - `.github/workflows/ci.yml`
 
-## 12. Limitations
+## 15. Limitations
 - This dataset does not encode all real-world migration drivers (e.g., family, geopolitics, policy shocks).
 - Fairness analysis is slice-based and should be extended with threshold-sensitive audits and intervention policy.
 - XAI interpretations are descriptive and not causal evidence.
 
-## 13. Future Work
+## 16. Future Work
 - Add causal framing (DAG + sensitivity checks).
 - Add temporal validation by year for drift-robust evaluation.
 - Add calibration and cost-sensitive decision threshold policy.
 - Add scenario-based LLM-agent evaluation with safety guardrails.
 
-## 14. Conclusion
+## 17. Conclusion
 This project is fully implemented, reproducible, and report-complete across technical, methodological, and governance dimensions. It includes all major deliverables expected in a professional university capstone: code, tests, figures, explainability, fairness analysis, extended curriculum alignment, and publication-ready documentation.
 
 ---
