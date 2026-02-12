@@ -1144,7 +1144,21 @@ def write_solution_markdown(
     q15_info: Dict[str, float | str],
     q16_info: Dict[str, float | str],
     q17_info: Dict[str, float | str],
+    q18_info: Dict[str, float | str],
+    q19_info: Dict[str, float | str],
+    q20_info: Dict[str, float | str],
 ) -> None:
+    def fmt(value: object, digits: int = 3) -> str:
+        if value is None:
+            return "N/A"
+        if isinstance(value, bool):
+            return "True" if value else "False"
+        if isinstance(value, (int, float)):
+            if isinstance(value, float) and math.isnan(value):
+                return "N/A"
+            return f"{value:.{digits}f}"
+        return str(value)
+
     q1_corr = q1_diag.get("visa_presence_corr_with_target", float("nan"))
     q1_yes = q1_diag.get("target_rate_if_visa_present", float("nan"))
     q1_no = q1_diag.get("target_rate_if_visa_absent", float("nan"))
