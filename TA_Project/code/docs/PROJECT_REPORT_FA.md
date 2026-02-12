@@ -171,10 +171,21 @@
 
 ---
 
-## 13) الحاقیه: سؤالات جدید (Q15-Q17)
+## 13) الحاقیه: سؤالات جدید (Q15-Q20)
 
 - **Q15 (کالیبراسیون و آستانه):** منحنی کالیبراسیون، Brier/ECE، آستانه‌های مبتنی بر F1 و هزینه.  
 - **Q16 (درفت):** PSI برای ویژگی‌های عددی، JS برای کشور، سیاست مانیتورینگ و بازآموزی.  
 - **Q17 (ریکورس):** حداقل تغییر ویژگی‌های قابل اقدام برای عبور از آستانه، نرخ موفقیت ریکورس، و تحلیل امکان/اخلاق.  
+- **Q18 (اعتبارسنجی زمانی):** backtest غلطان، افت عملکرد بین foldها، و تحلیل drift-aware.  
+- **Q19 (عدم‌قطعیت):** پوشش تجربی در سطوح اطمینان مختلف با بازه‌های conformal.  
+- **Q20 (مداخله عدالت):** مقایسه قبل/بعد mitigation با قید سیاستی برای افت عملکرد.  
 
-پس از اجرای `make run` اعداد دقیق در `code/solutions/run_summary.json` و تصاویر در `code/figures/q15_calibration_curve.png`, `q15_threshold_tradeoff.png`, `q16_drift_psi_top12.png`, `q17_recourse_median_deltas.png` قرار می‌گیرند.
+پس از اجرای `make run` اعداد دقیق در `code/solutions/run_summary.json` قرار می‌گیرند و artifactهای اصلی در مسیرهای زیر تولید می‌شوند:
+- `code/solutions/q18_temporal_backtest.csv`
+- `code/solutions/q19_uncertainty_coverage.csv`
+- `code/solutions/q20_fairness_mitigation_comparison.csv`
+- `code/figures/q18_temporal_degradation.png`
+- `code/figures/q19_coverage_vs_alpha.png`
+- `code/figures/q20_fairness_tradeoff.png`
+- `code/solutions/latex_metrics.json`
+- `code/solutions/latex_metrics.tex`

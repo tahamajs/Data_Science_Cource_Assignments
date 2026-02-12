@@ -195,39 +195,74 @@ Report policy:
   - `code/solutions/q17_recourse_examples.csv`
   - `code/figures/q17_recourse_median_deltas.png`
 
-## 14. Reproducibility and Engineering Quality
+## 14. Temporal Backtesting (Q18)
+- Rolling validation with temporal (or fallback) ordering is exported to:
+  - `code/solutions/q18_temporal_backtest.csv`
+- Drift-aware degradation figure:
+  - `code/figures/q18_temporal_degradation.png`
+- Summary fields in `run_summary.json`:
+  - `q18.mean_auc`
+  - `q18.auc_decay_absolute`
+  - `q18.split_strategy`
 
-### 11.1 Execution
+## 15. Uncertainty Quantification (Q19)
+- Split-conformal coverage table:
+  - `code/solutions/q19_uncertainty_coverage.csv`
+- Coverage vs confidence figure:
+  - `code/figures/q19_coverage_vs_alpha.png`
+- Summary fields in `run_summary.json`:
+  - `q19.coverage_at_90`
+  - `q19.max_under_coverage_gap`
+  - `q19.mean_interval_width`
+
+## 16. Fairness Mitigation Experiment (Q20)
+- Pre/post mitigation comparison:
+  - `code/solutions/q20_fairness_mitigation_comparison.csv`
+- Fairness-performance tradeoff figure:
+  - `code/figures/q20_fairness_tradeoff.png`
+- Summary fields in `run_summary.json`:
+  - `q20.baseline_demographic_parity_gap`
+  - `q20.mitigated_demographic_parity_gap`
+  - `q20.policy_pass`
+
+## 17. Reproducibility and Engineering Quality
+
+### 17.1 Execution
 - Full pipeline: `make run`
 - Tests: `make test`
 - Compile checks: `make compile`
 - LaTeX builds: `make latex`
 
-### 11.2 Artifacts
+### 17.2 Artifacts
 Core outputs:
 - `code/solutions/complete_solution_key.md`
 - `code/solutions/extended_solution_key.md`
 - `code/solutions/run_summary.json`
 - `code/solutions/report_stats.json`
+- `code/solutions/latex_metrics.json`
+- `code/solutions/latex_metrics.tex`
+- `code/solutions/q18_temporal_backtest.csv`
+- `code/solutions/q19_uncertainty_coverage.csv`
+- `code/solutions/q20_fairness_mitigation_comparison.csv`
 - `code/solutions/q1_moving_average.sql`
 - `code/figures/*.png`
 
-### 11.3 CI
+### 17.3 CI
 CI workflow validates install, compilation, and tests:
 - `.github/workflows/ci.yml`
 
-## 15. Limitations
+## 18. Limitations
 - This dataset does not encode all real-world migration drivers (e.g., family, geopolitics, policy shocks).
 - Fairness analysis is slice-based and should be extended with threshold-sensitive audits and intervention policy.
 - XAI interpretations are descriptive and not causal evidence.
 
-## 16. Future Work
+## 19. Future Work
 - Add causal framing (DAG + sensitivity checks).
 - Add temporal validation by year for drift-robust evaluation.
 - Add calibration and cost-sensitive decision threshold policy.
 - Add scenario-based LLM-agent evaluation with safety guardrails.
 
-## 17. Conclusion
+## 20. Conclusion
 This project is fully implemented, reproducible, and report-complete across technical, methodological, and governance dimensions. It includes all major deliverables expected in a professional university capstone: code, tests, figures, explainability, fairness analysis, extended curriculum alignment, and publication-ready documentation.
 
 ---
@@ -246,5 +281,7 @@ This project is fully implemented, reproducible, and report-complete across tech
 ## Appendix B: Evidence Sources in This Repo
 - `code/solutions/run_summary.json`
 - `code/solutions/report_stats.json`
+- `code/solutions/latex_metrics.json`
+- `code/solutions/latex_metrics.tex`
 - `code/solutions/q6_fairness_country_rates.csv`
 - `code/docs/TOPIC_COVERAGE_FROM_UT_REPOS.md`
