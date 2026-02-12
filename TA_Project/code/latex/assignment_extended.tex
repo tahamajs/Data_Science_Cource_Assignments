@@ -35,7 +35,7 @@
 
 \textbf{Required submission artifacts:}
 \begin{enumerate}
-    \item One reproducible notebook with clear sectioning (Q1--Q17 + Capstone).
+    \item One reproducible notebook with clear sectioning (Q1--Q20 + Capstone).
     \item One PDF report (max 20 pages excluding appendix).
     \item One code package with scripts/modules and dependency file.
     \item One presentation deck (10--15 slides).
@@ -50,7 +50,7 @@
     \item No leakage from post-outcome variables.
 \end{itemize}
 
-\section*{2. Grading Distribution (200 points)}
+\section*{2. Grading Distribution (260 points)}
 
 \begin{center}
 \begin{tabular}{@{}llc@{}}
@@ -65,10 +65,10 @@ E & Unsupervised learning + dimensionality reduction & 20 \\
 F & Deep learning + NLP + LMs/LLM agents & 30 \\
 G & Ethics, fairness, robustness, governance & 15 \\
 H & Integrated capstone implementation + communication & 25 \\
-I & Production reliability extension (calibration, drift, recourse) & 30 \\
+I & Production reliability and advanced diagnostics (Q15--Q20) & 60 \\
 J (Bonus) & Advanced research/production extensions (optional) & +20 \\
 \midrule
-Total (A--I) &  & 230 \\
+Total (A--I) &  & 260 \\
 Optional bonus &  & +20 \\
 \bottomrule
 \end{tabular}
@@ -273,6 +273,53 @@ For near-boundary negative predictions, estimate minimal actionable changes need
     \item recourse examples table,
     \item recourse-effort summary plot,
     \item discussion of practicality/ethics of suggested interventions.
+\end{itemize}
+
+\subsection*{Q18. Temporal Backtesting and Rolling Validation (10 pts)}
+Run a temporal robustness experiment.
+\begin{itemize}
+    \item Use chronological folds where a valid time column exists.
+    \item If no valid time column exists, define and justify a fallback ordering strategy.
+    \item Report fold-wise performance (\texttt{AUC}, \texttt{F1}) and decay relative to the first fold.
+    \item Add a drift-aware interpretation using a feature drift proxy (e.g., mean PSI).
+\end{itemize}
+
+\textbf{Deliverables:}
+\begin{itemize}
+    \item temporal backtest table (\texttt{csv}),
+    \item degradation figure (\texttt{png}),
+    \item explanation of fallback strategy (if used) in the report.
+\end{itemize}
+
+\subsection*{Q19. Uncertainty Quantification and Coverage (10 pts)}
+Quantify predictive uncertainty and validate reliability.
+\begin{itemize}
+    \item Implement conformal or calibrated probability intervals.
+    \item Evaluate empirical coverage across multiple confidence levels.
+    \item Report interval width and under-coverage risk.
+\end{itemize}
+
+\textbf{Deliverables:}
+\begin{itemize}
+    \item coverage summary table (\texttt{csv}),
+    \item coverage-vs-confidence figure (\texttt{png}),
+    \item policy note for handling low-confidence cases.
+\end{itemize}
+
+\subsection*{Q20. Fairness Mitigation Experiment (10 pts)}
+Design and evaluate a mitigation intervention under explicit policy constraints.
+\begin{itemize}
+    \item Train a baseline model and compute subgroup fairness metrics.
+    \item Apply one mitigation method (reweighing/thresholding/other justified method).
+    \item Compare pre/post fairness and pre/post utility.
+    \item Define and evaluate policy constraints (e.g., max acceptable AUC drop).
+\end{itemize}
+
+\textbf{Deliverables:}
+\begin{itemize}
+    \item pre/post mitigation comparison table (\texttt{csv}),
+    \item fairness-performance tradeoff figure (\texttt{png}),
+    \item deployment recommendation based on policy constraints.
 \end{itemize}
 
 \section*{Block J -- Advanced Extensions (Bonus +20)}

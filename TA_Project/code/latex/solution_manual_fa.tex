@@ -272,6 +272,42 @@ R_\alpha(T)=R(T)+\alpha|T|
     \item گزارش نرخ موفقیت ریکورس، میانه تغییر برای هر ویژگی، و بحث امکان/اخلاق.
 \end{itemize}
 
+\section*{Q18) اعتبارسنجی زمانی و افت عملکرد}
+\textbf{موارد لازم:}
+\begin{itemize}
+    \item طراحی \lr{rolling backtest} زمانی؛ در نبود ستون زمانی، fallback باید شفاف و مستند باشد.
+    \item گزارش متریک‌های هر fold (حداقل \lr{AUC} و \lr{F1}) و مقدار افت نسبت به fold اول.
+    \item تحلیل رابطه افت عملکرد با شاخص درفت (مانند میانگین \lr{PSI}).
+    \item خروجی‌های الزامی: \lr{q18\_temporal\_backtest.csv} و \lr{q18\_temporal\_degradation.png}.
+\end{itemize}
+
+\textbf{نکته تصحیح:}
+اگر fallback زمانی استفاده شده باشد ولی در گزارش صریح توضیح داده نشود، کسر نمره اعمال شود.
+
+\section*{Q19) کمی‌سازی عدم‌قطعیت}
+\textbf{موارد لازم:}
+\begin{itemize}
+    \item پیاده‌سازی روش \lr{conformal} (یا معادل معتبر) برای بازه/نمره اطمینان.
+    \item گزارش پوشش تجربی در چند سطح اطمینان (مثلاً ۸۰/۹۰/۹۵ درصد).
+    \item تحلیل پهنای بازه و ریسک کم‌پوششی.
+    \item خروجی‌های الزامی: \lr{q19\_uncertainty\_coverage.csv} و \lr{q19\_coverage\_vs\_alpha.png}.
+\end{itemize}
+
+\textbf{نکته تصحیح:}
+گزارش سطح اطمینان بدون سنجش پوشش تجربی کافی نیست.
+
+\section*{Q20) آزمایش مداخله عدالت الگوریتمی}
+\textbf{موارد لازم:}
+\begin{itemize}
+    \item خط پایه عدالت زیرگروهی (حداقل \lr{demographic parity gap} یا \lr{equal opportunity gap}).
+    \item اجرای یک مداخله مشخص (مثلاً \lr{reweighing}) و مقایسه قبل/بعد.
+    \item تحلیل مصالحه عدالت-عملکرد و بررسی قید سیاستی (مثلاً سقف افت \lr{AUC/F1}).
+    \item خروجی‌های الزامی: \lr{q20\_fairness\_mitigation\_comparison.csv} و \lr{q20\_fairness\_tradeoff.png}.
+\end{itemize}
+
+\textbf{نکته تصحیح:}
+اگر دانشجو بهبود عدالت را گزارش کند اما قید سیاستی/کسب‌وکاری نداشته باشد، نمره کامل داده نشود.
+
 \section*{Capstone) تبیین‌پذیری \lr{SHAP}}
 \textbf{مفاهیم کلیدی:}
 \begin{itemize}

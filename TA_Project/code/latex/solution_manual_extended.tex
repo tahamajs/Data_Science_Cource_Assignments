@@ -215,6 +215,60 @@ threshold choice must be justified by task costs, not by arbitrary default 0.5.
 \textbf{Grading note:}
 penalize unrealistic interventions (e.g., impossible immediate changes) if not explicitly acknowledged.
 
+\section*{Q18. Temporal Backtesting and Rolling Validation}
+\textbf{Expected answer components:}
+\begin{itemize}
+    \item Explicit chronological split strategy with rolling folds.
+    \item If no valid time field exists, a documented fallback ordering strategy.
+    \item Fold-wise metrics (at minimum AUC and F1), with decay measured relative to the first fold.
+    \item Drift-aware interpretation (e.g., mean PSI per fold or equivalent drift proxy).
+\end{itemize}
+
+\textbf{Minimum acceptable artifacts:}
+\begin{itemize}
+    \item \texttt{q18\_temporal\_backtest.csv}
+    \item \texttt{q18\_temporal\_degradation.png}
+\end{itemize}
+
+\textbf{Grading note:}
+if fallback chronology is used, students must explicitly justify why and state threat-to-validity impact.
+
+\section*{Q19. Uncertainty Quantification}
+\textbf{Expected answer components:}
+\begin{itemize}
+    \item Split-conformal or equivalent calibrated uncertainty procedure.
+    \item Empirical coverage at multiple confidence levels.
+    \item Interval width analysis and under-coverage reporting.
+    \item Practical handling policy for low-confidence predictions.
+\end{itemize}
+
+\textbf{Minimum acceptable artifacts:}
+\begin{itemize}
+    \item \texttt{q19\_uncertainty\_coverage.csv}
+    \item \texttt{q19\_coverage\_vs\_alpha.png}
+\end{itemize}
+
+\textbf{Grading note:}
+students lose points if they report confidence levels without empirical coverage validation.
+
+\section*{Q20. Fairness Mitigation Experiment}
+\textbf{Expected answer components:}
+\begin{itemize}
+    \item Baseline subgroup fairness metrics (at least demographic parity gap or equal opportunity gap).
+    \item One explicit mitigation intervention (e.g., reweighing) with pre/post comparison.
+    \item Performance-vs-fairness tradeoff analysis.
+    \item Policy constraint check (e.g., max tolerated AUC/F1 degradation).
+\end{itemize}
+
+\textbf{Minimum acceptable artifacts:}
+\begin{itemize}
+    \item \texttt{q20\_fairness\_mitigation\_comparison.csv}
+    \item \texttt{q20\_fairness\_tradeoff.png}
+\end{itemize}
+
+\textbf{Grading note:}
+no full credit if mitigation is presented without explicit policy constraints for deployment decisions.
+
 \section*{Block J (Bonus): Advanced Extensions}
 \textbf{Strong submissions may include:}
 \begin{itemize}

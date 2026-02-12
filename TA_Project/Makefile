@@ -1,11 +1,12 @@
 SHELL := /bin/bash
 PYTHON ?= python3
 PIP ?= $(PYTHON) -m pip
+PROFILE ?= balanced
 
 PROJECT_ROOT := $(CURDIR)
 CODE_DIR := $(PROJECT_ROOT)/code
 
-.PHONY: install test run baseline notebook-check compile latex latex-fa report-assets report report-fa
+.PHONY: install test run run-fast run-heavy baseline notebook-check compile latex latex-fa report-assets report report-fa
 
 install:
 	$(PIP) install --upgrade pip
@@ -15,7 +16,13 @@ test:
 	$(PYTHON) -m pytest $(CODE_DIR)/tests -q
 
 run:
-	MPLCONFIGDIR=/tmp/mpl LOKY_MAX_CPU_COUNT=4 $(PYTHON) $(CODE_DIR)/scripts/full_solution_pipeline.py
+	MPLCONFIGDIR=/tmp/mpl LOKY_MAX_CPU_COUNT=4 $(PYTHON) $(CODE_DIR)/scripts/full_solution_pipeline.py --profile $(PROFILE)
+
+run-fast:
+	MPLCONFIGDIR=/tmp/mpl LOKY_MAX_CPU_COUNT=4 $(PYTHON) $(CODE_DIR)/scripts/full_solution_pipeline.py --profile fast
+
+run-heavy:
+	MPLCONFIGDIR=/tmp/mpl LOKY_MAX_CPU_COUNT=4 $(PYTHON) $(CODE_DIR)/scripts/full_solution_pipeline.py --profile heavy
 
 baseline:
 	MPLCONFIGDIR=/tmp/mpl LOKY_MAX_CPU_COUNT=4 $(PYTHON) $(CODE_DIR)/scripts/train_and_explain.py
@@ -24,7 +31,7 @@ notebook-check:
 	$(PYTHON) -c "import nbformat; nb=nbformat.read('code/notebooks/Solution_Notebook.ipynb', as_version=4); print('Notebook cells:', len(nb.cells))"
 
 compile:
-	$(PYTHON) -m py_compile $(CODE_DIR)/scripts/full_solution_pipeline.py $(CODE_DIR)/scripts/train_and_explain.py $(CODE_DIR)/scripts/generate_synthetic_data.py $(CODE_DIR)/scripts/generate_report_assets.py
+	$(PYTHON) -m py_compile $(CODE_DIR)/scripts/full_solution_pipeline.py $(CODE_DIR)/scripts/train_and_explain.py $(CODE_DIR)/scripts/generate_synthetic_data.py $(CODE_DIR)/scripts/generate_report_assets.py $(CODE_DIR)/scripts/q18_temporal.py $(CODE_DIR)/scripts/q19_uncertainty.py $(CODE_DIR)/scripts/q20_fairness_mitigation.py $(CODE_DIR)/scripts/report_metrics_export.py
 
 latex:
 	cd $(CODE_DIR)/latex && xelatex -interaction=nonstopmode assignment.tex && xelatex -interaction=nonstopmode solution_manual.tex && xelatex -interaction=nonstopmode assignment_extended.tex && xelatex -interaction=nonstopmode solution_manual_extended.tex

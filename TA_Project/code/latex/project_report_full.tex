@@ -1,235 +1,251 @@
-\documentclass[11pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
-\usepackage{geometry}
-\usepackage{booktabs}
+\documentclass[conference]{IEEEtran}
 \usepackage{amsmath,amssymb}
+\usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{hyperref}
-\usepackage{enumitem}
-\geometry{margin=1in}
-\setlist[itemize]{leftmargin=1.4em}
-\setlist[enumerate]{leftmargin=1.6em}
+\usepackage{url}
+\hypersetup{hidelinks}
+\IfFileExists{../solutions/latex_metrics.tex}{\input{../solutions/latex_metrics.tex}}{}
 
-\title{Complete Project Report \\
-\textbf{Global Tech Talent Migration Assessment}}
-\author{UT-ECE Data Science -- Professional Project Package}
-\date{Spring 2025}
+% Fallback defaults (overridden by auto-generated metrics when available)
+\providecommand{\MetricRuntimeProfile}{N/A}
+\providecommand{\MetricQSixModel}{N/A}
+\providecommand{\MetricQSixAccuracy}{N/A}
+\providecommand{\MetricQSixAuc}{N/A}
+\providecommand{\MetricQSixFOne}{N/A}
+\providecommand{\MetricQFifteenBrier}{N/A}
+\providecommand{\MetricQFifteenEce}{N/A}
+\providecommand{\MetricQFifteenBestFOneThreshold}{N/A}
+\providecommand{\MetricQSixteenTopFeature}{N/A}
+\providecommand{\MetricQSixteenTopPsi}{N/A}
+\providecommand{\MetricQSeventeenRecourseRate}{N/A}
+\providecommand{\MetricQEighteenMeanAuc}{N/A}
+\providecommand{\MetricQEighteenAucDecay}{N/A}
+\providecommand{\MetricQNineteenCovNinety}{N/A}
+\providecommand{\MetricQNineteenMaxUndercoverage}{N/A}
+\providecommand{\MetricQTwentyDpGapBase}{N/A}
+\providecommand{\MetricQTwentyDpGapMitigated}{N/A}
+\providecommand{\MetricQTwentyPolicyPass}{N/A}
+
+\title{A Complete IEEE-Style Capstone Report for Global Tech Talent Migration Analysis}
+
+\author{%
+\IEEEauthorblockN{UT-ECE Data Science TA Team}
+\IEEEauthorblockA{Department of Electrical and Computer Engineering\\
+University of Tehran\\
+Spring 2025 Capstone Package}
+}
 
 \begin{document}
 \maketitle
 
-\section*{Executive Summary}
-This report documents a complete end-to-end data science implementation for predicting migration status on \texttt{GlobalTechTalent\_50k.csv}. The project covers data engineering, leakage controls, statistical inference, optimization analysis, non-linear modeling, unsupervised learning, explainability, and fairness slices.
+\begin{abstract}
+This report documents an end-to-end graduate-level data science capstone on \texttt{GlobalTechTalent\_50k.csv}. The pipeline covers data engineering, leakage diagnostics, inference, optimization, non-linear modeling, unsupervised learning, explainable AI, and production-oriented extensions (Q15--Q20). The implementation is reproducible via a profile-aware CLI and generates report-ready metrics and artifacts automatically.
+\end{abstract}
 
-\textbf{Latest capstone model (XGBoost):}
-\begin{itemize}
-    \item Accuracy: 0.5835
-    \item ROC-AUC: 0.5495
-    \item F1: 0.2475
-\end{itemize}
+\section{Problem Statement and Scope}
+The project predicts \texttt{Migration\_Status} for 50,000 technical professionals while enforcing methodological controls for leakage, drift, uncertainty, and fairness. The final package is organized as a full instructional+engineering deliverable: scripts, tests, notebooks, and bilingual reports.
 
-\section*{1. Dataset and Problem}
-\textbf{Dataset:} \texttt{code/data/GlobalTechTalent\_50k.csv} \\
-\textbf{Rows:} 50,000 \quad \textbf{Columns:} 15 \quad \textbf{Target:} \texttt{Migration\_Status}
+\section{Dataset Diagnostics}
 
-Target balance:
-\begin{itemize}
-    \item Class 0: 29,467
-    \item Class 1: 20,533
-    \item Positive rate: 41.07\%
-\end{itemize}
+\subsection{Target Balance}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\linewidth]{../figures/report_target_balance.png}
+\caption{Class distribution for \texttt{Migration\_Status}.}
+\end{figure}
+\textbf{Interpretation:} The dataset is moderately imbalanced and requires threshold-aware evaluation beyond raw accuracy. \\
+\textbf{Decision Impact:} Model selection and threshold policy are evaluated with AUC/F1/calibration rather than accuracy alone. \\
+\textbf{Limitation/Threat:} Class prevalence can shift in deployment, so historical balance should not be treated as stationary.
+
+\subsection{Missingness Profile}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\linewidth]{../figures/report_missingness_top10.png}
+\caption{Top-10 missingness rates across columns.}
+\end{figure}
+\textbf{Interpretation:} Missingness is concentrated in operational fields, notably visa-related attributes. \\
+\textbf{Decision Impact:} Features tied to post-outcome process states are either removed or treated as leakage candidates. \\
+\textbf{Limitation/Threat:} Missing-not-at-random behavior can encode policy effects and induce biased estimates.
+
+\subsection{Correlation Structure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\linewidth]{../figures/report_numeric_correlation.png}
+\caption{Correlation heatmap for key numeric predictors and target.}
+\end{figure}
+\textbf{Interpretation:} The target correlates with activity and prominence indicators but no single predictor is sufficient. \\
+\textbf{Decision Impact:} Multivariate and non-linear models are justified by mixed signal strength and interaction effects. \\
+\textbf{Limitation/Threat:} Correlation is not causal; policy-sensitive confounders remain unobserved.
+
+\subsection{Country-Level Migration Rates}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\linewidth]{../figures/report_country_migration_rate.png}
+\caption{Country-level migration rate ranking under minimum support filter.}
+\end{figure}
+\textbf{Interpretation:} Group-level outcome rates vary materially across origin countries. \\
+\textbf{Decision Impact:} Fairness slicing and post-mitigation evaluation are mandatory before policy use. \\
+\textbf{Limitation/Threat:} Observed regional differences may encode visa regimes, not individual readiness.
+
+\section{Core Questions (Q1--Q6)}
+
+\subsection{Q1 Data Engineering and Leakage}
+The SQL window-function answer is exported to \texttt{code/solutions/q1\_moving\_average.sql}. Leakage diagnostics show that \texttt{Visa\_Approval\_Date} must be excluded because it is a post-outcome process artifact.
+
+\subsection{Q3 Optimizer Dynamics}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\linewidth]{../figures/q3_ravine_optimizers.png}
+\caption{SGD vs Momentum vs Adam trajectories on a ravine objective.}
+\end{figure}
+\textbf{Interpretation:} Momentum and Adam reduce ravine oscillation and converge faster than plain SGD. \\
+\textbf{Decision Impact:} For ill-conditioned objectives, adaptive or momentum-based optimizers are preferred defaults. \\
+\textbf{Limitation/Threat:} Toy ravine behavior does not fully capture non-convex deep objective geometry.
+
+\subsection{Q4 Non-Linear Models and Complexity Control}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\linewidth]{../figures/q4_svm_gamma_sweep.png}
+\caption{Validation sensitivity to RBF kernel width (\(\gamma\)).}
+\end{figure}
+\textbf{Interpretation:} Larger \(\gamma\) increases local sensitivity and can increase variance. \\
+\textbf{Decision Impact:} Overfitting regimes are controlled by reducing \(\gamma\) and cross-validating the support pattern. \\
+\textbf{Limitation/Threat:} Hyperparameter effect depends on feature scaling and class overlap.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.72\linewidth]{../figures/report_target_balance.png}
-\caption{Target distribution.}
+\includegraphics[width=0.86\linewidth]{../figures/q4_tree_pruning_curve.png}
+\caption{Cost-complexity pruning tradeoff for CART.}
 \end{figure}
+\textbf{Interpretation:} Increasing \(\alpha\) regularizes tree size and moves along the bias-variance frontier. \\
+\textbf{Decision Impact:} Selected \(\alpha\) should maximize validation generalization, not training fit. \\
+\textbf{Limitation/Threat:} Pruning curves are data-split dependent and may drift under regime changes.
+
+\subsection{Q5 Unsupervised Structure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\linewidth]{../figures/q5_kmeans_elbow.png}
+\caption{WCSS elbow curve for model order selection in K-Means.}
+\end{figure}
+\textbf{Interpretation:} WCSS shows diminishing returns after a moderate cluster count. \\
+\textbf{Decision Impact:} Elbow-based \(K\) is treated as a complexity heuristic, then validated against interpretability utility. \\
+\textbf{Limitation/Threat:} Elbow location can be ambiguous when curvature is shallow.
+
+\subsection{Q6 Explainable Capstone Model}
+Current run profile: \textbf{\MetricRuntimeProfile}. \\
+Capstone model: \textbf{\MetricQSixModel}. \\
+AUC: \textbf{\MetricQSixAuc}, Accuracy: \textbf{\MetricQSixAccuracy}, F1: \textbf{\MetricQSixFOne}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\linewidth]{../figures/report_missingness_top10.png}
-\caption{Top missingness profile by column.}
+\includegraphics[width=0.95\linewidth]{../figures/q6_shap_force_plot.png}
+\caption{Local SHAP explanation for a selected high-citation candidate.}
 \end{figure}
+\textbf{Interpretation:} The candidate prediction is the sum of feature-level positive and negative contributions from the base value. \\
+\textbf{Decision Impact:} Decision review can target dominant negative drivers instead of relying on aggregate score alone. \\
+\textbf{Limitation/Threat:} SHAP explains model behavior, not structural causality.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\linewidth]{../figures/report_numeric_correlation.png}
-\caption{Correlation matrix for target and top numeric predictors.}
+\includegraphics[width=0.88\linewidth]{../figures/q6_shap_summary.png}
+\caption{Global feature influence summary for the capstone model.}
 \end{figure}
+\textbf{Interpretation:} Research and activity-related predictors dominate the global attribution profile. \\
+\textbf{Decision Impact:} Feature governance should prioritize data quality and policy review for top-ranked drivers. \\
+\textbf{Limitation/Threat:} Global importance does not reflect all subgroup-specific interactions.
+
+\section{Advanced Production-Oriented Block (Q15--Q20)}
+
+\subsection{Q15 Calibration and Threshold Policy}
+Brier: \textbf{\MetricQFifteenBrier}, ECE: \textbf{\MetricQFifteenEce}, Best-F1 threshold: \textbf{\MetricQFifteenBestFOneThreshold}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\linewidth]{../figures/report_country_migration_rate.png}
-\caption{Country-level migration rate comparison (sample threshold applied).}
+\includegraphics[width=0.86\linewidth]{../figures/q15_calibration_curve.png}
+\caption{Calibration reliability curve for the capstone model.}
 \end{figure}
-
-\section*{2. Data Engineering and Leakage Control}
-The SQL moving-average deliverable is provided in \texttt{code/solutions/q1\_moving\_average.sql}.
-
-Leakage diagnostics show \texttt{Visa\_Approval\_Date} is a direct post-outcome feature:
-\begin{itemize}
-    \item corr(visa present, migration target) = 1.000
-    \item P(Migration=1 $|$ visa present) = 1.000
-    \item P(Migration=1 $|$ visa absent) = 0.000
-\end{itemize}
-
-Therefore this feature is excluded from training.
-
-\section*{3. Statistical Inference and Linear Modeling}
-The package includes Elastic Net gradient derivation with proper L1 subgradient handling at zero, and inference interpretation guidance (coefficient, p-value, confidence interval) in:
-\begin{itemize}
-    \item \texttt{code/solutions/complete\_solution\_key.md}
-    \item \texttt{code/solutions/extended\_solution\_key.md}
-    \item \texttt{code/latex/solution\_manual.tex}
-\end{itemize}
-
-\section*{4. Optimization Analysis}
-A ravine objective compares SGD, Momentum, and Adam dynamics.
-
-Final losses:
-\begin{itemize}
-    \item SGD: 0.403329
-    \item Momentum: 0.000823
-    \item Adam: 0.000034
-\end{itemize}
+\textbf{Interpretation:} The calibration curve quantifies probability reliability against empirical frequencies. \\
+\textbf{Decision Impact:} Operational thresholds are selected from calibrated risk estimates rather than raw scores. \\
+\textbf{Limitation/Threat:} Calibration can degrade over time and must be monitored.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\linewidth]{../figures/q3_ravine_optimizers.png}
-\caption{Optimization trajectories on a ravine objective.}
+\includegraphics[width=0.90\linewidth]{../figures/q15_threshold_tradeoff.png}
+\caption{Threshold tradeoff between F1 components and expected decision cost.}
 \end{figure}
+\textbf{Interpretation:} Precision, recall, and expected error cost respond differently to threshold movement. \\
+\textbf{Decision Impact:} The threshold is chosen by policy utility (cost matrix), not a universal default. \\
+\textbf{Limitation/Threat:} Cost assumptions are context-dependent and can change by jurisdiction.
 
-\section*{5. Non-Linear Models}
-\textbf{SVM gamma sweep:}
-\begin{itemize}
-    \item Best gamma: 0.005
-    \item Best validation accuracy: 0.600
-    \item Worst validation accuracy: 0.591
-\end{itemize}
+\subsection{Q16 Drift Monitoring}
+Top drift feature: \textbf{\MetricQSixteenTopFeature} with PSI \textbf{\MetricQSixteenTopPsi}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\linewidth]{../figures/q4_svm_gamma_sweep.png}
-\caption{Validation behavior under gamma changes.}
+\includegraphics[width=0.90\linewidth]{../figures/q16_drift_psi_top12.png}
+\caption{Feature drift ranking using PSI thresholds.}
 \end{figure}
+\textbf{Interpretation:} A subset of features exhibits moderate-to-high instability between reference and current windows. \\
+\textbf{Decision Impact:} Retraining and feature-level alerting are triggered by PSI severity bands. \\
+\textbf{Limitation/Threat:} PSI detects distribution shift, not necessarily target relationship drift.
 
-\textbf{Cost-complexity pruning:}
-\begin{itemize}
-    \item Best \(\alpha\): 0.009639
-    \item Best validation accuracy: 0.600
-\end{itemize}
+\subsection{Q17 Counterfactual Recourse}
+Recourse success rate: \textbf{\MetricQSeventeenRecourseRate}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\linewidth]{../figures/q4_tree_pruning_curve.png}
-\caption{Decision tree pruning tradeoff curve.}
+\includegraphics[width=0.78\linewidth]{../figures/q17_recourse_median_deltas.png}
+\caption{Median actionable effort needed to flip near-boundary predictions.}
 \end{figure}
+\textbf{Interpretation:} Actionability varies across controllable features and can be quantified. \\
+\textbf{Decision Impact:} Candidate guidance can focus on the lowest-effort feasible interventions. \\
+\textbf{Limitation/Threat:} Counterfactual feasibility depends on real-world constraints not encoded in data.
 
-\section*{6. Unsupervised Learning}
-\textbf{PCA explained variance ratios:}
-\begin{itemize}
-    \item PC1: 0.277
-    \item PC2: 0.145
-    \item PC1 + PC2: 0.422
-\end{itemize}
-
-\textbf{KMeans elbow estimate:} K = 4
+\subsection{Q18 Temporal Backtesting and Degradation}
+Mean temporal AUC: \textbf{\MetricQEighteenMeanAuc}, AUC decay: \textbf{\MetricQEighteenAucDecay}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.74\linewidth]{../figures/q5_kmeans_elbow.png}
-\caption{KMeans elbow diagnostic plot.}
+\includegraphics[width=0.90\linewidth]{../figures/q18_temporal_degradation.png}
+\caption{Rolling temporal folds: performance decay against drift proxy.}
 \end{figure}
+\textbf{Interpretation:} Performance changes across sequential folds and is contrasted with drift magnitude. \\
+\textbf{Decision Impact:} Time-aware validation is required before production claims on future windows. \\
+\textbf{Limitation/Threat:} If a true time field is absent, fallback ordering introduces uncertainty in temporal realism.
 
-\section*{7. Explainability (SHAP)}
-Capstone explanation outputs:
-\begin{itemize}
-    \item Candidate index: 27343
-    \item Predicted probability: 0.3892
-    \item Base value: -0.3494 (log-odds)
-    \item Output value: -0.4507 (log-odds)
-    \item Top local contributor: \texttt{num\_\_Research\_Citations}
-\end{itemize}
+\subsection{Q19 Uncertainty Quantification}
+Coverage@90: \textbf{\MetricQNineteenCovNinety}, max under-coverage: \textbf{\MetricQNineteenMaxUndercoverage}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\linewidth]{../figures/q6_shap_force_plot.png}
-\caption{Local SHAP explanation for selected candidate.}
+\includegraphics[width=0.90\linewidth]{../figures/q19_coverage_vs_alpha.png}
+\caption{Nominal vs empirical coverage and interval width across confidence levels.}
 \end{figure}
+\textbf{Interpretation:} Split-conformal intervals expose the calibration-quality tradeoff between reliability and interval width. \\
+\textbf{Decision Impact:} Policy can reject low-confidence cases and route them for human review. \\
+\textbf{Limitation/Threat:} Distribution shift can break finite-sample coverage guarantees.
+
+\subsection{Q20 Fairness Mitigation Experiment}
+DP gap baseline: \textbf{\MetricQTwentyDpGapBase}; DP gap mitigated: \textbf{\MetricQTwentyDpGapMitigated}; policy pass: \textbf{\MetricQTwentyPolicyPass}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\linewidth]{../figures/q6_shap_summary.png}
-\caption{Global importance view for the capstone model.}
+\includegraphics[width=0.84\linewidth]{../figures/q20_fairness_tradeoff.png}
+\caption{Fairness-performance tradeoff from baseline to mitigated model.}
 \end{figure}
+\textbf{Interpretation:} Reweighing shifts the operating point on the fairness-performance plane. \\
+\textbf{Decision Impact:} Deployment requires explicit policy constraints on acceptable performance drop and fairness gain. \\
+\textbf{Limitation/Threat:} Single-metric fairness gains can mask harms on unmonitored subgroups.
 
-\section*{8. Calibration and Threshold Policy (Q15)}
-Calibration analysis for the current capstone model:
-\begin{itemize}
-    \item Brier score, ECE, and best thresholds (F1 vs asymmetric cost) are logged in \texttt{solutions/run\_summary.json}.
-    \item Plots: \texttt{figures/q15\_calibration\_curve.png}, \texttt{figures/q15\_threshold\_tradeoff.png}.
-\end{itemize}
+\section{Reproducibility and Artifacts}
+The implementation supports profile-based execution via
+\texttt{python code/scripts/full\_solution\_pipeline.py --profile \{fast,balanced,heavy\}}.
+All artifacts are generated under:\\
+\texttt{code/solutions/} and \texttt{code/figures/}, including schema-v2 \texttt{run\_summary.json}, Q18--Q20 CSV outputs, and report metric exports (\texttt{latex\_metrics.json}/\texttt{.tex}).
 
-\section*{9. Drift Monitoring (Q16)}
-\begin{itemize}
-    \item PSI drift table: \texttt{solutions/q16\_drift\_psi.csv}
-    \item Top-12 PSI plot: \texttt{figures/q16\_drift\_psi\_top12.png}
-    \item Country JS divergence value is recorded in \texttt{run\_summary.json}.
-\end{itemize}
-
-\section*{10. Counterfactual Recourse (Q17)}
-\begin{itemize}
-    \item Recourse examples: \texttt{solutions/q17\_recourse\_examples.csv}
-    \item Recourse effort summary: \texttt{figures/q17\_recourse\_median\_deltas.png}
-    \item Metrics (success rate, median deltas per actionable feature) are stored in \texttt{run\_summary.json}.
-\end{itemize}
-
-\section*{11. Fairness and Governance}
-Country-level fairness slice output is exported to:
-\url{code/solutions/q6_fairness_country_rates.csv}
-
-Governance policy in this package:
-\begin{itemize}
-    \item predictive use only (non-causal claims),
-    \item subgroup audit before deployment,
-    \item human-in-the-loop override for high-impact decisions,
-    \item periodic drift and policy-shift monitoring.
-\end{itemize}
-
-\section*{12. Reproducibility and Tooling}
-\begin{itemize}
-    \item Full run: \texttt{make run}
-    \item Tests: \texttt{make test}
-    \item Compile checks: \texttt{make compile}
-    \item LaTeX builds: \texttt{make latex}
-\end{itemize}
-
-CI pipeline: \texttt{.github/workflows/ci.yml}
-
-\section*{13. Extended Curriculum Coverage}
-An extended assignment package was added to cover the full UT-ECE Spring 2024/2025 topic range (including dashboards/storytelling, big data framing, deep learning, NLP, and LLM agents):
-\begin{itemize}
-    \item \texttt{code/latex/assignment\_extended.tex}
-    \item \texttt{code/latex/solution\_manual\_extended.tex}
-    \item \texttt{code/solutions/extended\_solution\_key.md}
-    \item \texttt{code/notebooks/Extended\_Assignment\_Workbook.ipynb}
-\end{itemize}
-
-Coverage mapping references:
-\begin{itemize}
-    \item \url{https://github.com/DataScience-ECE-UniversityOfTehran/DataScience-Spring2024}
-    \item \url{https://github.com/DataScience-ECE-UniversityOfTehran/DataScience-Spring2025}
-\end{itemize}
-
-\section*{14. Limitations and Next Steps}
-\begin{itemize}
-    \item The dataset cannot represent all social/geopolitical migration drivers.
-    \item Explainability is descriptive and should not be used as causal proof.
-    \item Future upgrades: temporal validation, calibration-driven thresholds, causal sensitivity analysis, and richer fairness intervention policy.
-\end{itemize}
-
-\section*{Conclusion}
-This project report is complete across data, modeling, evaluation, explainability, ethics, reproducibility, and curriculum alignment dimensions, with all major figures and artifacts included for professional university-level submission.
+\section{Conclusion}
+The project now operates as a full graduate-capstone package: it combines mathematical rigor, engineering reproducibility, production diagnostics, and explainability/fairness accountability in a single auditable workflow.
 
 \end{document}

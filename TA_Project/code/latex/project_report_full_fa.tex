@@ -1,288 +1,252 @@
-\documentclass[11pt,a4paper]{article}
-\usepackage{geometry}
-\usepackage{booktabs}
+\documentclass[journal,onecolumn]{IEEEtran}
 \usepackage{amsmath,amssymb}
+\usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{float}
-\usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{xepersian}
-
 \settextfont{Times New Roman}
 \setlatintextfont{Times New Roman}
-\geometry{margin=1in}
-\setlist[itemize]{leftmargin=1.8em}
-\setlist[enumerate]{leftmargin=1.8em}
-\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+\hypersetup{hidelinks}
+\IfFileExists{../solutions/latex_metrics.tex}{\input{../solutions/latex_metrics.tex}}{}
 
-\title{گزارش نهایی کامل پروژه\\
-\textbf{تحلیل مهاجرت جهانی استعدادهای فنی با رویکرد داده‌محور}}
-\author{دانشگاه تهران -- دانشکده مهندسی برق و کامپیوتر\\بسته حرفه‌ای درس علم داده}
-\date{بهار ۱۴۰۴}
+% مقادیر پیش‌فرض (در صورت نبود خروجی خودکار)
+\providecommand{\MetricRuntimeProfile}{N/A}
+\providecommand{\MetricQSixModel}{N/A}
+\providecommand{\MetricQSixAccuracy}{N/A}
+\providecommand{\MetricQSixAuc}{N/A}
+\providecommand{\MetricQSixFOne}{N/A}
+\providecommand{\MetricQFifteenBrier}{N/A}
+\providecommand{\MetricQFifteenEce}{N/A}
+\providecommand{\MetricQFifteenBestFOneThreshold}{N/A}
+\providecommand{\MetricQSixteenTopFeature}{N/A}
+\providecommand{\MetricQSixteenTopPsi}{N/A}
+\providecommand{\MetricQSeventeenRecourseRate}{N/A}
+\providecommand{\MetricQEighteenMeanAuc}{N/A}
+\providecommand{\MetricQEighteenAucDecay}{N/A}
+\providecommand{\MetricQNineteenCovNinety}{N/A}
+\providecommand{\MetricQNineteenMaxUndercoverage}{N/A}
+\providecommand{\MetricQTwentyDpGapBase}{N/A}
+\providecommand{\MetricQTwentyDpGapMitigated}{N/A}
+\providecommand{\MetricQTwentyPolicyPass}{N/A}
+\newcommand{\FASection}[1]{\par\bigskip\noindent\textbf{#1}\par\medskip}
+\newcommand{\FASubsection}[1]{\par\medskip\noindent\textbf{#1}\par\smallskip}
 
 \begin{document}
-\maketitle
-
-\section*{خلاصه اجرایی}
-این گزارش، اجرای \textbf{کامل، بازتولیدپذیر و قابل داوری} پروژه نهایی علم داده را ارائه می‌کند.
-پوشش پروژه شامل مهندسی داده، استنباط آماری، بهینه‌سازی، مدل‌های غیرخطی، یادگیری بدون نظارت، \lr{XAI} با \lr{SHAP}، عدالت، و سه بخش پایش تولید (کالیبراسیون، درفت، ریکورس) است.
-
-\textbf{نتایج آخرین اجرای کپستون} (از \lr{run\_summary.json}):
-\begin{itemize}
-    \item مدل: \lr{RandomForest (XGBoost fallback)}
-    \item \lr{Accuracy}: 0.5944
-    \item \lr{ROC-AUC}: 0.5727
-    \item \lr{F1}: 0.2609
-\end{itemize}
-
-\section*{۱) تعریف مسئله و داده}
-\textbf{داده:} \lr{code/data/GlobalTechTalent\_50k.csv}\\
-\textbf{حجم:} ۵۰٬۰۰۰ سطر و ۱۵ ستون\\
-\textbf{هدف:} \lr{Migration\_Status}
-
-\subsection*{۱-۱) توازن کلاس‌ها}
-\begin{itemize}
-    \item تعداد کلاس ۰: 29467
-    \item تعداد کلاس ۱: 20533
-    \item نرخ کلاس مثبت: 0.41066
-\end{itemize}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.72\linewidth]{../figures/report_target_balance.png}
-\caption{توزیع متغیر هدف.}
-\end{figure}
-
-\subsection*{۱-۲) داده‌های گمشده}
-بیشترین مقدار داده گمشده مربوط به \lr{Visa\_Approval\_Date} با حدود 58.934\% است که هم‌زمان یک ویژگی نشت‌زا نیز محسوب می‌شود.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.78\linewidth]{../figures/report_missingness_top10.png}
-\caption{ده ستون با بیشترین نرخ گمشده.}
-\end{figure}
-
-\subsection*{۱-۳) هم‌بستگی و الگوهای اولیه}
-ویژگی‌های عددی با هم‌بستگی بالاتر نسبت به هدف شامل \lr{GitHub\_Activity}، \lr{Research\_Citations} و \lr{Remote\_Work} هستند.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.79\linewidth]{../figures/report_numeric_correlation.png}
-\caption{هم‌بستگی ویژگی‌های عددی کلیدی با هدف.}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.79\linewidth]{../figures/report_country_migration_rate.png}
-\caption{مقایسه نرخ مهاجرت بین کشورها (با آستانه حداقل نمونه).}
-\end{figure}
-
-\section*{۲) مهندسی داده و کنترل نشت}
-\subsection*{۲-۱) خروجی SQL}
-کوئری میانگین متحرک سه‌ساله و رتبه‌بندی کشوری در فایل زیر تولید شده است:
 \begin{center}
-\lr{code/solutions/q1\_moving\_average.sql}
+{\Large \textbf{گزارش نهایی کامل پروژه در قالب IEEE}}\\[0.4em]
+{\large \textbf{تحلیل داده‌محور مهاجرت جهانی استعدادهای فنی}}\\[0.8em]
+تیم دستیاران آموزشی درس علم داده\\
+دانشکده مهندسی برق و کامپیوتر، دانشگاه تهران\\
+بسته کپستون کارشناسی‌ارشد -- بهار ۱۴۰۴
 \end{center}
+\vspace{0.8em}
 
-\subsection*{۲-۲) تشخیص نشت داده}
-شاخص‌های تشخیصی اجرای فعلی:
-\begin{itemize}
-    \item \lr{corr(visa\_present, target)} = 1.000
-    \item \lr{P(Migration=1 | visa\_present)} = 1.000
-    \item \lr{P(Migration=1 | visa\_absent)} = 0.000
-\end{itemize}
-نتیجه: \lr{Visa\_Approval\_Date} حتماً باید قبل از آموزش حذف شود.
+\FASection{چکیده}
+این گزارش نسخه کامل و قابل داوری پروژه نهایی درس علم داده است. پیاده‌سازی حاضر کل مسیر مهندسی داده تا تحلیل‌های تولیدی را پوشش می‌دهد: کنترل نشت، مدل‌سازی خطی و غیرخطی، بهینه‌سازی، یادگیری بدون نظارت، تبیین‌پذیری با \lr{SHAP}، و سه افزونه پیشرفته \lr{Q18-Q20} برای پایداری زمانی، عدم‌قطعیت و عدالت الگوریتمی.
 
-\section*{۳) استنباط آماری و مدل‌های خطی}
-در این بسته، مشتق \lr{Elastic Net} و تفسیر آزمون معنی‌داری با جزئیات در اسناد زیر آمده است:
-\begin{itemize}
-    \item \lr{code/solutions/complete\_solution\_key.md}
-    \item \lr{code/solutions/extended\_solution\_key.md}
-    \item \lr{code/latex/solution\_manual.tex}
-    \item \lr{code/latex/solution\_manual\_fa.tex}
-\end{itemize}
+\FASection{تعریف مسئله و دامنه پروژه}
+هدف، پیش‌بینی \lr{Migration\_Status} برای ۵۰ هزار متخصص فناوری است. خروجی نهایی صرفا یک مدل نیست؛ بلکه یک بسته کامل دانشگاهی-مهندسی است که شامل کد، آزمون، نوت‌بوک، گزارش دو‌زبانه و خروجی‌های استاندارد \lr{CSV/JSON/PNG} است.
 
-هسته ریاضی:
-\[
-\nabla_{\theta_j}J = \frac{1}{m}\sum_i(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)} + \lambda_1\partial|\theta_j| + \lambda_2\theta_j
-\]
+\FASection{تشخیص اولیه داده}
 
-\section*{۴) تحلیل بهینه‌سازی}
-مقایسه روی تابع \lr{ravine} نشان می‌دهد که روش‌های تطبیقی/شتاب‌دار رفتار همگرایی بهتری از \lr{SGD} خام دارند.
+\FASubsection{توازن کلاس هدف}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\linewidth]{../figures/report_target_balance.png}
+\caption{توزیع کلاس‌های متغیر هدف \lr{Migration\_Status}.}
+\end{figure}
+\textbf{تفسیر:} توزیع کلاس‌ها نامتوازنِ خفیف است و ارزیابی باید فراتر از دقت خام باشد. \\
+\textbf{اثر تصمیمی:} معیارهای \lr{AUC/F1} و تحلیل آستانه، معیار اصلی انتخاب مدل قرار می‌گیرند. \\
+\textbf{محدودیت/تهدید:} نسبت کلاس‌ها ممکن است در زمان استقرار تغییر کند و ثابت فرض‌کردن آن پرریسک است.
 
-\begin{center}
-\begin{tabular}{@{}lc@{}}
-\toprule
-بهینه‌ساز & مقدار نهایی زیان \\
-\midrule
-\lr{SGD} & 0.403329 \\
-\lr{Momentum} & 0.000823 \\
-\lr{Adam} & 0.000034 \\
-\bottomrule
-\end{tabular}
-\end{center}
+\FASubsection{الگوی داده‌های گمشده}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\linewidth]{../figures/report_missingness_top10.png}
+\caption{ده ستون با بیشترین نرخ داده گمشده.}
+\end{figure}
+\textbf{تفسیر:} گمشدگی در ستون‌های فرایندی متمرکز است و بخشی از آن با نشت داده همپوشانی دارد. \\
+\textbf{اثر تصمیمی:} ویژگی‌های پس‌رخداد، قبل از آموزش حذف می‌شوند یا به‌صورت کنترل‌شده وارد تحلیل می‌شوند. \\
+\textbf{محدودیت/تهدید:} اگر گمشدگی تصادفی نباشد، خودِ الگوی گمشدگی می‌تواند منشأ بایاس شود.
+
+\FASubsection{ساختار هم‌بستگی}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\linewidth]{../figures/report_numeric_correlation.png}
+\caption{نقشه هم‌بستگی ویژگی‌های عددی کلیدی با هدف.}
+\end{figure}
+\textbf{تفسیر:} چند ویژگی مهم سیگنال دارند اما هیچ متغیری به‌تنهایی پاسخ کامل نمی‌دهد. \\
+\textbf{اثر تصمیمی:} استفاده از مدل‌های چندمتغیره و غیرخطی به‌صورت هم‌زمان توجیه می‌شود. \\
+\textbf{محدودیت/تهدید:} هم‌بستگی دلالت علّی ندارد و می‌تواند بازتاب عوامل پنهان سیاستی باشد.
+
+\FASubsection{نرخ مهاجرت در سطح کشور}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\linewidth]{../figures/report_country_migration_rate.png}
+\caption{مقایسه نرخ مهاجرت بین کشورها پس از اعمال حداقل حجم نمونه.}
+\end{figure}
+\textbf{تفسیر:} تفاوت گروهی بین کشورها معنادار است و بی‌توجهی به آن ارزیابی را ناقص می‌کند. \\
+\textbf{اثر تصمیمی:} تحلیل عدالت قبل و بعد از مداخله الزامی است. \\
+\textbf{محدودیت/تهدید:} تفاوت‌ها می‌توانند ناشی از محدودیت‌های سیاستی باشند نه توان واقعی افراد.
+
+\FASection{نتایج هسته اصلی (Q1 تا Q6)}
+
+\FASubsection{Q1: مهندسی داده و نشت}
+خروجی \lr{SQL} در \lr{code/solutions/q1\_moving\_average.sql} ذخیره شده است.\
+ویژگی \lr{Visa\_Approval\_Date} به‌عنوان نشت مستقیم حذف می‌شود.
+
+\FASubsection{Q3: تحلیل بهینه‌سازها}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\linewidth]{../figures/q3_ravine_optimizers.png}
+\caption{مسیر همگرایی \lr{SGD}، \lr{Momentum} و \lr{Adam} روی سطح دره‌ای.}
+\end{figure}
+\textbf{تفسیر:} \lr{Momentum/Adam} نوسان عرضی را کاهش می‌دهند و همگرایی سریع‌تری دارند. \\
+\textbf{اثر تصمیمی:} برای توابع بدشرط، بهینه‌ساز شتاب‌دار انتخاب پیش‌فرض مناسب‌تری است. \\
+\textbf{محدودیت/تهدید:} رفتار روی تابع آزمایشی، کل پیچیدگی اهداف غیرمحدب را پوشش نمی‌دهد.
+
+\FASubsection{Q4: مدل غیرخطی و کنترل پیچیدگی}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\linewidth]{../figures/q4_svm_gamma_sweep.png}
+\caption{حساسیت دقت اعتبارسنجی نسبت به \(\gamma\) در \lr{SVM-RBF}.}
+\end{figure}
+\textbf{تفسیر:} افزایش \(\gamma\) می‌تواند مرز تصمیم را بیش‌ازحد محلی و پرنوسان کند. \\
+\textbf{اثر تصمیمی:} در حالت بیش‌برازش، \(\gamma\) کاهش می‌یابد و روی اعتبارسنجی تنظیم می‌شود. \\
+\textbf{محدودیت/تهدید:} نتیجه نهایی به مقیاس‌بندی و همپوشانی کلاس‌ها وابسته است.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\linewidth]{../figures/q3_ravine_optimizers.png}
-\caption{مقایسه مسیر بهینه‌سازها روی تابع دره‌ای.}
+\includegraphics[width=0.86\linewidth]{../figures/q4_tree_pruning_curve.png}
+\caption{مصالحه خطا-پیچیدگی در هرس \lr{Decision Tree}.}
 \end{figure}
+\textbf{تفسیر:} \(\alpha\) بزرگ‌تر اندازه درخت را کم می‌کند و واریانس را پایین می‌آورد. \\
+\textbf{اثر تصمیمی:} انتخاب \(\alpha\) بر اساس عملکرد اعتبارسنجی انجام می‌شود، نه خطای آموزش. \\
+\textbf{محدودیت/تهدید:} منحنی هرس نسبت به نحوه تقسیم داده حساس است.
 
-\section*{۵) مدل‌های غیرخطی و کنترل پیچیدگی}
-\subsection*{۵-۱) \lr{SVM-RBF}}
-خروجی جست‌وجوی \(\gamma\):
-\begin{itemize}
-    \item بهترین \(\gamma\): 0.005
-    \item بهترین دقت اعتبارسنجی: 0.5813
-    \item بدترین دقت اعتبارسنجی: 0.5740
-\end{itemize}
+\FASubsection{Q5: ساختار بدون نظارت}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\linewidth]{../figures/q5_kmeans_elbow.png}
+\caption{منحنی آرنج \lr{WCSS} برای انتخاب تعداد خوشه‌ها.}
+\end{figure}
+\textbf{تفسیر:} پس از یک \(K\) میانی، کاهش \lr{WCSS} بازده نزولی پیدا می‌کند. \\
+\textbf{اثر تصمیمی:} \(K\) به‌صورت heuristic انتخاب و سپس با تفسیرپذیری خوشه‌ها اعتبارسنجی می‌شود. \\
+\textbf{محدودیت/تهدید:} در منحنی‌های کم‌انحنا، محل آرنج می‌تواند مبهم باشد.
+
+\FASubsection{Q6: مدل کپستون و \lr{SHAP}}
+پروفایل اجرا: \textbf{\MetricRuntimeProfile}.\\
+مدل کپستون: \textbf{\MetricQSixModel}.\\
+\lr{AUC}: \textbf{\MetricQSixAuc}، \lr{Accuracy}: \textbf{\MetricQSixAccuracy}، \lr{F1}: \textbf{\MetricQSixFOne}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\linewidth]{../figures/q4_svm_gamma_sweep.png}
-\caption{رفتار دقت اعتبارسنجی در تغییر \(\gamma\).}
+\includegraphics[width=0.95\linewidth]{../figures/q6_shap_force_plot.png}
+\caption{توضیح محلی \lr{SHAP} برای نمونه منتخب.}
 \end{figure}
-
-\subsection*{۵-۲) هرس \lr{Decision Tree}}
-\begin{itemize}
-    \item بهترین \lr{ccp\_alpha}: 0.006833
-    \item بهترین دقت اعتبارسنجی: 0.5813
-\end{itemize}
+\textbf{تفسیر:} اختلاف \lr{base value} و خروجی نهایی از جمع سهم ویژگی‌ها ساخته می‌شود. \\
+\textbf{اثر تصمیمی:} بازبینی پرونده روی عوامل غالب منفی/مثبت متمرکز می‌شود. \\
+\textbf{محدودیت/تهدید:} \lr{SHAP} رفتار مدل را توضیح می‌دهد، نه رابطه علّی دنیای واقعی را.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\linewidth]{../figures/q4_tree_pruning_curve.png}
-\caption{منحنی مصالحه خطا-پیچیدگی در هرس درخت.}
+\includegraphics[width=0.88\linewidth]{../figures/q6_shap_summary.png}
+\caption{نمای سراسری اهمیت ویژگی‌ها در مدل کپستون.}
 \end{figure}
+\textbf{تفسیر:} ویژگی‌های مرتبط با فعالیت فنی و استناد، وزن بیشتری در پیش‌بینی دارند. \\
+\textbf{اثر تصمیمی:} کنترل کیفیت داده برای ویژگی‌های پراثر، اولویت حاکمیتی می‌گیرد. \\
+\textbf{محدودیت/تهدید:} اهمیت سراسری، ناهمگنی اثر در همه زیرگروه‌ها را نشان نمی‌دهد.
 
-\section*{۶) یادگیری بدون نظارت}
-\subsection*{۶-۱) \lr{PCA}}
-\begin{itemize}
-    \item \lr{EVR(PC1)}: 0.2775
-    \item \lr{EVR(PC2)}: 0.1449
-    \item \lr{EVR(PC1+PC2)}: 0.4223
-\end{itemize}
+\FASection{بلوک پیشرفته تولیدی (Q15 تا Q20)}
 
-\subsection*{۶-۲) \lr{KMeans Elbow}}
-\begin{itemize}
-    \item \lr{K} منتخب: 4
-    \item \lr{WCSS(K=1)}: 84795.2093
-    \item \lr{WCSS(K=10)}: 41890.2375
-\end{itemize}
+\FASubsection{Q15: کالیبراسیون و سیاست آستانه}
+\lr{Brier}: \textbf{\MetricQFifteenBrier}، \lr{ECE}: \textbf{\MetricQFifteenEce}، آستانه بهینه \lr{F1}: \textbf{\MetricQFifteenBestFOneThreshold}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.74\linewidth]{../figures/q5_kmeans_elbow.png}
-\caption{تشخیص نقطه آرنج برای انتخاب تعداد خوشه‌ها.}
+\includegraphics[width=0.86\linewidth]{../figures/q15_calibration_curve.png}
+\caption{منحنی قابلیت اطمینان کالیبراسیون احتمال.}
 \end{figure}
-
-\section*{۷) کپستون تبیین‌پذیری با \lr{SHAP}}
-\subsection*{۷-۱) خروجی محلی نمونه}
-\begin{itemize}
-    \item \lr{Candidate index}: 13530
-    \item \lr{Predicted probability}: 0.5086
-    \item \lr{base\_value}: 0.5000
-    \item \lr{output\_value}: 0.5086
-    \item مهم‌ترین ویژگی محلی: \lr{num\_\_Research\_Citations}
-\end{itemize}
+\textbf{تفسیر:} کالیبراسیون نشان می‌دهد احتمال پیش‌بینی‌شده تا چه حد با فراوانی واقعی هم‌راستاست. \\
+\textbf{اثر تصمیمی:} تصمیم‌های حساس با احتمال کالیبره‌شده گرفته می‌شوند، نه امتیاز خام. \\
+\textbf{محدودیت/تهدید:} کالیبراسیون در گذر زمان ممکن است فرسوده شود.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.90\linewidth]{../figures/q6_shap_force_plot.png}
-\caption{توضیح محلی \lr{SHAP} برای داوطلب منتخب.}
+\includegraphics[width=0.90\linewidth]{../figures/q15_threshold_tradeoff.png}
+\caption{مصالحه آستانه بین دقت، بازخوانی، \lr{F1} و هزینه مورد انتظار.}
 \end{figure}
+\textbf{تفسیر:} هر آستانه، توازن متفاوتی بین خطاهای نوع اول/دوم ایجاد می‌کند. \\
+\textbf{اثر تصمیمی:} آستانه نهایی با ماتریس هزینه سیاستی انتخاب می‌شود. \\
+\textbf{محدودیت/تهدید:} مفروضات هزینه ممکن است بین کشور/سازمان متفاوت باشد.
 
-\subsection*{۷-۲) نمای سراسری اهمیت ویژگی‌ها}
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\linewidth]{../figures/q6_shap_summary.png}
-\caption{اهمیت سراسری ویژگی‌ها بر اساس \lr{SHAP}.}
-\end{figure}
-
-\section*{۸) کالیبراسیون و سیاست آستانه (Q15)}
-کالیبراسیون احتمال و انتخاب آستانه برای مدل کپستون:
-\begin{itemize}
-    \item \lr{Brier} و \lr{ECE}: مقادیر به‌روز در \lr{run\_summary.json}.
-    \item دو آستانه گزارش می‌شود: یکی برای بیشینه‌سازی \lr{F1} و دیگری برای کمینه‌سازی هزینه نامتقارن خطا.
-\end{itemize}
+\FASubsection{Q16: پایش درفت}
+ویژگی با بیشترین درفت: \textbf{\MetricQSixteenTopFeature} با \lr{PSI}=\textbf{\MetricQSixteenTopPsi}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\linewidth]{../figures/q15_calibration_curve.png}
-\caption{منحنی کالیبراسیون مدل کپستون.}
+\includegraphics[width=0.90\linewidth]{../figures/q16_drift_psi_top12.png}
+\caption{رتبه‌بندی درفت ویژگی‌ها بر اساس \lr{PSI}.}
 \end{figure}
+\textbf{تفسیر:} بخشی از ویژگی‌ها ناپایداری توزیعی قابل‌توجه دارند. \\
+\textbf{اثر تصمیمی:} آستانه‌های هشدار \lr{PSI} به پایش دوره‌ای و بازآموزی متصل می‌شود. \\
+\textbf{محدودیت/تهدید:} \lr{PSI} تغییر رابطه ویژگی-هدف را مستقیما اندازه نمی‌گیرد.
+
+\FASubsection{Q17: ریکورس مقابله‌ای}
+نرخ موفقیت ریکورس: \textbf{\MetricQSeventeenRecourseRate}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.82\linewidth]{../figures/q15_threshold_tradeoff.png}
-\caption{تجارت آستانه: دقت/بازخوانی/اف۱ و هزینه مورد انتظار.}
+\includegraphics[width=0.78\linewidth]{../figures/q17_recourse_median_deltas.png}
+\caption{میانه تغییر لازم برای عبور از مرز تصمیم در هر ویژگی قابل اقدام.}
 \end{figure}
+\textbf{تفسیر:} هزینه تغییر در ویژگی‌های عملیاتی یکسان نیست و قابل کمی‌سازی است. \\
+\textbf{اثر تصمیمی:} پیشنهاد اقدام به متقاضی بر اساس کم‌هزینه‌ترین مسیر ممکن داده می‌شود. \\
+\textbf{محدودیت/تهدید:} عملی‌بودن ریکورس به محدودیت‌های واقعی خارج از داده وابسته است.
 
-\section*{۹) درفت و پایداری داده (Q16)}
-پایش درفت بین دو پنجره مرجع/جاری با \lr{PSI} و یک شاخص دسته‌ای:
-\begin{itemize}
-    \item قانون تقسیم (زمانی یا تصادفی) و اندازه هر پنجره در \lr{run\_summary.json}.
-    \item رتبه‌بندی \lr{PSI} برای ویژگی‌ها در \lr{code/solutions/q16\_drift\_psi.csv}.
-    \item شاخص \lr{JS divergence} برای توزیع کشور (در صورت وجود).
-\end{itemize}
+\FASubsection{Q18: اعتبارسنجی زمانی و افت عملکرد}
+میانگین \lr{AUC} زمانی: \textbf{\MetricQEighteenMeanAuc}، افت \lr{AUC}: \textbf{\MetricQEighteenAucDecay}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.82\linewidth]{../figures/q16_drift_psi_top12.png}
-\caption{۱۲ ویژگی اول بر اساس \lr{PSI}. خطوط عمودی: ۰.۱۰ (هشدار) و ۰.۲۵ (بحرانی).}
+\includegraphics[width=0.90\linewidth]{../figures/q18_temporal_degradation.png}
+\caption{افت عملکرد در پنجره‌های زمانی غلطان در کنار شاخص درفت.}
 \end{figure}
+\textbf{تفسیر:} عملکرد بین foldهای متوالی تغییر می‌کند و با شدت درفت قابل مقایسه است. \\
+\textbf{اثر تصمیمی:} قبل از استقرار، سنجش زمانی اجباری است و صرف \lr{random split} کافی نیست. \\
+\textbf{محدودیت/تهدید:} در نبود ستون زمانی معتبر، fallback باید صریح گزارش شود.
 
-\section*{۱۰) ریکورس مقابله‌ای (Q17)}
-تحلیل کمینه تغییر لازم برای عبور از آستانه تصمیم برای نمونه‌های نزدیک مرز:
-\begin{itemize}
-    \item نرخ موفقیت ریکورس و میانه تغییر برای ویژگی‌های عملیاتی در \lr{run\_summary.json}.
-    \item جدول نمونه‌ها: \lr{code/solutions/q17\_recourse\_examples.csv}
-\end{itemize}
+\FASubsection{Q19: کمی‌سازی عدم‌قطعیت}
+\lr{Coverage@90}: \textbf{\MetricQNineteenCovNinety}، بیشینه کم‌پوششی: \textbf{\MetricQNineteenMaxUndercoverage}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.72\linewidth]{../figures/q17_recourse_median_deltas.png}
-\caption{میانه مداخله مورد نیاز برای هر ویژگی قابل اقدام.}
+\includegraphics[width=0.90\linewidth]{../figures/q19_coverage_vs_alpha.png}
+\caption{پوشش اسمی در برابر پوشش تجربی و پهنای بازه عدم‌قطعیت.}
 \end{figure}
+\textbf{تفسیر:} بازه‌های conformal توازن بین اطمینان پیش‌بینی و عرض بازه را روشن می‌کنند. \\
+\textbf{اثر تصمیمی:} موارد کم‌اطمینان به مسیر بررسی انسانی ارجاع می‌شوند. \\
+\textbf{محدودیت/تهدید:} تضمین‌های پوشش در صورت جابه‌جایی توزیع تضعیف می‌شوند.
 
-\section*{۱۱) عدالت، اخلاق و حاکمیت}
-خروجی تحلیل زیرگروهی بر اساس کشور در فایل زیر ثبت شده است:
-\begin{center}
-\lr{code/solutions/q6\_fairness\_country\_rates.csv}
-\end{center}
+\FASubsection{Q20: مداخله عدالت الگوریتمی}
+شکاف \lr{DP} پایه: \textbf{\MetricQTwentyDpGapBase}، شکاف \lr{DP} پس از مداخله: \textbf{\MetricQTwentyDpGapMitigated}، نتیجه قید سیاستی: \textbf{\MetricQTwentyPolicyPass}.
 
-سیاست پیشنهادی استقرار:
-\begin{itemize}
-    \item استفاده تصمیم‌یار (نه تصمیم‌گیر خودکار نهایی).
-    \item بازبینی انسانی برای موارد اثرگذار.
-    \item پایش دوره‌ای \lr{data drift}، \lr{label drift} و تغییرات سیاستی.
-\end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.84\linewidth]{../figures/q20_fairness_tradeoff.png}
+\caption{مصالحه عدالت-عملکرد از مدل پایه تا مدل مداخله‌شده.}
+\end{figure}
+\textbf{تفسیر:} بازوزن‌دهی، نقطه عملکردی مدل را روی صفحه عدالت-کارایی جابه‌جا می‌کند. \\
+\textbf{اثر تصمیمی:} استقرار منوط به عبور هم‌زمان از قید افت عملکرد و بهبود عدالت است. \\
+\textbf{محدودیت/تهدید:} بهبود یک معیار عدالت ممکن است برای زیرگروه‌های ریزتر کافی نباشد.
 
-\section*{۱۲) بازتولیدپذیری و کیفیت مهندسی}
-\begin{itemize}
-    \item اجرای کامل پایپ‌لاین: \lr{make run}
-    \item اجرای آزمون‌ها: \lr{make test}
-    \item بررسی کامپایل پایتون: \lr{make compile}
-    \item ساخت گزارش: \lr{make report}
-    \item ساخت نسخه‌های فارسی \LaTeX: \lr{make latex-fa} و \lr{make report-fa}
-\end{itemize}
+\FASection{بازتولیدپذیری و خروجی‌ها}
+اجرای کامل با دستور زیر انجام می‌شود:\\
+\lr{python code/scripts/full\_solution\_pipeline.py --profile \{fast,balanced,heavy\}}\\
+خروجی‌ها در \lr{code/solutions} و \lr{code/figures} ذخیره می‌شوند، شامل \lr{run\_summary.json} نسخه ۲، خروجی‌های \lr{Q18-Q20} و فایل‌های \lr{latex\_metrics} برای گزارش خودکار.
 
-\section*{۱۳) محدودیت‌ها}
-\begin{itemize}
-    \item داده همه محرک‌های اجتماعی/ژئوپولیتیکی مهاجرت را پوشش نمی‌دهد.
-    \item \lr{SHAP} تبیین توصیفی ارائه می‌دهد و جایگزین استنتاج علّی نیست.
-    \item نتایج کپستون به در دسترس بودن کتابخانه \lr{xgboost} وابسته است.
-\end{itemize}
-
-\section*{۱۴) کارهای آینده}
-\begin{enumerate}
-    \item افزودن اعتبارسنجی زمانی و تحلیل پایداری بین‌سال.
-    \item پیاده‌سازی کالیبراسیون احتمال و سیاست آستانه تصمیم.
-    \item توسعه تحلیل عدالت با معیارهای حساس به آستانه.
-    \item گسترش عامل \lr{LLM} با نرده‌های ایمنی و راستی‌آزمایی شواهد.
-\end{enumerate}
-
-\section*{نتیجه‌گیری}
-این بسته پروژه، تمام ابعاد کلیدی یک تحویل حرفه‌ای دانشگاهی را پوشش می‌دهد: تعریف مسئله، مهندسی داده، مدل‌سازی، ارزیابی، تبیین‌پذیری، عدالت، و مستندسازی بازتولیدپذیر. نسخه فارسی این گزارش برای ارائه رسمی و داوری آموزشی آماده است.
+\FASection{جمع‌بندی}
+پروژه در این نسخه به یک بسته حرفه‌ای کپستون تبدیل شده است: پیچیدگی علمی، استاندارد مهندسی، و قابلیت داوری آموزشی را به‌صورت یکپارچه و قابل بازتولید پوشش می‌دهد.
 
 \end{document}
