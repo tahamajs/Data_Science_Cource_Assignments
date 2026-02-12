@@ -143,6 +143,50 @@ Expected:
 - human-in-the-loop and override policy
 - monitoring and incident response expectations
 
+## Q15. Calibration and Threshold Policy (New)
+
+Required analysis:
+- calibration curve and reliability interpretation
+- Brier score and/or expected calibration error (ECE)
+- two threshold policies:
+  - threshold maximizing F1
+  - threshold minimizing asymmetric expected cost (e.g., FN cost > FP cost)
+
+Recommended conclusion format:
+- report both thresholds,
+- explain why the operational threshold should follow cost structure rather than default 0.5.
+
+## Q16. Drift Detection and Monitoring (New)
+
+Required analysis:
+- split data into reference/current windows (time-based when available)
+- compute PSI for numeric features and rank them
+- compute one categorical drift signal (e.g., JS divergence)
+- define monitoring trigger policy
+
+PSI interpretation guideline:
+- PSI < 0.10: low drift
+- 0.10 <= PSI < 0.25: moderate drift
+- PSI >= 0.25: high drift / investigate + retraining decision
+
+## Q17. Counterfactual Recourse (New)
+
+Required analysis:
+- select actionable features
+- for near-threshold negative predictions, estimate minimum feature change to cross threshold
+- summarize:
+  - recourse success rate
+  - median required intervention by feature
+  - practical/ethical constraints of intervention
+
+High-quality answer must explicitly acknowledge that some features are not truly actionable in real policy settings.
+
+## Block J (Bonus): Advanced Extensions
+- Causal DAG with identifiability discussion and adjustment sets.
+- Conformal/uncertainty intervals with empirical coverage.
+- Temporal validation vs random split with degradation analysis.
+- Online/streaming serving design with freshness, SLA, OOD/drift guardrail, and rollback.
+
 ## Capstone Integrated Requirements
 
 A complete capstone submission must provide:

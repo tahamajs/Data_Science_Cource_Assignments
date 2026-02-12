@@ -8,7 +8,14 @@ This script generates:
 - SVM gamma + decision tree pruning diagnostics for Q4
 - PCA + KMeans elbow analysis for Q5
 - capstone model + SHAP local explanation for Q6
-- a consolidated markdown answer key aligned with Q1-Q6
+- Q15 calibration + threshold policy analysis
+- Q16 drift diagnostics with PSI summaries
+- Q17 counterfactual recourse analysis
+- Q18 temporal backtesting with rolling validation and degradation analysis
+- Q19 uncertainty quantification via split conformal intervals
+- Q20 fairness mitigation pre/post policy evaluation
+- a consolidated markdown answer key aligned with Q1-Q6 plus Q15-Q17 extension
+- run summary schema v2 + LaTeX-ready metrics exports
 """
 
 from __future__ import annotations
@@ -29,15 +36,28 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.calibration import calibration_curve
 from sklearn.cluster import KMeans
 from sklearn.compose import ColumnTransformer
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    brier_score_loss,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+
+from q18_temporal import run_q18_temporal_backtesting
+from q19_uncertainty import run_q19_uncertainty_quantification
+from q20_fairness_mitigation import run_q20_fairness_mitigation
+from report_metrics_export import METRIC_EXPORT_VERSION, export_metrics_files
 
 TARGET = "Migration_Status"
 LEAKAGE_FEATURES = ["Visa_Approval_Date"]
@@ -46,6 +66,43 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = PROJECT_ROOT / "data" / "GlobalTechTalent_50k.csv"
 DEFAULT_FIGURES_DIR = PROJECT_ROOT / "figures"
 DEFAULT_SOLUTIONS_DIR = PROJECT_ROOT / "solutions"
+RUN_SUMMARY_VERSION = 2
+
+PROFILE_CONFIGS = {
+    "fast": {
+        "q4_sample_size": 1200,
+        "q4_max_alpha_points": 22,
+        "q4_gamma_grid": [0.005, 0.03, 0.2],
+        "q5_cluster_sample": 6000,
+        "q5_k_max": 8,
+        "q6_sample_size": 12000,
+        "q15_sample_size": 12000,
+        "q17_sample_size": 9000,
+        "q17_max_candidates": 80,
+    },
+    "balanced": {
+        "q4_sample_size": 1800,
+        "q4_max_alpha_points": 35,
+        "q4_gamma_grid": [0.005, 0.02, 0.08, 0.3],
+        "q5_cluster_sample": 12000,
+        "q5_k_max": 10,
+        "q6_sample_size": 20000,
+        "q15_sample_size": 22000,
+        "q17_sample_size": 16000,
+        "q17_max_candidates": 120,
+    },
+    "heavy": {
+        "q4_sample_size": 2600,
+        "q4_max_alpha_points": 50,
+        "q4_gamma_grid": [0.002, 0.005, 0.02, 0.08, 0.2, 0.5],
+        "q5_cluster_sample": 20000,
+        "q5_k_max": 14,
+        "q6_sample_size": 32000,
+        "q15_sample_size": 32000,
+        "q17_sample_size": 26000,
+        "q17_max_candidates": 200,
+    },
+}
 
 try:
     import shap
@@ -117,6 +174,31 @@ def build_preprocessor(X: pd.DataFrame) -> Tuple[ColumnTransformer, List[str], L
         ]
     )
     return pre, categorical, numeric
+
+
+def build_capstone_model() -> Tuple[str, object]:
+    if XGB_AVAILABLE:
+        model_name = "XGBoost"
+        model = xgb.XGBClassifier(
+            n_estimators=220,
+            max_depth=5,
+            learning_rate=0.05,
+            subsample=0.9,
+            colsample_bytree=0.9,
+            random_state=RANDOM_STATE,
+            n_jobs=4,
+            eval_metric="logloss",
+        )
+    else:
+        model_name = "RandomForest (XGBoost fallback)"
+        model = RandomForestClassifier(
+            n_estimators=120,
+            max_depth=10,
+            random_state=RANDOM_STATE,
+            n_jobs=4,
+            class_weight="balanced_subsample",
+        )
+    return model_name, model
 
 
 def write_q1_sql(out_path: Path) -> str:
@@ -263,9 +345,15 @@ def plot_ravine_paths(paths: Dict[str, np.ndarray], out_path: Path) -> Dict[str,
     return final_losses
 
 
-def run_q4_svm_and_pruning(df: pd.DataFrame, figures_dir: Path) -> Dict[str, float]:
+def run_q4_svm_and_pruning(
+    df: pd.DataFrame,
+    figures_dir: Path,
+    sample_size: int = 1800,
+    gamma_grid: List[float] | None = None,
+    max_alpha_points: int = 35,
+) -> Dict[str, float]:
     # Numeric-only subset keeps the non-linear comparison computationally manageable.
-    sample = df.sample(n=min(1800, len(df)), random_state=RANDOM_STATE).copy()
+    sample = df.sample(n=min(sample_size, len(df)), random_state=RANDOM_STATE).copy()
     y = sample[TARGET].astype(int)
     numeric_cols = sample.select_dtypes(include=[np.number]).columns.tolist()
     numeric_cols = [c for c in numeric_cols if c not in [TARGET, "UserID", "Visa_Approval_Date"]]
@@ -278,7 +366,7 @@ def run_q4_svm_and_pruning(df: pd.DataFrame, figures_dir: Path) -> Dict[str, flo
     X_train_enc = scaler.fit_transform(X_train)
     X_val_enc = scaler.transform(X_val)
 
-    gammas = [0.005, 0.02, 0.08, 0.3]
+    gammas = gamma_grid or [0.005, 0.02, 0.08, 0.3]
     train_scores: List[float] = []
     val_scores: List[float] = []
     support_ratios: List[float] = []
@@ -308,8 +396,8 @@ def run_q4_svm_and_pruning(df: pd.DataFrame, figures_dir: Path) -> Dict[str, flo
     path = tree_base.cost_complexity_pruning_path(X_train_enc, y_train)
     raw_alphas = path.ccp_alphas
 
-    if len(raw_alphas) > 35:
-        alphas = np.unique(np.quantile(raw_alphas, np.linspace(0, 1, 35)))
+    if len(raw_alphas) > max_alpha_points:
+        alphas = np.unique(np.quantile(raw_alphas, np.linspace(0, 1, max_alpha_points)))
     else:
         alphas = np.unique(raw_alphas)
 
@@ -353,7 +441,12 @@ def run_q4_svm_and_pruning(df: pd.DataFrame, figures_dir: Path) -> Dict[str, flo
     }
 
 
-def run_q5_unsupervised(df: pd.DataFrame, figures_dir: Path) -> Dict[str, float]:
+def run_q5_unsupervised(
+    df: pd.DataFrame,
+    figures_dir: Path,
+    cluster_sample: int = 12000,
+    k_max: int = 10,
+) -> Dict[str, float]:
     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
     drop_cols = [TARGET, "UserID", "Visa_Approval_Date"]
     numeric_cols = [c for c in numeric_cols if c not in drop_cols]
@@ -372,11 +465,11 @@ def run_q5_unsupervised(df: pd.DataFrame, figures_dir: Path) -> Dict[str, float]
     pc12_ratio = pc1_ratio + pc2_ratio
 
     sample_idx = np.random.default_rng(RANDOM_STATE).choice(
-        len(X_scaled), size=min(12000, len(X_scaled)), replace=False
+        len(X_scaled), size=min(cluster_sample, len(X_scaled)), replace=False
     )
     X_cluster = X_scaled[sample_idx]
 
-    ks = np.arange(1, 11)
+    ks = np.arange(1, k_max + 1)
     wcss: List[float] = []
     for k in ks:
         km = KMeans(n_clusters=int(k), random_state=RANDOM_STATE, n_init=10)
@@ -415,7 +508,7 @@ def run_q5_unsupervised(df: pd.DataFrame, figures_dir: Path) -> Dict[str, float]
         "pca_pc1_pc2_ratio": pc12_ratio,
         "kmeans_elbow_k": float(elbow_k),
         "kmeans_wcss_k1": float(wcss[0]),
-        "kmeans_wcss_k10": float(wcss[-1]),
+        "kmeans_wcss_kmax": float(wcss[-1]),
     }
 
 
@@ -647,6 +740,385 @@ def run_q6_capstone(df: pd.DataFrame, figures_dir: Path, solutions_dir: Path) ->
     return {**metrics, **shap_info}
 
 
+def _prepare_model_bundle(df: pd.DataFrame, sample_size: int = 20000) -> Dict[str, object]:
+    work_df = df.sample(n=min(sample_size, len(df)), random_state=RANDOM_STATE).copy()
+    X, y = build_features(work_df, drop_leakage=True)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=RANDOM_STATE, stratify=y
+    )
+
+    pre, _, _ = build_preprocessor(X_train)
+    X_train_enc = pre.fit_transform(X_train)
+    X_test_enc = pre.transform(X_test)
+
+    model_name, model = build_capstone_model()
+    model.fit(X_train_enc, y_train)
+
+    y_prob = model.predict_proba(X_test_enc)[:, 1]
+    y_pred = (y_prob >= 0.5).astype(int)
+
+    return {
+        "model_name": model_name,
+        "model": model,
+        "preprocessor": pre,
+        "X_train": X_train,
+        "X_test": X_test,
+        "y_train": y_train,
+        "y_test": y_test,
+        "y_prob": y_prob,
+        "y_pred": y_pred,
+    }
+
+
+def run_q15_calibration_threshold(df: pd.DataFrame, figures_dir: Path) -> Dict[str, float | str]:
+    bundle = _prepare_model_bundle(df, sample_size=22000)
+    y_test = np.asarray(bundle["y_test"])
+    y_prob = np.asarray(bundle["y_prob"])
+
+    brier = float(brier_score_loss(y_test, y_prob))
+    auc = float(roc_auc_score(y_test, y_prob))
+
+    prob_true, prob_pred = calibration_curve(y_test, y_prob, n_bins=10, strategy="quantile")
+    bin_edges = np.linspace(0.0, 1.0, 11)
+    bin_ids = np.digitize(y_prob, bin_edges, right=True) - 1
+    ece = 0.0
+    n = len(y_prob)
+    for b in range(10):
+        mask = bin_ids == b
+        if not np.any(mask):
+            continue
+        avg_prob = float(np.mean(y_prob[mask]))
+        avg_true = float(np.mean(y_test[mask]))
+        ece += (np.sum(mask) / n) * abs(avg_true - avg_prob)
+
+    thresholds = np.linspace(0.05, 0.95, 19)
+    f1_values: List[float] = []
+    precision_values: List[float] = []
+    recall_values: List[float] = []
+    expected_costs: List[float] = []
+
+    cost_fn = 2.0
+    cost_fp = 1.0
+
+    for t in thresholds:
+        pred = (y_prob >= t).astype(int)
+        f1_values.append(float(f1_score(y_test, pred, zero_division=0)))
+        precision_values.append(float(precision_score(y_test, pred, zero_division=0)))
+        recall_values.append(float(recall_score(y_test, pred, zero_division=0)))
+        fn = int(np.sum((y_test == 1) & (pred == 0)))
+        fp = int(np.sum((y_test == 0) & (pred == 1)))
+        expected_costs.append(float((cost_fn * fn + cost_fp * fp) / len(y_test)))
+
+    best_f1_idx = int(np.argmax(f1_values))
+    best_cost_idx = int(np.argmin(expected_costs))
+
+    calibration_path = figures_dir / "q15_calibration_curve.png"
+    plt.figure(figsize=(7.2, 5.4))
+    plt.plot([0, 1], [0, 1], "--", color="gray", label="Perfect calibration")
+    plt.plot(prob_pred, prob_true, marker="o", color="#1f77b4", label="Model")
+    plt.xlabel("Mean predicted probability")
+    plt.ylabel("Observed positive rate")
+    plt.title("Q15A: Calibration Curve")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(calibration_path, dpi=220)
+    plt.close()
+
+    threshold_path = figures_dir / "q15_threshold_tradeoff.png"
+    fig, ax1 = plt.subplots(figsize=(8.4, 5.2))
+    ax1.plot(thresholds, f1_values, label="F1", color="#1f77b4")
+    ax1.plot(thresholds, precision_values, label="Precision", color="#2ca02c")
+    ax1.plot(thresholds, recall_values, label="Recall", color="#ff7f0e")
+    ax1.set_xlabel("Decision threshold")
+    ax1.set_ylabel("Score")
+    ax1.axvline(float(thresholds[best_f1_idx]), linestyle="--", color="#1f77b4", alpha=0.6)
+
+    ax2 = ax1.twinx()
+    ax2.plot(thresholds, expected_costs, label="Expected cost", color="#d62728", linewidth=2)
+    ax2.set_ylabel("Expected cost per sample")
+    ax2.axvline(float(thresholds[best_cost_idx]), linestyle="--", color="#d62728", alpha=0.6)
+
+    lines_1, labels_1 = ax1.get_legend_handles_labels()
+    lines_2, labels_2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc="upper center", ncol=2)
+    plt.title("Q15B: Threshold Policy Tradeoff")
+    plt.tight_layout()
+    plt.savefig(threshold_path, dpi=220)
+    plt.close()
+
+    return {
+        "model_name": str(bundle["model_name"]),
+        "roc_auc": auc,
+        "brier_score": brier,
+        "expected_calibration_error": float(ece),
+        "best_f1_threshold": float(thresholds[best_f1_idx]),
+        "best_f1": float(f1_values[best_f1_idx]),
+        "best_cost_threshold": float(thresholds[best_cost_idx]),
+        "minimum_expected_cost": float(expected_costs[best_cost_idx]),
+        "calibration_plot_path": _rel(calibration_path),
+        "threshold_plot_path": _rel(threshold_path),
+    }
+
+
+def _compute_psi(reference: pd.Series, current: pd.Series, bins: int = 10) -> float:
+    ref = pd.Series(reference).dropna().astype(float)
+    cur = pd.Series(current).dropna().astype(float)
+    if ref.empty or cur.empty:
+        return float("nan")
+
+    quantiles = np.linspace(0.0, 1.0, bins + 1)
+    edges = np.unique(np.quantile(ref, quantiles))
+    if len(edges) < 3:
+        lo = float(min(ref.min(), cur.min()))
+        hi = float(max(ref.max(), cur.max()))
+        if lo == hi:
+            return 0.0
+        edges = np.linspace(lo, hi, bins + 1)
+
+    ref_hist, _ = np.histogram(ref, bins=edges)
+    cur_hist, _ = np.histogram(cur, bins=edges)
+    if ref_hist.sum() == 0 or cur_hist.sum() == 0:
+        return float("nan")
+
+    ref_pct = ref_hist / ref_hist.sum()
+    cur_pct = cur_hist / cur_hist.sum()
+    eps = 1e-6
+    ref_pct = np.clip(ref_pct, eps, None)
+    cur_pct = np.clip(cur_pct, eps, None)
+    return float(np.sum((cur_pct - ref_pct) * np.log(cur_pct / ref_pct)))
+
+
+def _js_divergence(p: np.ndarray, q: np.ndarray) -> float:
+    eps = 1e-12
+    p = np.clip(p, eps, None)
+    q = np.clip(q, eps, None)
+    p = p / p.sum()
+    q = q / q.sum()
+    m = 0.5 * (p + q)
+    kl_pm = np.sum(p * np.log(p / m))
+    kl_qm = np.sum(q * np.log(q / m))
+    return float(0.5 * (kl_pm + kl_qm))
+
+
+def run_q16_drift_monitoring(df: pd.DataFrame, figures_dir: Path, solutions_dir: Path) -> Dict[str, float | str]:
+    if "Year" in df.columns and df["Year"].nunique(dropna=True) > 1:
+        median_year = float(df["Year"].median())
+        reference = df[df["Year"] <= median_year].copy()
+        current = df[df["Year"] > median_year].copy()
+        split_rule = f"year <= {median_year:.1f} vs year > {median_year:.1f}"
+    else:
+        shuffled = df.sample(frac=1.0, random_state=RANDOM_STATE)
+        split = len(shuffled) // 2
+        reference = shuffled.iloc[:split].copy()
+        current = shuffled.iloc[split:].copy()
+        split_rule = "random half split"
+
+    if len(reference) < 400 or len(current) < 400:
+        shuffled = df.sample(frac=1.0, random_state=RANDOM_STATE)
+        split = len(shuffled) // 2
+        reference = shuffled.iloc[:split].copy()
+        current = shuffled.iloc[split:].copy()
+        split_rule = "random half split (fallback)"
+
+    numeric_cols = reference.select_dtypes(include=[np.number]).columns.tolist()
+    numeric_cols = [c for c in numeric_cols if c not in [TARGET, "UserID"]]
+
+    psi_rows = []
+    for col in numeric_cols:
+        psi = _compute_psi(reference[col], current[col], bins=10)
+        psi_rows.append({"feature": col, "psi": psi})
+
+    psi_df = pd.DataFrame(psi_rows).sort_values("psi", ascending=False)
+    psi_path = solutions_dir / "q16_drift_psi.csv"
+    psi_df.to_csv(psi_path, index=False)
+
+    top_plot = psi_df.head(12).copy()
+    drift_plot_path = figures_dir / "q16_drift_psi_top12.png"
+    plt.figure(figsize=(9, 5.2))
+    plt.barh(top_plot["feature"], top_plot["psi"], color="#1f77b4")
+    plt.axvline(0.10, color="#ff7f0e", linestyle="--", linewidth=1, label="Moderate drift (0.10)")
+    plt.axvline(0.25, color="#d62728", linestyle="--", linewidth=1, label="High drift (0.25)")
+    plt.gca().invert_yaxis()
+    plt.xlabel("Population Stability Index (PSI)")
+    plt.ylabel("Feature")
+    plt.title("Q16: Feature Drift Ranking")
+    plt.legend(loc="lower right")
+    plt.tight_layout()
+    plt.savefig(drift_plot_path, dpi=220)
+    plt.close()
+
+    js_country = float("nan")
+    if "Country_Origin" in reference.columns:
+        ref_dist = reference["Country_Origin"].value_counts(normalize=True)
+        cur_dist = current["Country_Origin"].value_counts(normalize=True)
+        keys = sorted(set(ref_dist.index) | set(cur_dist.index))
+        p = np.array([float(ref_dist.get(k, 0.0)) for k in keys], dtype=float)
+        q = np.array([float(cur_dist.get(k, 0.0)) for k in keys], dtype=float)
+        js_country = _js_divergence(p, q)
+
+    valid_psi = psi_df["psi"].dropna()
+    high_drift = int((valid_psi >= 0.25).sum())
+    moderate_drift = int(((valid_psi >= 0.10) & (valid_psi < 0.25)).sum())
+
+    top_feature = ""
+    top_psi = float("nan")
+    if not psi_df.empty:
+        top_feature = str(psi_df.iloc[0]["feature"])
+        top_psi = float(psi_df.iloc[0]["psi"])
+
+    return {
+        "split_rule": split_rule,
+        "reference_size": float(len(reference)),
+        "current_size": float(len(current)),
+        "top_drift_feature": top_feature,
+        "top_drift_psi": top_psi,
+        "high_drift_feature_count": float(high_drift),
+        "moderate_drift_feature_count": float(moderate_drift),
+        "country_js_divergence": js_country,
+        "drift_table_path": _rel(psi_path),
+        "drift_plot_path": _rel(drift_plot_path),
+    }
+
+
+def _predict_row_probability(model, preprocessor, row_df: pd.DataFrame) -> float:
+    transformed = preprocessor.transform(row_df)
+    return float(model.predict_proba(transformed)[:, 1][0])
+
+
+def run_q17_recourse_analysis(df: pd.DataFrame, figures_dir: Path, solutions_dir: Path) -> Dict[str, float | str]:
+    bundle = _prepare_model_bundle(df, sample_size=16000)
+    model = bundle["model"]
+    pre = bundle["preprocessor"]
+    X_train = bundle["X_train"]
+    X_test = bundle["X_test"]
+    y_prob = np.asarray(bundle["y_prob"])
+
+    decision_threshold = 0.5
+    near_boundary = np.where((y_prob < decision_threshold) & (y_prob >= 0.25))[0]
+    if len(near_boundary) == 0:
+        near_boundary = np.where(y_prob < decision_threshold)[0]
+    near_boundary = near_boundary[np.argsort(y_prob[near_boundary])[::-1]]
+    candidate_positions = near_boundary[:120]
+
+    feature_deltas: Dict[str, np.ndarray] = {}
+    if "GitHub_Activity" in X_test.columns:
+        feature_deltas["GitHub_Activity"] = np.arange(2.0, 42.0, 2.0)
+    if "Research_Citations" in X_test.columns:
+        feature_deltas["Research_Citations"] = np.arange(50.0, 2050.0, 50.0)
+    if "Industry_Experience" in X_test.columns:
+        feature_deltas["Industry_Experience"] = np.arange(0.5, 10.5, 0.5)
+
+    feature_caps = {
+        c: float(X_train[c].quantile(0.995)) if np.issubdtype(X_train[c].dtype, np.number) else float("nan")
+        for c in X_train.columns
+        if c in feature_deltas
+    }
+    feature_scales = {
+        c: float(X_train[c].std()) if np.issubdtype(X_train[c].dtype, np.number) else 1.0
+        for c in X_train.columns
+        if c in feature_deltas
+    }
+
+    recourse_rows = []
+    for pos in candidate_positions:
+        row = X_test.iloc[[pos]].copy()
+        base_prob = float(y_prob[pos])
+        row_index = row.index[0]
+        best_record = None
+
+        for feature, deltas in feature_deltas.items():
+            if feature not in row.columns:
+                continue
+            base_value = row.iloc[0][feature]
+            if pd.isna(base_value):
+                continue
+
+            for delta in deltas:
+                trial_value = float(base_value) + float(delta)
+                if feature in feature_caps and not math.isnan(feature_caps[feature]):
+                    trial_value = min(trial_value, feature_caps[feature])
+                if trial_value <= float(base_value):
+                    continue
+
+                trial_row = row.copy()
+                trial_row.iloc[0, trial_row.columns.get_loc(feature)] = trial_value
+                trial_prob = _predict_row_probability(model, pre, trial_row)
+                if trial_prob >= decision_threshold:
+                    actual_delta = float(trial_value - float(base_value))
+                    scale = feature_scales.get(feature, 1.0)
+                    normalized_delta = actual_delta / (scale + 1e-6)
+                    candidate = {
+                        "candidate_index": int(row_index),
+                        "base_probability": base_prob,
+                        "best_feature": feature,
+                        "required_delta": actual_delta,
+                        "new_probability": float(trial_prob),
+                        "normalized_delta": float(normalized_delta),
+                    }
+                    if best_record is None or candidate["normalized_delta"] < best_record["normalized_delta"]:
+                        best_record = candidate
+                    break
+
+        if best_record is not None:
+            recourse_rows.append(best_record)
+
+    recourse_df = pd.DataFrame(recourse_rows)
+    recourse_path = solutions_dir / "q17_recourse_examples.csv"
+    if recourse_df.empty:
+        recourse_df = pd.DataFrame(
+            columns=[
+                "candidate_index",
+                "base_probability",
+                "best_feature",
+                "required_delta",
+                "new_probability",
+                "normalized_delta",
+            ]
+        )
+    recourse_df.to_csv(recourse_path, index=False)
+
+    recourse_plot_path = figures_dir / "q17_recourse_median_deltas.png"
+    plt.figure(figsize=(7.6, 4.8))
+    if recourse_df.empty:
+        plt.text(0.5, 0.5, "No feasible recourse found", ha="center", va="center", fontsize=12)
+        plt.axis("off")
+    else:
+        medians = recourse_df.groupby("best_feature")["required_delta"].median().sort_values(ascending=False)
+        plt.bar(medians.index, medians.values, color=["#1f77b4", "#2ca02c", "#ff7f0e"][: len(medians)])
+        plt.ylabel("Median required change")
+        plt.xlabel("Actionable feature")
+        plt.title("Q17: Median Recourse Effort by Feature")
+        plt.xticks(rotation=15)
+    plt.tight_layout()
+    plt.savefig(recourse_plot_path, dpi=220)
+    plt.close()
+
+    considered = int(len(candidate_positions))
+    successful = int(len(recourse_df))
+    success_rate = float(successful / considered) if considered > 0 else 0.0
+
+    summary: Dict[str, float | str] = {
+        "model_name": str(bundle["model_name"]),
+        "decision_threshold": float(decision_threshold),
+        "candidates_considered": float(considered),
+        "successful_recourse_count": float(successful),
+        "recourse_success_rate": success_rate,
+        "recourse_examples_path": _rel(recourse_path),
+        "recourse_plot_path": _rel(recourse_plot_path),
+    }
+
+    default_features = ["GitHub_Activity", "Research_Citations", "Industry_Experience"]
+    for feature in default_features:
+        key = f"median_required_delta_{feature}"
+        if feature not in feature_deltas or recourse_df.empty:
+            summary[key] = float("nan")
+        else:
+            subset = recourse_df.loc[recourse_df["best_feature"] == feature, "required_delta"]
+            summary[key] = float(subset.median()) if not subset.empty else float("nan")
+
+    return summary
+
+
 def write_solution_markdown(
     out_path: Path,
     q1_diag: Dict[str, float],
@@ -654,6 +1126,9 @@ def write_solution_markdown(
     q4_info: Dict[str, float],
     q5_info: Dict[str, float],
     q6_info: Dict[str, float | str],
+    q15_info: Dict[str, float | str],
+    q16_info: Dict[str, float | str],
+    q17_info: Dict[str, float | str],
 ) -> None:
     q1_corr = q1_diag.get("visa_presence_corr_with_target", float("nan"))
     q1_yes = q1_diag.get("target_rate_if_visa_present", float("nan"))
@@ -800,6 +1275,62 @@ Artifacts:
 - Global SHAP summary plot: `{q6_info['summary_plot_path']}`
 - Country fairness slice: `{q6_info.get('fairness_path', '')}`
 
+## Q15. Calibration and Threshold Policy (New)
+
+Why this matters:
+- A high AUC model can still be poorly calibrated.
+- Decision threshold should be chosen by utility/cost, not only default 0.5.
+
+Run results:
+- Model: **{q15_info['model_name']}**
+- ROC-AUC: **{q15_info['roc_auc']:.3f}**
+- Brier score: **{q15_info['brier_score']:.4f}**
+- Expected calibration error: **{q15_info['expected_calibration_error']:.4f}**
+- Best threshold by F1: **{q15_info['best_f1_threshold']:.2f}** (F1={q15_info['best_f1']:.3f})
+- Best threshold by expected cost: **{q15_info['best_cost_threshold']:.2f}**
+- Minimum expected cost per sample: **{q15_info['minimum_expected_cost']:.4f}**
+
+Artifacts:
+- Calibration curve: `{q15_info['calibration_plot_path']}`
+- Threshold tradeoff plot: `{q15_info['threshold_plot_path']}`
+
+## Q16. Drift Monitoring and Data Stability (New)
+
+Drift diagnostics use PSI (Population Stability Index) across reference/current windows.
+
+Run results:
+- Split rule: **{q16_info['split_rule']}**
+- Reference size: **{q16_info['reference_size']:.0f}**
+- Current size: **{q16_info['current_size']:.0f}**
+- Top drift feature: **{q16_info['top_drift_feature']}**
+- Top drift PSI: **{q16_info['top_drift_psi']:.4f}**
+- High-drift features (PSI >= 0.25): **{q16_info['high_drift_feature_count']:.0f}**
+- Moderate-drift features (0.10 <= PSI < 0.25): **{q16_info['moderate_drift_feature_count']:.0f}**
+- Country distribution JS divergence: **{q16_info['country_js_divergence']:.4f}**
+
+Artifacts:
+- Drift table: `{q16_info['drift_table_path']}`
+- Drift plot: `{q16_info['drift_plot_path']}`
+
+## Q17. Counterfactual Recourse Analysis (New)
+
+Question addressed:
+- For near-boundary non-migrant predictions, what is the minimum actionable change needed to flip decision to migration-positive?
+
+Run results:
+- Model: **{q17_info['model_name']}**
+- Decision threshold: **{q17_info['decision_threshold']:.2f}**
+- Candidates considered: **{q17_info['candidates_considered']:.0f}**
+- Successful recourse count: **{q17_info['successful_recourse_count']:.0f}**
+- Recourse success rate: **{q17_info['recourse_success_rate']:.3f}**
+- Median delta (GitHub\_Activity): **{q17_info['median_required_delta_GitHub_Activity']:.3f}**
+- Median delta (Research\_Citations): **{q17_info['median_required_delta_Research_Citations']:.3f}**
+- Median delta (Industry\_Experience): **{q17_info['median_required_delta_Industry_Experience']:.3f}**
+
+Artifacts:
+- Recourse examples table: `{q17_info['recourse_examples_path']}`
+- Recourse effort plot: `{q17_info['recourse_plot_path']}`
+
 ## Fairness note for grading discussion
 Even with strong predictive metrics, model decisions can mirror historical policy constraints. Country-level predicted positive rates should be audited against domain knowledge before any deployment.
 """
@@ -831,9 +1362,24 @@ def run_all(data_path: Path, figures_dir: Path, solutions_dir: Path) -> Dict[str
     # Q6
     q6_info = run_q6_capstone(df, figures_dir, solutions_dir)
 
+    # Q15-Q17 (extended add-on)
+    q15_info = run_q15_calibration_threshold(df, figures_dir)
+    q16_info = run_q16_drift_monitoring(df, figures_dir, solutions_dir)
+    q17_info = run_q17_recourse_analysis(df, figures_dir, solutions_dir)
+
     # Full answer key
     answer_key_path = solutions_dir / "complete_solution_key.md"
-    write_solution_markdown(answer_key_path, q1_diag, q3_info, q4_info, q5_info, q6_info)
+    write_solution_markdown(
+        answer_key_path,
+        q1_diag,
+        q3_info,
+        q4_info,
+        q5_info,
+        q6_info,
+        q15_info,
+        q16_info,
+        q17_info,
+    )
 
     summary = {
         "data_path": _rel(data_path),
@@ -846,6 +1392,9 @@ def run_all(data_path: Path, figures_dir: Path, solutions_dir: Path) -> Dict[str
         "q4": q4_info,
         "q5": q5_info,
         "q6": q6_info,
+        "q15": q15_info,
+        "q16": q16_info,
+        "q17": q17_info,
         "xgboost_available": XGB_AVAILABLE,
         "shap_available": SHAP_AVAILABLE,
         "xgboost_import_error": XGB_IMPORT_ERROR,
