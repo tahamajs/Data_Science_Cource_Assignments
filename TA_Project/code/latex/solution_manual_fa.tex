@@ -237,6 +237,41 @@ R_\alpha(T)=R(T)+\alpha|T|
     \item طراحی مسیر \lr{human override} و بازبینی پرونده.
 \end{itemize}
 
+\section*{Q15) کالیبراسیون و سیاست آستانه}
+\textbf{موارد لازم:}
+\begin{itemize}
+    \item منحنی کالیبراسیون و تفسیر شکاف با خط ایده‌آل.
+    \item یک یا دو معیار کالیبراسیون (مثلاً \lr{Brier} و \lr{ECE}).
+    \item دو آستانه:
+    \begin{enumerate}
+        \item آستانه بهینه برای بیشینه کردن \lr{F1}.
+        \item آستانه بهینه بر اساس هزینه نامتقارن خطا (هزینه \lr{FN} > \lr{FP}).
+    \end{enumerate}
+    \item توصیه نهایی باید بر مبنای هزینه/کاربرد باشد، نه پیش‌فرض ۰٫۵.
+\end{itemize}
+
+\section*{Q16) تشخیص درفت و پایش}
+\textbf{موارد لازم:}
+\begin{itemize}
+    \item تقسیم داده به پنجره مرجع/جاری (ترجیحاً زمانی؛ در نبود زمان، تقسیم تصادفی).
+    \item محاسبه و رتبه‌بندی \lr{PSI} برای ویژگی‌های عددی؛ سیاست تفسیر:
+    \begin{itemize}
+        \item \lr{PSI} $<$ 0.10: پایین
+        \item 0.10--0.25: متوسط
+        \item $\ge$ 0.25: بالا (بررسی و اقدام)
+    \end{itemize}
+    \item یک شاخص درفت برای دسته‌ای‌ها (مثلاً \lr{JS divergence} توزیع کشور).
+    \item پیشنهاد \lr{SOP} پایش: آستانه هشدار/بحرانی و محرک بازآموزی.
+\end{itemize}
+
+\section*{Q17) ریکورس مقابله‌ای}
+\textbf{موارد لازم:}
+\begin{itemize}
+    \item تعریف ویژگی‌های قابل مداخله (مثلاً \lr{GitHub\_Activity}، \lr{Research\_Citations}، \lr{Industry\_Experience}).
+    \item جست‌وجوی کمینه تغییر برای عبور از آستانه تصمیم، با سقف‌های واقع‌گرایانه.
+    \item گزارش نرخ موفقیت ریکورس، میانه تغییر برای هر ویژگی، و بحث امکان/اخلاق.
+\end{itemize}
+
 \section*{Capstone) تبیین‌پذیری \lr{SHAP}}
 \textbf{مفاهیم کلیدی:}
 \begin{itemize}

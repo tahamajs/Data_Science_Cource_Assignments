@@ -35,7 +35,7 @@
 
 \textbf{Required submission artifacts:}
 \begin{enumerate}
-    \item One reproducible notebook with clear sectioning (Q1--Q14 + Capstone).
+    \item One reproducible notebook with clear sectioning (Q1--Q17 + Capstone).
     \item One PDF report (max 20 pages excluding appendix).
     \item One code package with scripts/modules and dependency file.
     \item One presentation deck (10--15 slides).
@@ -65,8 +65,11 @@ E & Unsupervised learning + dimensionality reduction & 20 \\
 F & Deep learning + NLP + LMs/LLM agents & 30 \\
 G & Ethics, fairness, robustness, governance & 15 \\
 H & Integrated capstone implementation + communication & 25 \\
+I & Production reliability extension (calibration, drift, recourse) & 30 \\
+J (Bonus) & Advanced research/production extensions (optional) & +20 \\
 \midrule
-Total &  & 200 \\
+Total (A--I) &  & 230 \\
+Optional bonus &  & +20 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -220,6 +223,66 @@ Deliver a full-stack implementation that includes:
     \item one fairness slice table,
     \item one executive summary for non-technical stakeholders.
 \end{itemize}
+
+\section*{Block I -- Production Reliability Extension (30 points)}
+
+\subsection*{Q15. Calibration and Threshold Policy (10 pts)}
+Using your best supervised model from earlier sections:
+\begin{itemize}
+    \item generate a reliability/calibration curve,
+    \item compute at least one probabilistic calibration metric (e.g., Brier score, ECE),
+    \item derive two threshold policies:
+    \begin{enumerate}
+        \item threshold maximizing F1,
+        \item threshold minimizing an asymmetric cost (e.g., FN cost > FP cost).
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Deliverables:}
+\begin{itemize}
+    \item calibration plot,
+    \item threshold-vs-metric tradeoff plot,
+    \item final threshold recommendation with justification.
+\end{itemize}
+
+\subsection*{Q16. Drift Detection and Monitoring Design (10 pts)}
+Define and execute a drift analysis between two data windows (time-based if possible).
+\begin{itemize}
+    \item compute PSI for numeric features and rank by severity,
+    \item include one categorical drift indicator (e.g., JS divergence over country distribution),
+    \item propose a monitoring policy (warning/critical thresholds and retraining triggers).
+\end{itemize}
+
+\textbf{Deliverables:}
+\begin{itemize}
+    \item drift table (feature, metric, status),
+    \item drift ranking figure,
+    \item concise monitoring SOP for production.
+\end{itemize}
+
+\subsection*{Q17. Counterfactual Recourse Analysis (10 pts)}
+For near-boundary negative predictions, estimate minimal actionable changes needed to flip outcome.
+\begin{itemize}
+    \item choose at least two actionable features (e.g., GitHub activity, citations),
+    \item compute minimal intervention per candidate under realistic caps,
+    \item report recourse success rate and median intervention magnitude by feature.
+\end{itemize}
+
+\textbf{Deliverables:}
+\begin{itemize}
+    \item recourse examples table,
+    \item recourse-effort summary plot,
+    \item discussion of practicality/ethics of suggested interventions.
+\end{itemize}
+
+\section*{Block J -- Advanced Extensions (Bonus +20)}
+Any subset earns partial bonus. Keep results reproducible and justified.
+\begin{enumerate}
+    \item \textbf{Causal framing (5 pts)}: propose a DAG for migration, identify (in)valid adjustment sets, and discuss identifiability limits.
+    \item \textbf{Uncertainty (5 pts)}: add conformal prediction or calibrated prediction intervals with empirical coverage check on the test split.
+    \item \textbf{Temporal robustness (5 pts)}: perform time-based validation (e.g., train on earlier years, test on later) and compare to random split; report drift-aware degradation.
+    \item \textbf{Streaming/online serving (5 pts)}: outline a minimal online inference design (feature freshness, idempotent writes, latency/SLA), plus a guardrail for out-of-distribution detection.
+\end{enumerate}
 
 \section*{3. Academic Integrity and Professional Standards}
 

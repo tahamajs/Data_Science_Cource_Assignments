@@ -172,6 +172,59 @@ DBSCAN robustness to non-spherical clusters and noise points.
     \item mitigation and human override policy.
 \end{itemize}
 
+\section*{Q15. Calibration and Threshold Policy}
+\textbf{Expected answer components:}
+\begin{itemize}
+    \item reliability plot (calibration curve) with interpretation,
+    \item at least one probabilistic calibration metric (Brier score and/or ECE),
+    \item threshold policy from two objectives:
+    \begin{itemize}
+        \item maximize F1,
+        \item minimize asymmetric expected cost.
+    \end{itemize}
+\end{itemize}
+
+\textbf{Grading note:}
+threshold choice must be justified by task costs, not by arbitrary default 0.5.
+
+\section*{Q16. Drift Detection and Monitoring}
+\textbf{Expected answer components:}
+\begin{itemize}
+    \item two-window split design (preferably temporal),
+    \item numeric feature drift ranking via PSI,
+    \item one categorical drift signal (e.g., JS divergence),
+    \item clear trigger policy for warning/critical events.
+\end{itemize}
+
+\textbf{Reference interpretation of PSI:}
+\begin{itemize}
+    \item PSI < 0.10: low drift,
+    \item 0.10--0.25: moderate drift,
+    \item PSI >= 0.25: high drift requiring intervention.
+\end{itemize}
+
+\section*{Q17. Counterfactual Recourse}
+\textbf{Expected answer components:}
+\begin{itemize}
+    \item actionable feature set with practical constraints,
+    \item minimal-change search per candidate near decision boundary,
+    \item recourse success rate and per-feature effort summary,
+    \item discussion of realistic and ethical intervention boundaries.
+\end{itemize}
+
+\textbf{Grading note:}
+penalize unrealistic interventions (e.g., impossible immediate changes) if not explicitly acknowledged.
+
+\section*{Block J (Bonus): Advanced Extensions}
+\textbf{Strong submissions may include:}
+\begin{itemize}
+    \item \textbf{Causal DAG}: clear graph, plausible assumptions, and discussion of (non-)identifiability and adjustment sets.
+    \item \textbf{Uncertainty}: conformal prediction or calibrated intervals with empirical coverage reported on held-out data.
+    \item \textbf{Temporal validation}: chronological split vs random split with degradation analysis.
+    \item \textbf{Online/streaming serving}: feature freshness plan, SLA/latency targets, OOD/drift guardrail, rollback path.
+\end{itemize}
+Partial credit for well-reasoned designs even without full code; no credit for causal claims without addressing assumptions.
+
 \section*{Capstone}
 \textbf{Minimum complete capstone output:}
 \begin{enumerate}

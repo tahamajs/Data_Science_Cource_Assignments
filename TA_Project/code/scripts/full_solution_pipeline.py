@@ -553,8 +553,13 @@ def _extract_binary_shap(
     return vector, base
 
 
-def run_q6_capstone(df: pd.DataFrame, figures_dir: Path, solutions_dir: Path) -> Dict[str, float | str]:
-    work_df = df.sample(n=min(20000, len(df)), random_state=RANDOM_STATE).copy()
+def run_q6_capstone(
+    df: pd.DataFrame,
+    figures_dir: Path,
+    solutions_dir: Path,
+    sample_size: int = 20000,
+) -> Dict[str, float | str]:
+    work_df = df.sample(n=min(sample_size, len(df)), random_state=RANDOM_STATE).copy()
     X, y = build_features(work_df, drop_leakage=True)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=RANDOM_STATE, stratify=y
@@ -770,8 +775,12 @@ def _prepare_model_bundle(df: pd.DataFrame, sample_size: int = 20000) -> Dict[st
     }
 
 
-def run_q15_calibration_threshold(df: pd.DataFrame, figures_dir: Path) -> Dict[str, float | str]:
-    bundle = _prepare_model_bundle(df, sample_size=22000)
+def run_q15_calibration_threshold(
+    df: pd.DataFrame,
+    figures_dir: Path,
+    sample_size: int = 22000,
+) -> Dict[str, float | str]:
+    bundle = _prepare_model_bundle(df, sample_size=sample_size)
     y_test = np.asarray(bundle["y_test"])
     y_prob = np.asarray(bundle["y_prob"])
 
@@ -985,8 +994,14 @@ def _predict_row_probability(model, preprocessor, row_df: pd.DataFrame) -> float
     return float(model.predict_proba(transformed)[:, 1][0])
 
 
-def run_q17_recourse_analysis(df: pd.DataFrame, figures_dir: Path, solutions_dir: Path) -> Dict[str, float | str]:
-    bundle = _prepare_model_bundle(df, sample_size=16000)
+def run_q17_recourse_analysis(
+    df: pd.DataFrame,
+    figures_dir: Path,
+    solutions_dir: Path,
+    sample_size: int = 16000,
+    max_candidates: int = 120,
+) -> Dict[str, float | str]:
+    bundle = _prepare_model_bundle(df, sample_size=sample_size)
     model = bundle["model"]
     pre = bundle["preprocessor"]
     X_train = bundle["X_train"]
@@ -998,7 +1013,7 @@ def run_q17_recourse_analysis(df: pd.DataFrame, figures_dir: Path, solutions_dir
     if len(near_boundary) == 0:
         near_boundary = np.where(y_prob < decision_threshold)[0]
     near_boundary = near_boundary[np.argsort(y_prob[near_boundary])[::-1]]
-    candidate_positions = near_boundary[:120]
+    candidate_positions = near_boundary[:max_candidates]
 
     feature_deltas: Dict[str, np.ndarray] = {}
     if "GitHub_Activity" in X_test.columns:

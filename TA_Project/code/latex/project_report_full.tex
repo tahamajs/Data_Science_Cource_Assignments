@@ -164,7 +164,28 @@ Capstone explanation outputs:
 \caption{Global importance view for the capstone model.}
 \end{figure}
 
-\section*{8. Fairness and Governance}
+\section*{8. Calibration and Threshold Policy (Q15)}
+Calibration analysis for the current capstone model:
+\begin{itemize}
+    \item Brier score, ECE, and best thresholds (F1 vs asymmetric cost) are logged in \texttt{solutions/run\_summary.json}.
+    \item Plots: \texttt{figures/q15\_calibration\_curve.png}, \texttt{figures/q15\_threshold\_tradeoff.png}.
+\end{itemize}
+
+\section*{9. Drift Monitoring (Q16)}
+\begin{itemize}
+    \item PSI drift table: \texttt{solutions/q16\_drift\_psi.csv}
+    \item Top-12 PSI plot: \texttt{figures/q16\_drift\_psi\_top12.png}
+    \item Country JS divergence value is recorded in \texttt{run\_summary.json}.
+\end{itemize}
+
+\section*{10. Counterfactual Recourse (Q17)}
+\begin{itemize}
+    \item Recourse examples: \texttt{solutions/q17\_recourse\_examples.csv}
+    \item Recourse effort summary: \texttt{figures/q17\_recourse\_median\_deltas.png}
+    \item Metrics (success rate, median deltas per actionable feature) are stored in \texttt{run\_summary.json}.
+\end{itemize}
+
+\section*{11. Fairness and Governance}
 Country-level fairness slice output is exported to:
 \url{code/solutions/q6_fairness_country_rates.csv}
 
@@ -176,7 +197,7 @@ Governance policy in this package:
     \item periodic drift and policy-shift monitoring.
 \end{itemize}
 
-\section*{9. Reproducibility and Tooling}
+\section*{12. Reproducibility and Tooling}
 \begin{itemize}
     \item Full run: \texttt{make run}
     \item Tests: \texttt{make test}
@@ -186,7 +207,7 @@ Governance policy in this package:
 
 CI pipeline: \texttt{.github/workflows/ci.yml}
 
-\section*{10. Extended Curriculum Coverage}
+\section*{13. Extended Curriculum Coverage}
 An extended assignment package was added to cover the full UT-ECE Spring 2024/2025 topic range (including dashboards/storytelling, big data framing, deep learning, NLP, and LLM agents):
 \begin{itemize}
     \item \texttt{code/latex/assignment\_extended.tex}
@@ -201,7 +222,7 @@ Coverage mapping references:
     \item \url{https://github.com/DataScience-ECE-UniversityOfTehran/DataScience-Spring2025}
 \end{itemize}
 
-\section*{11. Limitations and Next Steps}
+\section*{14. Limitations and Next Steps}
 \begin{itemize}
     \item The dataset cannot represent all social/geopolitical migration drivers.
     \item Explainability is descriptive and should not be used as causal proof.

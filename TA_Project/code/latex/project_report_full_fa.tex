@@ -25,9 +25,9 @@
 
 \section*{خلاصه اجرایی}
 این گزارش، اجرای \textbf{کامل، بازتولیدپذیر و قابل داوری} پروژه نهایی علم داده را ارائه می‌کند.
-پوشش پروژه شامل مهندسی داده، استنباط آماری، بهینه‌سازی، مدل‌های غیرخطی، یادگیری بدون نظارت، \lr{XAI} با \lr{SHAP}، و تحلیل عدالت است.
+پوشش پروژه شامل مهندسی داده، استنباط آماری، بهینه‌سازی، مدل‌های غیرخطی، یادگیری بدون نظارت، \lr{XAI} با \lr{SHAP}، عدالت، و سه بخش پایش تولید (کالیبراسیون، درفت، ریکورس) است.
 
-\textbf{نتایج اجرای فعلی کپستون (در محیط فعلی):}
+\textbf{نتایج آخرین اجرای کپستون} (از \lr{run\_summary.json}):
 \begin{itemize}
     \item مدل: \lr{RandomForest (XGBoost fallback)}
     \item \lr{Accuracy}: 0.5944
@@ -199,7 +199,53 @@
 \caption{اهمیت سراسری ویژگی‌ها بر اساس \lr{SHAP}.}
 \end{figure}
 
-\section*{۸) عدالت، اخلاق و حاکمیت}
+\section*{۸) کالیبراسیون و سیاست آستانه (Q15)}
+کالیبراسیون احتمال و انتخاب آستانه برای مدل کپستون:
+\begin{itemize}
+    \item \lr{Brier} و \lr{ECE}: مقادیر به‌روز در \lr{run\_summary.json}.
+    \item دو آستانه گزارش می‌شود: یکی برای بیشینه‌سازی \lr{F1} و دیگری برای کمینه‌سازی هزینه نامتقارن خطا.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{../figures/q15_calibration_curve.png}
+\caption{منحنی کالیبراسیون مدل کپستون.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\linewidth]{../figures/q15_threshold_tradeoff.png}
+\caption{تجارت آستانه: دقت/بازخوانی/اف۱ و هزینه مورد انتظار.}
+\end{figure}
+
+\section*{۹) درفت و پایداری داده (Q16)}
+پایش درفت بین دو پنجره مرجع/جاری با \lr{PSI} و یک شاخص دسته‌ای:
+\begin{itemize}
+    \item قانون تقسیم (زمانی یا تصادفی) و اندازه هر پنجره در \lr{run\_summary.json}.
+    \item رتبه‌بندی \lr{PSI} برای ویژگی‌ها در \lr{code/solutions/q16\_drift\_psi.csv}.
+    \item شاخص \lr{JS divergence} برای توزیع کشور (در صورت وجود).
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\linewidth]{../figures/q16_drift_psi_top12.png}
+\caption{۱۲ ویژگی اول بر اساس \lr{PSI}. خطوط عمودی: ۰.۱۰ (هشدار) و ۰.۲۵ (بحرانی).}
+\end{figure}
+
+\section*{۱۰) ریکورس مقابله‌ای (Q17)}
+تحلیل کمینه تغییر لازم برای عبور از آستانه تصمیم برای نمونه‌های نزدیک مرز:
+\begin{itemize}
+    \item نرخ موفقیت ریکورس و میانه تغییر برای ویژگی‌های عملیاتی در \lr{run\_summary.json}.
+    \item جدول نمونه‌ها: \lr{code/solutions/q17\_recourse\_examples.csv}
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\linewidth]{../figures/q17_recourse_median_deltas.png}
+\caption{میانه مداخله مورد نیاز برای هر ویژگی قابل اقدام.}
+\end{figure}
+
+\section*{۱۱) عدالت، اخلاق و حاکمیت}
 خروجی تحلیل زیرگروهی بر اساس کشور در فایل زیر ثبت شده است:
 \begin{center}
 \lr{code/solutions/q6\_fairness\_country\_rates.csv}
@@ -212,7 +258,7 @@
     \item پایش دوره‌ای \lr{data drift}، \lr{label drift} و تغییرات سیاستی.
 \end{itemize}
 
-\section*{۹) بازتولیدپذیری و کیفیت مهندسی}
+\section*{۱۲) بازتولیدپذیری و کیفیت مهندسی}
 \begin{itemize}
     \item اجرای کامل پایپ‌لاین: \lr{make run}
     \item اجرای آزمون‌ها: \lr{make test}
@@ -221,14 +267,14 @@
     \item ساخت نسخه‌های فارسی \LaTeX: \lr{make latex-fa} و \lr{make report-fa}
 \end{itemize}
 
-\section*{۱۰) محدودیت‌ها}
+\section*{۱۳) محدودیت‌ها}
 \begin{itemize}
     \item داده همه محرک‌های اجتماعی/ژئوپولیتیکی مهاجرت را پوشش نمی‌دهد.
     \item \lr{SHAP} تبیین توصیفی ارائه می‌دهد و جایگزین استنتاج علّی نیست.
     \item نتایج کپستون به در دسترس بودن کتابخانه \lr{xgboost} وابسته است.
 \end{itemize}
 
-\section*{۱۱) کارهای آینده}
+\section*{۱۴) کارهای آینده}
 \begin{enumerate}
     \item افزودن اعتبارسنجی زمانی و تحلیل پایداری بین‌سال.
     \item پیاده‌سازی کالیبراسیون احتمال و سیاست آستانه تصمیم.
