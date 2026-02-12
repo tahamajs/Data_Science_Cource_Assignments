@@ -1,18 +1,22 @@
-from kafka import KafkaConsumer
-import json
+"""Stream insight events and print them."""
 
-# Create Kafka consumer
-consumer = KafkaConsumer(
-    'darooghe.insights',
-    bootstrap_servers=['localhost:9092'],
-    auto_offset_reset='earliest',  # or 'latest'
-    enable_auto_commit=True,
-    group_id='insights-consumer-group',
-    value_deserializer=lambda x: json.loads(x.decode('utf-8'))
-)
+from __future__ import annotations
 
-print("Starting to consume from darooghe.insights...")
+import logging
 
-# Poll and print messages
-for message in consumer:
-    print(f"Received: {message.value}")
+from common import build_consumer
+
+
+def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    consumer = build_consumer("darooghe.insights", group_id="insights-consumer-group", timeout_ms=10_000)
+    print("Starting to consume from darooghe.insights...")
+    try:
+        for message in consumer:
+            print(f"Received: {message.value}")
+    finally:
+        consumer.close()
+
+
+if __name__ == "__main__":
+    main()

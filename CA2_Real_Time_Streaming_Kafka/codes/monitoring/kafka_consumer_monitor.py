@@ -1,42 +1,56 @@
-from kafka import KafkaConsumer
-from prometheus_client import start_http_server, Gauge
+"""Expose Kafka consumer lag via Prometheus."""
+
+from __future__ import annotations
+
 import json
+import os
 import time
 
-# Create a Prometheus Gauge
-consumer_lag_gauge = Gauge('kafka_consumer_lag', 'Kafka Consumer Lag for darooghe.commission_ratio')
+from kafka import KafkaConsumer
+from prometheus_client import Gauge, start_http_server
 
-# Start Prometheus metrics server
-start_http_server(7071)  # Exposes metrics at http://localhost:7071
 
-# Create Kafka consumer
-consumer = KafkaConsumer(
-    'darooghe.commission_ratio',
-    bootstrap_servers='localhost:9092',
-    auto_offset_reset='earliest',
-    enable_auto_commit=True,
-    group_id='monitoring-group',  # Important: Set group_id to track committed offsets
-    value_deserializer=lambda x: json.loads(x.decode('utf-8'))
-)
+def build_consumer(topic: str, bootstrap: str) -> KafkaConsumer:
+    consumer = KafkaConsumer(
+        topic,
+        bootstrap_servers=bootstrap,
+        auto_offset_reset=os.getenv("KAFKA_OFFSET_RESET", "earliest"),
+        enable_auto_commit=True,
+        group_id=os.getenv("MONITOR_GROUP_ID", "monitoring-group"),
+        value_deserializer=lambda x: json.loads(x.decode("utf-8")),
+    )
+    consumer.poll(timeout_ms=1000)  # ensure assignment
+    return consumer
 
-print("Kafka consumer started. Exposing lag metrics...")
 
-# Assign topic partitions manually
-consumer.poll(timeout_ms=1000)  # Poll to join group and get assignments
-
-def get_consumer_lag(consumer):
+def get_consumer_lag(consumer: KafkaConsumer, gauge: Gauge) -> None:
     for tp in consumer.assignment():
         committed = consumer.committed(tp)
         end_offset = consumer.end_offsets([tp])[tp]
         if committed is not None and end_offset is not None:
             lag = end_offset - committed
-            consumer_lag_gauge.set(lag)
+            gauge.set(lag)
 
-# Infinite loop
-try:
-    while True:
-        get_consumer_lag(consumer)
-        time.sleep(5)  # Update every 5 seconds
-except KeyboardInterrupt:
-    consumer.close()
-    print("Consumer closed.")
+
+def main() -> None:
+    topic = os.getenv("MONITOR_TOPIC", "darooghe.commission_ratio")
+    bootstrap = os.getenv("KAFKA_BROKER", "localhost:9092")
+    gauge = Gauge("kafka_consumer_lag", f"Kafka Consumer Lag for {topic}")
+
+    start_http_server(int(os.getenv("PROM_PORT", 7071)))
+    print("Prometheus metrics on :%s" % os.getenv("PROM_PORT", 7071))
+
+    consumer = build_consumer(topic, bootstrap)
+    print(f"Kafka consumer started for {topic}. Exposing lag metrics...")
+
+    try:
+        while True:
+            get_consumer_lag(consumer, gauge)
+            time.sleep(5)
+    except KeyboardInterrupt:
+        consumer.close()
+        print("Consumer closed.")
+
+
+if __name__ == "__main__":
+    main()

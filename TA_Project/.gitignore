@@ -23,3 +23,11 @@ code/.venv/
 build/
 dist/
 *.egg-info/
+
+# LaTeX build artifacts
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.toc

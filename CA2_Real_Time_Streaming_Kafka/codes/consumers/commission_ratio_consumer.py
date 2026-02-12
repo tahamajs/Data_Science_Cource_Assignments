@@ -1,47 +1,20 @@
-# from kafka import KafkaConsumer
-# import json
+"""Consume commission_ratio aggregates and preview them."""
 
-# consumer = KafkaConsumer(
-#     'darooghe.commission_ratio',
-#     bootstrap_servers='localhost:9092',
-#     value_deserializer=lambda x: json.loads(x.decode('utf-8')),
-#     auto_offset_reset='latest',
-#     enable_auto_commit=True
-# )
+from __future__ import annotations
 
-# print("Listening to darooghe.commission_ratio...")
-# for message in consumer:
-#     print(message.value)
-from kafka import KafkaConsumer
-import json
-import pandas as pd
+import logging
 
-consumer = KafkaConsumer(
-    'darooghe.commission_ratio',
-    bootstrap_servers='localhost:9092',
-    auto_offset_reset='earliest',
-    enable_auto_commit=True,
-    value_deserializer=lambda x: json.loads(x.decode('utf-8')),
-    consumer_timeout_ms=5000  # timeout after 5 seconds if no new messages
-)
+from common import consume_to_dataframe
 
-print("Starting to consume from darooghe.commission_ratio...")
 
-data = []
+def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    df = consume_to_dataframe("darooghe.commission_ratio", limit=1000)
+    if df.empty:
+        return
+    print(df.head())
+    print(df.count())
 
-for message in consumer:
-    record = message.value  # Already a dictionary
-    data.append(record)
-    
-    if len(data) >= 1000:  # read only first 1000 messages
-        break
 
-# Create DataFrame
-df = pd.DataFrame(data)
-
-# Show first few rows
-print(df.head())
-print(df.count())
-
-# Optional: Save it
-# df.to_csv("commission_ratio.csv", index=False)
+if __name__ == "__main__":
+    main()

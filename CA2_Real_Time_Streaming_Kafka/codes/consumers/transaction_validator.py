@@ -1,9 +1,13 @@
-from confluent_kafka import Consumer, Producer
+from __future__ import annotations
+
 import json
-from datetime import datetime, timedelta, timezone
-from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
+import logging
 import os
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional
+
+from confluent_kafka import Consumer, Producer
 
 
 @dataclass
@@ -38,23 +42,31 @@ class Transaction:
 class TransactionValidatorConsumer:
     VALID_OS = ["iOS", "Android"]
 
-    def __init__(self, topic="darooghe.transactions", error_topic="darooghe.error_logs", display_one=False):
+    def __init__(
+        self,
+        topic: str = "darooghe.transactions",
+        error_topic: str = "darooghe.error_logs",
+        display_one: bool = False,
+        broker: str = None,
+    ):
         self.topic = topic
         self.error_topic = error_topic
         self.display_one = display_one
 
-        self.consumer = Consumer({
-            'bootstrap.servers': 'localhost:9092',
-            'group.id': 'darooghe-validator',
-            'auto.offset.reset': 'earliest'
-        })
+        self.consumer = Consumer(
+            {
+                "bootstrap.servers": broker or os.getenv("KAFKA_BROKER", "localhost:9092"),
+                "group.id": os.getenv("VALIDATOR_GROUP_ID", "darooghe-validator"),
+                "auto.offset.reset": os.getenv("KAFKA_OFFSET_RESET", "earliest"),
+            }
+        )
 
-        self.producer = Producer({
-            'bootstrap.servers': 'localhost:9092'
-        })
+        self.producer = Producer(
+            {"bootstrap.servers": broker or os.getenv("KAFKA_BROKER", "localhost:9092")}
+        )
 
     def start(self):
-        print(f"👀 Subscribed to: {self.topic}")
+        logging.info("Subscribed to: %s", self.topic)
         self.consumer.subscribe([self.topic])
         try:
             while True:
@@ -62,7 +74,7 @@ class TransactionValidatorConsumer:
                 if msg is None:
                     continue
                 if msg.error():
-                    print(f"⚠️ Consumer error: {msg.error()}")
+                    logging.warning("Consumer error: %s", msg.error())
                     continue
 
                 self.process_message(msg.value())
@@ -70,7 +82,7 @@ class TransactionValidatorConsumer:
                 if self.display_one:
                     break
         except KeyboardInterrupt:
-            print("🛑 Stopped by user.")
+            logging.info("Stopped by user.")
         finally:
             self.consumer.close()
 
@@ -84,15 +96,19 @@ class TransactionValidatorConsumer:
             errors = self.validate(transaction)
             if errors:
                 self.write_errors(transaction.transaction_id, errors)
-                print(f"❌ Invalid transaction: {transaction.transaction_id} - {[e['error_code'] for e in errors]}")
+                logging.warning(
+                    "Invalid transaction %s: %s",
+                    transaction.transaction_id,
+                    [e["error_code"] for e in errors],
+                )
             else:
-                print(f"✅ Valid transaction: {transaction.transaction_id}")
+                logging.info("Valid transaction: %s", transaction.transaction_id)
                 # Save valid transaction to file
                 self.save_to_file(raw_tx)
 
             self.producer.flush()
-        except Exception as e:
-            print(f"🚨 Error processing message: {e}")
+        except Exception as e:  # noqa: BLE001
+            logging.exception("Error processing message: %s", e)
 
     def validate(self, transaction: Transaction) -> List[Dict[str, Any]]:
         errors = []
@@ -141,9 +157,10 @@ class TransactionValidatorConsumer:
             )
 
     def save_to_file(self, transaction_data: Dict[str, Any], file_path: str = "transactions.jsonl"):
-        with open(file_path, "a") as f:
+        with open(file_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(transaction_data) + "\n")
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     consumer = TransactionValidatorConsumer(display_one=False)  # Set to True for one-message preview
     consumer.start()

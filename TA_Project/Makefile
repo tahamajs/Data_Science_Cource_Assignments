@@ -21,11 +21,7 @@ baseline:
 	MPLCONFIGDIR=/tmp/mpl LOKY_MAX_CPU_COUNT=4 $(PYTHON) $(CODE_DIR)/scripts/train_and_explain.py
 
 notebook-check:
-	$(PYTHON) - <<'PY'
-import nbformat
-nb = nbformat.read('code/notebooks/Solution_Notebook.ipynb', as_version=4)
-print('Notebook cells:', len(nb.cells))
-PY
+	$(PYTHON) -c "import nbformat; nb=nbformat.read('code/notebooks/Solution_Notebook.ipynb', as_version=4); print('Notebook cells:', len(nb.cells))"
 
 compile:
 	$(PYTHON) -m py_compile $(CODE_DIR)/scripts/full_solution_pipeline.py $(CODE_DIR)/scripts/train_and_explain.py $(CODE_DIR)/scripts/generate_synthetic_data.py
