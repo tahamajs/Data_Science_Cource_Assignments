@@ -1,0 +1,70 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\geometry{margin=1in}
+
+\title{University of Tehran \\ Department of Electrical and Computer Engineering \\ \textbf{Data Science - Final Assignment}}
+\author{Lead Teaching Assistant Team}
+\date{Spring 2025}
+
+\begin{document}
+\maketitle
+
+\begin{tcolorbox}
+\textbf{Analyzing Global Tech Talent Migration}: You are provided with a dataset of 50,000 tech professionals. The goal is to predict \texttt{Migration\_Status} (1 if they migrated to another country for work, 0 otherwise). Features include \texttt{GitHub\_Activity}, \texttt{Research\_Citations}, \texttt{Industry\_Experience}, and categorical data such as \texttt{Education\_Level}.
+\end{tcolorbox}
+
+\section{Question 1: Advanced Data Engineering \& SQL}
+\subsection*{Part A: Time-Series Trends via Window Functions}
+Write a single SQL query to compute the 3-year moving average of \texttt{Research\_Citations} for each user, partitioned by \texttt{Country\_Origin}, and rank users inside each country by this moving average.
+
+\subsection*{Part B: Diagnostic Identification of Data Leakage}
+Given proposed features below, identify which would introduce leakage and justify your answer:
+\begin{itemize}
+    \item \texttt{Years\_Since\_Degree}
+    \item \texttt{Visa\_Approval\_Date}
+    \item \texttt{Last\_Login\_Region}
+    \item \texttt{Passport\_Renewal\_Status}
+\end{itemize}
+
+\section{Question 2: Statistical Inference \& Linear Models}
+\subsection*{Part A: Elastic Net Derivation}
+Given
+\[
+J(\theta)=\frac{1}{2m}\sum_{i=1}^{m}\left(h_\theta(x^{(i)})-y^{(i)}\right)^2+\lambda_1\sum_{j=1}^{n}|\theta_j|+\frac{\lambda_2}{2}\sum_{j=1}^{n}\theta_j^2,
+\]
+derive $\nabla J(\theta)$ with respect to $\theta_j$, and explain subgradient behavior at $\theta_j=0$.
+
+\subsection*{Part B: Interpreting Regression Outputs}
+For \texttt{GitHub\_Activity}:
+\begin{itemize}
+    \item Coefficient: 0.52
+    \item P-value: 0.003
+    \item 95\% CI: [0.18, 0.86]
+\end{itemize}
+State whether it is statistically significant under $H_0: \beta=0$ and interpret both p-value and CI.
+
+\section{Question 3: Optimization \& Gradient Descent}
+Explain the ravine phenomenon and compare Momentum vs Adam for optimization in this geometry.
+
+\section{Question 4: Non-Linear Models \& Kernels}
+\subsection*{Part A: SVM RBF Parameterization}
+If RBF-SVM overfits, how should $\gamma$ be adjusted and why?
+
+\subsection*{Part B: Cost-Complexity Pruning}
+Given $R_\alpha(T)=R(T)+\alpha|T|$, explain how $\alpha$ controls pruning and bias-variance behavior.
+
+\section{Question 5: Unsupervised Learning}
+\subsection*{Part A: PCA Explained Variance}
+For a $3\times3$ covariance matrix, show how to compute explained variance ratios for PC1 and PC2 and interpret eigenvalues.
+
+\subsection*{Part B: K-Means Elbow Method}
+Give a mathematical/geometric argument for why WCSS elbow is a useful heuristic for choosing $K$.
+
+\section{Question 6: Capstone Explainability}
+Using SHAP for an XGBoost model, explain the difference between \texttt{base\_value} and \texttt{output\_value} for a high-citation candidate predicted as \texttt{No Migration}.
+
+\end{document}

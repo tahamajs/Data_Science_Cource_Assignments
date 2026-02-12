@@ -1,676 +1,239 @@
-# Data Science Course - University of Tehran
+# Data Science Course – University of Tehran (Complete Repository)
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.8%E2%80%933.12-blue.svg)](https://www.python.org/)
 [![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-orange.svg)](https://jupyter.org/)
+[![Docker](https://img.shields.io/badge/Docker-ready-0db7ed.svg)](https://www.docker.com/)
+[![Kafka](https://img.shields.io/badge/Apache-Kafka-black.svg)](https://kafka.apache.org/)
 [![License](https://img.shields.io/badge/License-Academic-green.svg)]()
 
-This repository contains all coursework, projects, and materials for the Data Science course at the University of Tehran. The course covers comprehensive topics from statistical foundations to advanced machine learning and deep learning techniques.
+A single, end-to-end home for every assignment, notebook, lecture slide, resource pack, and capstone project delivered in the University of Tehran Data Science course. This README is intentionally exhaustive so new contributors, students, and reviewers can find exactly what they need without hunting through folders.
 
-## 📋 Table of Contents
+---
 
-- [Overview](#overview)
-- [Repository Structure](#repository-structure)
-- [Course Materials](#course-materials)
-- [Projects & Assignments](#projects--assignments)
-  - [CA0: Introduction to Data Science](#ca0-introduction-to-data-science)
-  - [CA1: Statistical Analysis](#ca1-statistical-analysis)
-  - [CA3: Recommender Systems](#ca3-recommender-systems)
-  - [CA4: Advanced Topics](#ca4-advanced-topics)
-  - [CA5&6: Natural Language Processing](#ca56-natural-language-processing)
-  - [Final Project: NYC Taxi Demand Prediction](#final-project-nyc-taxi-demand-prediction)
-- [Technologies & Tools](#technologies--tools)
-- [Installation & Setup](#installation--setup)
-- [Team Members](#team-members)
+## Table of Contents
+- [Quick Overview](#quick-overview)
+- [Repository Layout](#repository-layout)
+- [Environment & Tooling](#environment--tooling)
+- [Setup Guide](#setup-guide)
+- [Working With Notebooks & Data](#working-with-notebooks--data)
+- [Coursework Modules](#coursework-modules)
+  - [CA0 — Statistical Inference & Monte Carlo](#ca0--statistical-inference--monte-carlo)
+  - [CA1 — Data Visualization & Score-Based Sampling](#ca1--data-visualization--score-based-sampling)
+  - [CA2 — Real-Time Streaming with Kafka](#ca2--real-time-streaming-with-kafka)
+  - [CA3 — Advanced ML, Regression & Recommender Systems](#ca3--advanced-ml-regression--recommender-systems)
+  - [CA4 — Deep Learning (MLP, CNN, RNN)](#ca4--deep-learning-mlp-cnn-rnn)
+  - [CA5&6 — NLP & Semi-Supervised Learning](#ca56--nlp--semi-supervised-learning)
+- [Capstone: Uber Demand Prediction](#capstone-uber-demand-prediction)
+- [TA Project (Teaching Assistant Resources)](#ta-project-teaching-assistant-resources)
+- [Lectures, Cheat Sheets & Supplementary Resources](#lectures-cheat-sheets--supplementary-resources)
+- [Coding Standards, Naming & Submission Rules](#coding-standards-naming--submission-rules)
+- [Data & Storage Notes](#data--storage-notes)
+- [Support & Contact](#support--contact)
 - [License](#license)
+- [Last Updated](#last-updated)
 
 ---
 
-## 🎯 Overview
-
-This Data Science course provides a comprehensive journey through:
-
-- **Statistical Foundations**: Probability theory, inference, and hypothesis testing
-- **Data Visualization**: Statistical charts, design principles, and storytelling with data
-- **Machine Learning**: Supervised and unsupervised learning algorithms
-- **Deep Learning**: Neural Networks, CNNs, RNNs, and Transformers
-- **Natural Language Processing**: Language models and text analysis
-- **Real-world Applications**: End-to-end data science projects with CI/CD pipelines
+## Quick Overview
+- **Scope**: 6 core coursework assignments (CA0–CA6), a full production-style capstone, lecture slide deck, Python foundations notebooks, cheat sheets, and a TA-grade reference implementation.
+- **Languages & Tools**: Python 3.8–3.12, Jupyter, scikit-learn, PyTorch/TensorFlow (DL tasks), Apache Kafka (streaming), Docker & Compose (capstone), MySQL (capstone DB), GitHub Actions (CI/CD).
+- **Audience**: Students following the course, instructors/graders, and collaborators who need a single entry point to all artifacts.
 
 ---
 
-## 📁 Repository Structure
+## Repository Layout
+Top-level directories are organized by assignment and resource type:
 
 ```
-DS_UT/
-├── cheetsheet/                 # Quick reference guides and cheat sheets
-│   └── *.pdf                  # Course cheat sheets
-│
-├── Materials/                  # All lecture slides and course materials
-│   ├── Lecture 02-14/         # Complete lecture series
-│   └── Sample Questions       # Final exam preparation
-│
-├── projects/                   # All course assignments and projects
-│   ├── CA0/                   # Assignment 0: Introduction
-│   ├── CA1/                   # Assignment 1: Statistical Analysis
-│   ├── CA3/                   # Assignment 3: Recommender Systems
-│   ├── CA4/                   # Assignment 4: Advanced ML
-│   ├── CA56/                  # Assignment 5&6: NLP
-│   └── phase las/             # Final Project: NYC Taxi Prediction
-│       └── Data_Science_Phase2_Project_CI-CD/
-│
-└── README.md                  # This file
+/Users/tahamajs/Documents/uni/DS
+├── CA0_Statistical_Inference_Monte_Carlo/    # Prob/inference & Monte Carlo simulation
+├── CA1_Data_Visualization_Score_Sampling/    # Visualization & score-based sampling
+├── CA2_Real_Time_Streaming_Kafka/            # Event streaming with Apache Kafka
+├── CA3_Advanced_ML_Regression_RecSys/        # Regression + recommender systems
+├── CA4_Deep_Learning_Neural_Networks/        # MLP, CNN, RNN assignments
+├── CA56_NLP_Semi_Supervised_Learning/        # NLP + semi-supervised text modeling
+├── Data_Science_Final_Project/               # Capstone (phase 2 & 3) + presentation
+├── TA_Project/                               # TA reference solution for migration case study
+├── Python for Data Science Notebooks/        # Intro Python → pandas → matplotlib notebooks
+├── Cheetsheet/                               # PDF quick references
+├── lectures/                                 # Lecture slide PDFs (01–14)
+├── More Resources/                           # Extra material (PowerBI, web scraping, etc.)
+├── LICENSE                                   # Academic license
+└── README.md                                 # You are here
 ```
 
 ---
 
-## 📚 Course Materials
-
-The `Materials/` directory contains comprehensive lecture slides covering:
-
-### Core Topics
-
-1. **Statistical Foundations**
-
-   - Lecture 02: Statistical Charts
-   - Lecture 03: Probability Theory Review
-   - Lecture 04: Foundations for Inference & Visualization Design
-
-2. **Machine Learning Fundamentals**
-
-   - Lecture 05: Linear Regression, Dashboards & Storytelling
-   - Lecture 06: SQL (Parts 1 & 2)
-   - Lecture 07: Data Preprocessing
-   - Lecture 08: Gradient Descent & Logistic Regression
-
-3. **Advanced Machine Learning**
-
-   - Lecture 09-01: Sklearn & Feature Engineering
-   - Lecture 09-02: Logistic Regression (Advanced)
-   - Lecture 09-03: Cross-Validation & Regularization
-   - Lecture 09-04: SVM & KNN
-   - Lecture 09-05: Decision Trees & Random Forests
-
-4. **Deep Learning**
-
-   - Lecture 10: Neural Networks & CNNs
-   - Lecture 11: RNNs & NLP Fundamentals
-   - Lecture 12: Language Models
-
-5. **Advanced Topics**
-   - Lecture 13: Unsupervised Learning
-   - Lecture 14: Data Science Applications
+## Environment & Tooling
+- **Python**: 3.8–3.12 are used across assignments. Prefer 3.10+ for best library support.
+- **Package managers**: `pip` + `venv` (per-assignment requirements files where applicable).
+- **Jupyter**: Run notebooks locally or in VS Code/JupyterLab.
+- **Docker & Docker Compose**: Required for the capstone (`Data_Science_Final_Project/phase3`).
+- **Apache Kafka**: Required for CA2 streaming labs; install locally or run via Docker (not included here).
+- **Databases**: MySQL 8.0 for the capstone; SQLite/lightweight storage for small labs where noted.
+- **Git LFS**: Recommended if you add large models or datasets.
 
 ---
 
-## 🚀 Projects & Assignments
-
-### CA0: Introduction to Data Science
-
-**Location**: `projects/CA0/`
-
-Initial assignment introducing basic data science concepts and Python programming fundamentals.
-
-**Topics Covered**:
-
-- Python basics
-- Data structures
-- Introduction to pandas and numpy
-
----
-
-### CA1: Statistical Analysis
-
-**Location**: `projects/CA1/`
-
-**Team Members**: 810101504, 810101492, 810101520
-
-Statistical analysis project focusing on:
-
-- Exploratory Data Analysis (EDA)
-- Statistical hypothesis testing
-- Data visualization
-- Probability distributions
-
----
-
-### CA3: Recommender Systems
-
-**Location**: `projects/CA3/`
-
-**Description**: Implementation of an ensemble-based movie recommendation system using collaborative filtering.
-
-**Key Features**:
-
-- **Algorithms Implemented**:
-  - SVD (Singular Value Decomposition)
-  - SVD++ (Enhanced SVD)
-  - KNN-Baseline (K-Nearest Neighbors)
-- **Advanced Techniques**:
-  - Grid search hyperparameter tuning
-  - Ensemble learning with bagging
-  - Linear regression blending
-  - Model stacking
-
-**Main File**: `Q3.py`
-
-**Metrics**:
-
-- RMSE (Root Mean Squared Error)
-- MSE (Mean Squared Error)
-- MAE (Mean Absolute Error)
-- R² Score
-
-**Usage**:
-
-```bash
-python Q3.py --data_dir ./dataset/
-```
-
-**Performance Optimization**:
-
-- Cross-validation with 3 folds
-- Parallel processing for grid search
-- Weighted ensemble predictions
-- Rating clipping for boundary constraints
-
----
-
-### CA4: Advanced Topics
-
-**Location**: `projects/CA4/`
-
-Advanced machine learning assignment exploring complex algorithms and techniques.
-
----
-
-### CA5&6: Natural Language Processing
-
-**Location**: `projects/CA56/`
-
-**Description**: Persian Question-Answering system using NLP techniques.
-
-**Contents**:
-
-- `labeled-data.csv`: Training dataset with labeled examples
-- `unlabeled-data.csv`: Test dataset for predictions
-- `PerCQA_JSON_Format.json`: Persian conversational QA format
-- `DS_CA56 (1).ipynb`: Implementation notebook
-
-**Topics**:
-
-- Text preprocessing for Persian language
-- Question answering systems
-- Natural language understanding
-- Model evaluation and validation
-
-**Key Challenges**:
-
-- Persian language processing
-- Context understanding
-- Answer extraction
-
----
-
-### Final Project: NYC Taxi Demand Prediction
-
-**Location**: `projects/phase las/Data_Science_Phase2_Project_CI-CD/`
-
-**Team Members**: 810101504, 810101492, 810101520
-
-A comprehensive end-to-end machine learning project predicting taxi demand in New York City with complete CI/CD pipeline integration.
-
-#### 🎯 Project Objectives
-
-Predict taxi demand patterns based on:
-
-- **Location**: Geographic zones in NYC
-- **Time**: Peak hours and time-based patterns
-- **Weather**: Weather conditions and their impact
-- **Historical Trends**: Past demand patterns
-
-#### 📊 Project Components
-
-**1. Data Pipeline** (`pipeline.py`)
-
-- Automated data loading from multiple sources
-- Data preprocessing and cleaning
-- Feature engineering
-- Performance monitoring and logging
-
-**2. Database** (`database/`)
-
-- MySQL database schema
-- Taxi zone coordinates
-- Weather data integration
-- Efficient data storage and retrieval
-
-**3. Machine Learning Models** (`models/`)
-
-Multiple model configurations optimized for different scenarios:
-
-- **Base Performance Model**
-  - General demand prediction
-  - Comprehensive feature set
-- **Location-Based Model**
-  - Zone-specific demand patterns
-  - Geographic feature engineering
-- **Peak Time Model**
-  - Time-series analysis
-  - Rush hour predictions
-- **Weather-Dependent Model**
-
-  - Weather impact analysis
-  - Conditional demand forecasting
-
-- **Neural Network Model**
-  - Deep learning approach
-  - Non-linear pattern recognition
-
-**Model Files**:
-
-```
-models/
-├── *_best_model.joblib          # Trained models
-├── *_encoder.joblib              # Feature encoders
-├── *_scaler.joblib/.pkl          # Data scalers
-├── model_metadata.json           # Model configurations
-└── model_performance_comparison.json  # Evaluation results
-```
-
-**4. Scripts** (`scripts/`)
-
-Modular Python scripts for:
-
-- `database_connection.py`: Database connectivity
-- `load_data.py`: Data ingestion
-- `preprocess.py`: Data cleaning and transformation
-- `feature_engineering.py`: Feature creation
-- `seed_database.py`: Database initialization
-
-**5. Notebooks**
-
-- `Phase3.ipynb`: Main analysis and model development
-- `Weather_Complete_Report_Final.ipynb`: Weather data analysis
-- `clean.ipynb`: Data cleaning procedures
-- `import.ipynb`: Data import processes
-- `scrapping.ipynb`: Web scraping for additional data
-
-**6. Visualizations** (`visualizations/`, `weather_visualizations/`)
-
-- Demand heatmaps
-- Time-series plots
-- Weather correlation charts
-- Geographic distribution maps
-- Model performance comparisons
-
-**7. SQL Queries** (`Query/`)
-
-- Complex analytical queries
-- Data aggregation scripts
-- Performance optimization queries
-
-#### 🐳 Docker Deployment
-
-Complete containerization setup:
-
-**Files**:
-
-- `Dockerfile`: Container configuration
-- `docker-compose.yml`: Multi-container orchestration
-- `docker-entrypoint.sh`: Initialization script
-
-**Quick Start**:
-
-```bash
-# Build and run
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop containers
-docker-compose down
-```
-
-#### 📦 Dependencies
-
-**Core Libraries** (`requirements.txt`):
-
-```
-pandas              # Data manipulation
-sqlalchemy         # Database ORM
-pymysql            # MySQL connector
-scikit-learn       # Machine learning
-matplotlib         # Plotting
-seaborn            # Statistical visualizations
-numpy              # Numerical computing
-cryptography       # Secure connections
-mysql-connector-python  # MySQL driver
-```
-
-#### 🔄 CI/CD Pipeline
-
-Automated workflow featuring:
-
-- **Continuous Integration**:
-  - Automated testing
-  - Code quality checks
-  - Dependency management
-- **Continuous Deployment**:
-  - Docker image building
-  - Automated deployments
-  - Environment configuration
-
-#### 📈 Model Performance
-
-The project includes comprehensive model evaluation:
-
-- Cross-validation metrics
-- Hold-out test performance
-- Comparison across different approaches
-- Performance visualization
-
-**Evaluation Metrics**:
-
-- Mean Absolute Error (MAE)
-- Root Mean Squared Error (RMSE)
-- R² Score
-- Mean Absolute Percentage Error (MAPE)
-
-#### 🗺️ Data Sources
-
-1. **NYC Taxi Trip Data**
-
-   - Pickup/dropoff locations
-   - Trip timestamps
-   - Trip distances
-
-2. **Weather Data** (Scraped)
-
-   - Temperature
-   - Precipitation
-   - Wind conditions
-   - Visibility
-
-3. **Geographic Data**
-   - Taxi zone boundaries
-   - Zone coordinates
-   - Borough information
-
-#### 🚀 Running the Pipeline
-
-```bash
-# Setup environment
-pip install -r requirements.txt
-
-# Run complete pipeline
-python pipeline.py
-
-# Or run individual steps
-python scripts/load_data.py
-python scripts/preprocess.py
-python scripts/feature_engineering.py
-```
-
-#### 📊 Key Insights
-
-The project demonstrates:
-
-- Weather significantly impacts demand (especially precipitation)
-- Clear peak hours: morning (7-9 AM) and evening (5-7 PM) rushes
-- Geographic patterns: Manhattan shows highest demand
-- Seasonal variations in demand patterns
-- Holiday effects on taxi usage
-
-#### 🎓 Learning Outcomes
-
-This project showcases:
-
-- End-to-end ML pipeline development
-- Real-world data challenges and solutions
-- Model selection and optimization
-- Production-ready code practices
-- Docker containerization
-- CI/CD implementation
-- Database design and management
-- Data visualization best practices
-
----
-
-## 🛠️ Technologies & Tools
-
-### Programming Languages
-
-- **Python 3.8+**: Primary language for data analysis and ML
-
-### Data Science Libraries
-
-- **pandas**: Data manipulation and analysis
-- **NumPy**: Numerical computing
-- **Scikit-learn**: Machine learning algorithms
-- **Surprise**: Recommender systems
-
-### Visualization
-
-- **Matplotlib**: Basic plotting
-- **Seaborn**: Statistical visualizations
-
-### Deep Learning (if applicable)
-
-- **TensorFlow/PyTorch**: Neural networks
-- **Keras**: High-level neural networks API
-
-### Database
-
-- **SQL**: Data querying
-- **MySQL**: Relational database
-- **SQLAlchemy**: Python SQL toolkit
-
-### Development Tools
-
-- **Jupyter Notebook**: Interactive development
-- **Docker**: Containerization
-- **Git**: Version control
-- **GitHub Actions**: CI/CD
-
-### Web Scraping
-
-- **BeautifulSoup/Scrapy**: Data collection
-
----
-
-## 💻 Installation & Setup
-
-### Prerequisites
-
-- Python 3.8 or higher
-- pip package manager
-- Jupyter Notebook
-- Git
-- Docker (for final project)
-
-### Basic Setup
-
-1. **Clone the repository**
-
-```bash
-git clone <repository-url>
-cd DS
-```
-
-2. **Create virtual environment** (recommended)
-
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
+## Setup Guide
+1. **Clone**
+   ```bash
+   git clone <repo-url>
+   cd DS
+   ```
+2. **Create a virtual environment** (recommended per assignment)
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # Windows: .venv\Scripts\activate
+   ```
 3. **Install dependencies**
+   - For foundational notebooks: `pip install pandas numpy matplotlib seaborn scikit-learn jupyter`
+   - For each assignment or phase, check the local `requirements.txt` or the README inside its folder.
+4. **Run notebooks**
+   ```bash
+   jupyter notebook
+   ```
+   Open the relevant `.ipynb` inside the assignment directory.
+5. **Docker-based workflows (capstone)**
+   ```bash
+   cd Data_Science_Final_Project/phase3
+   docker-compose up --build
+   ```
+6. **Kafka workflows (CA2)**
+   - Start a Kafka broker & Zookeeper locally (or via Docker).
+   - Update broker addresses in `CA2_Real_Time_Streaming_Kafka/codes/config/` if needed.
 
-For general coursework:
+---
 
+## Working With Notebooks & Data
+- Keep large datasets in their provided `datasets/` or `data/` subfolders to preserve relative paths used in notebooks.
+- When copying notebooks, also copy companion assets (config files, encoders, scalers, joblib artifacts) that live beside the notebook.
+- Many notebooks assume UTF-8 CSVs; if paths contain spaces, wrap them in quotes when running scripts.
+- For reproducibility, seed-setting is included in most notebooks (`numpy`, `random`, `torch`/`tf` where applicable).
+
+---
+
+## Coursework Modules
+### CA0 — Statistical Inference & Monte Carlo
+**Path**: `CA0_Statistical_Inference_Monte_Carlo/`  
+**Focus**: Law of Large Numbers, Central Limit Theorem, confidence intervals, hypothesis testing, and Monte Carlo simulation.  
+**Key assets**: `codes/notebook.ipynb`, `datasets/2016-general-election-trump-vs-clinton.csv`, `datasets/drug_safety.csv`, `description/CA0.pdf`.  
+**Run**: `cd CA0_Statistical_Inference_Monte_Carlo && jupyter notebook codes/notebook.ipynb`
+
+### CA1 — Data Visualization & Score-Based Sampling
+**Path**: `CA1_Data_Visualization_Score_Sampling/`  
+**Focus**: Score function estimation, unadjusted Langevin dynamics, Gaussian mixture sampling, and Airbnb price/geo analysis.  
+**Key assets**: `code/code.ipynb`, `dataset/Airbnb_Listings.xlsx`, `dataset/Neighborhood_Locations.xlsx`, `description/CA1.pdf`.  
+**Run**: `cd CA1_Data_Visualization_Score_Sampling && jupyter notebook code/code.ipynb`
+
+### CA2 — Real-Time Streaming with Kafka
+**Path**: `CA2_Real_Time_Streaming_Kafka/`  
+**Focus**: Event-driven architecture, Kafka producers/consumers, Poisson-based synthetic transaction generation, monitoring, and storage patterns.  
+**Key assets**: producer/consumer scripts under `codes/`, Poisson generator `base_codes/darooghe_pulse.py`, architecture/report PDFs in `description/` and `report/`.  
+**Run (example)**:
 ```bash
-pip install pandas numpy matplotlib seaborn scikit-learn jupyter
+# Terminal 1: start broker externally
+cd CA2_Real_Time_Streaming_Kafka/codes/producers && python transactions_producer.py
+# Terminal 2: consume/process
+cd CA2_Real_Time_Streaming_Kafka/codes/consumers && python transactions_consumer.py
+```
+Update topic/broker settings in `codes/config/` to match your Kafka instance.
+
+### CA3 — Advanced ML, Regression & Recommender Systems
+**Path**: `CA3_Advanced_ML_Regression_RecSys/`  
+**Focus**: Bike-demand regression with rich feature engineering, collaborative-filtering recommender ensembles (SVD, SVD++, KNN Baseline), and visualization/statistical analysis tasks.  
+**Key assets**: `codes/Q1.zip` (bike sharing), `codes/Q2.py` (movie recommender), `codes/Q3.py` + `codes/visualizations/`, assignment PDFs under `descriptions/`, analytic reports under `reports/`.  
+**Run (recommender)**:
+```bash
+cd CA3_Advanced_ML_Regression_RecSys/codes
+python Q2.py --data_dir ./dataset  # adjust data path if needed
 ```
 
-For CA3 (Recommender Systems):
+### CA4 — Deep Learning (MLP, CNN, RNN)
+**Path**: `CA4_Deep_Learning_Neural_Networks/`  
+**Focus**: Implementing and training MLPs, CNNs, and RNN/LSTM/GRU models; image classification and sequence forecasting; transfer learning and data augmentation.  
+**Key assets**: `codes/Task1/Task1_MLP.ipynb`, `codes/Task2/Task2_CNNs.ipynb`, `codes/Task3/Task3_RNNs.ipynb`, datasets (`datasets/BTC-USD.csv`, `datasets/matches.csv`), `description/DS-CA4.pdf`.  
+**Run**: open notebooks in Jupyter; GPU optional but beneficial for CNN/RNN sections.
 
+### CA5&6 — NLP & Semi-Supervised Learning
+**Path**: `CA56_NLP_Semi_Supervised_Learning/`  
+**Focus**: Text vectorization (SentenceTransformers, Word2Vec), supervised baselines, pseudo-labeling, active learning, and co-training on limited labeled data for game-review score prediction.  
+**Key assets**: `code/` notebooks and scripts, `datasets/` (labeled/unlabeled CSVs, JSON format), `description/` for assignment brief.  
+**Run**: `cd CA56_NLP_Semi_Supervised_Learning && jupyter notebook code/<notebook>.ipynb`
+
+---
+
+## Capstone: Uber Demand Prediction
+**Path**: `Data_Science_Final_Project/`  
+**Phases**:
+- **Phase 2** (`phase2/`): earlier pipeline prototype with `pipeline.py`, `requirements.txt`, and automation scripts (`run.sh`, `Makefile`).
+- **Phase 3** (`phase3/`): production-grade pipeline with Dockerized services, MySQL schema, CI/CD, health checks, and logging.
+
+**Highlights (Phase 3)**
+- Handles 14M+ NYC Uber trip records (2015) with weather and spatial enrichment.
+- Automated ETL → preprocessing → feature engineering → model training/evaluation.
+- Models: Gradient Boosting, Random Forest, XGBoost, Neural Nets; peak-time classification + demand regression.
+- Containers: `docker-compose.yml` spins up app, MySQL, phpMyAdmin, and Jupyter; entrypoint managed by `docker-entrypoint.sh`.
+
+**Quick Start (Phase 3)**
 ```bash
-pip install scikit-surprise
-```
-
-For Final Project:
-
-```bash
-cd projects/phase\ las/Data_Science_Phase2_Project_CI-CD/
+cd Data_Science_Final_Project/phase3
+cp .env.example .env   # adjust DB credentials/ports if needed
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-### Running Jupyter Notebooks
-
-```bash
-jupyter notebook
-```
-
-Navigate to the desired `.ipynb` file and run the cells.
-
-### Docker Setup (Final Project)
-
-```bash
-cd projects/phase\ las/Data_Science_Phase2_Project_CI-CD/
+# Local run
+python pipeline.py
+# Or containerized
 docker-compose up --build
 ```
+Detailed architecture, schema, and task descriptions live in `phase3/README.md` and the presentation deck in `presentation/Project-Presentation.pdf`.
 
 ---
 
-## 👥 Team Members
-
-**Student IDs**:
-
-- 810101504
-- 810101492
-- 810101520
+## TA Project (Teaching Assistant Resources)
+**Path**: `TA_Project/`  
+A fully worked, CI-enabled solution set for the "Global Tech Talent Migration" assessment. Includes implementation, answer keys, LaTeX assets, and automation via `make`. See `TA_Project/README.md` for commands (e.g., `make install`, `make run`) and output locations under `code/solutions/`.
 
 ---
 
-## 📝 Assignment Submission Guidelines
-
-Each assignment follows the naming convention:
-
-```
-DS_CA{NUMBER}_{ID1}_{ID2}_{ID3}.zip
-```
+## Lectures, Cheat Sheets & Supplementary Resources
+- **Lecture slides** (`lectures/`): 14 PDF decks covering the entire course sequence (lifecycle, probability, SQL, ML, DL, applications).
+- **Cheat sheets** (`Cheetsheet/`): Quick-reference PDFs for stats, ML, and tooling.
+- **Python foundations** (`Python for Data Science Notebooks/`): 8 progressive notebooks from data types through NumPy/pandas/Matplotlib.
+- **More Resources/**: Additional material (e.g., PowerBI samples, web scraping examples, extra CA0/CA1 references).
 
 ---
 
-## 🎓 Course Information
-
-**Institution**: University of Tehran  
-**Course**: Data Science  
-**Academic Year**: 2024-2025  
-**Semester**: Fall 2024
-
----
-
-## 📖 Additional Resources
-
-### Cheat Sheets
-
-The `cheetsheet/` directory contains quick reference guides for:
-
-- Python syntax
-- Pandas operations
-- Machine learning algorithms
-- Statistical methods
-
-### Documentation
-
-- Course lecture slides in `Materials/`
-- Project documentation in respective folders
-- Code comments and docstrings
+## Coding Standards, Naming & Submission Rules
+- **Submission naming** (per course policy): `DS_CA{NUMBER}_{ID1}_{ID2}_{ID3}.zip`.
+- **Reproducibility**: Prefer deterministic seeds; document package versions in `requirements.txt` when adding code.
+- **Notebooks**: Keep outputs cleared when committing unless plots/tables are needed for grading.
+- **Data paths**: Use relative paths inside notebooks/scripts so they run from the assignment root.
+- **Style**: PEP 8 for Python; SQL files formatted with uppercase keywords.
 
 ---
 
-## 🔍 Project Highlights
-
-### Key Achievements
-
-1. **Comprehensive Coverage**: From basic statistics to advanced deep learning
-2. **Real-world Applications**: NYC taxi demand prediction with production-ready code
-3. **Best Practices**:
-
-   - Modular code design
-   - Comprehensive documentation
-   - Version control
-   - CI/CD pipelines
-   - Docker containerization
-
-4. **Advanced Techniques**:
-   - Ensemble learning
-   - Feature engineering
-   - Hyperparameter tuning
-   - Model evaluation and selection
-   - Time series analysis
+## Data & Storage Notes
+- Large CSVs and model artifacts are kept within each assignment’s `datasets/`, `data/`, or `models/` folders to avoid cross-coupling.
+- If you add new data, avoid committing files >100MB unless Git LFS is configured.
+- Model binaries (e.g., `*.joblib`, encoders, scalers) for the capstone live in `Data_Science_Final_Project/phase3/models/` (see `model_metadata.json`).
 
 ---
 
-## 🚀 Future Enhancements
-
-Potential improvements and extensions:
-
-- [ ] Real-time prediction API
-- [ ] Interactive dashboard for visualizations
-- [ ] Mobile application integration
-- [ ] Additional data sources integration
-- [ ] Advanced deep learning models
-- [ ] A/B testing framework
-- [ ] Automated model retraining
+## Support & Contact
+- For course-related questions: reach out via University of Tehran channels or the course issue tracker (if enabled).
+- For repository issues or suggestions: open a GitHub issue referencing the relevant assignment folder.
 
 ---
 
-## 📞 Contact & Support
-
-For questions or collaboration opportunities:
-
-- Repository Issues: Use GitHub Issues
-- Team Communication: [Contact through university channels]
+## License
+This repository is distributed for academic purposes under the terms described in `LICENSE`.
 
 ---
 
-## 📄 License
-
-This project is part of academic coursework at the University of Tehran. All rights reserved for educational purposes.
-
----
-
-## 🙏 Acknowledgments
-
-- **Instructors**: University of Tehran Data Science Faculty
-- **Teaching Assistants**: For guidance and support
-- **Open Source Community**: For libraries and tools used in this course
-
----
-
-## 📊 Repository Statistics
-
-- **Total Assignments**: 6 (CA0, CA1, CA3, CA4, CA5&6, Final Project)
-- **Programming Languages**: Python, SQL
-- **Total Notebooks**: 8+
-- **Lecture Materials**: 14 lectures
-- **Team Size**: 3 members
-
----
-
-## 🔄 Last Updated
-
-October 10, 2025
-
----
+## Last Updated
+February 12, 2026
 
 <div align="center">
-
-### ⭐ Star this repository if you found it helpful!
-
-**Made with ❤️ by the DS Team**
-
+  <strong>⭐ If this collection helps you, consider starring the repository.</strong>
 </div>

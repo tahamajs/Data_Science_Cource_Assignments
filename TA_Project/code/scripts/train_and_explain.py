@@ -7,6 +7,8 @@ import argparse
 from pathlib import Path
 import numpy as np
 import pandas as pd
+import os
+import tempfile
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
@@ -15,11 +17,19 @@ from sklearn.metrics import accuracy_score, roc_auc_score, classification_report
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 import shap
+import matplotlib
+
+# Keep matplotlib cache writable in restricted environments.
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "mpl-cache"))
+matplotlib.use("Agg")  # headless backend
 import matplotlib.pyplot as plt
 
 
 LEAKAGE_FEATURES = ["Visa_Approval_Date"]
 TARGET = "Migration_Status"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_DATA_PATH = PROJECT_ROOT / "data" / "GlobalTechTalent_50k.csv"
+DEFAULT_FIG_DIR = PROJECT_ROOT / "figures"
 
 
 def load_data(csv_path: Path) -> pd.DataFrame:
@@ -32,7 +42,7 @@ def load_data(csv_path: Path) -> pd.DataFrame:
 
 
 def build_preprocessor(df: pd.DataFrame):
-    categorical = df.select_dtypes(include=["object", "category"]).columns.tolist()
+    categorical = df.select_dtypes(include=["object", "string", "category"]).columns.tolist()
     if TARGET in categorical:
         categorical.remove(TARGET)
     numeric = [c for c in df.columns if c not in categorical + [TARGET]]
@@ -58,11 +68,10 @@ def fit_models(df: pd.DataFrame, test_size: float = 0.2, random_state: int = 42)
 
     # Logistic Regression with Elastic Net
     log_reg = LogisticRegression(
-        penalty="elasticnet",
+        # Newer sklearn versions infer elastic-net behavior from l1_ratio directly.
         l1_ratio=0.5,
         solver="saga",
         max_iter=2000,
-        n_jobs=-1,
     )
 
     log_pipeline = Pipeline(
@@ -117,40 +126,64 @@ def compute_shap_plot(rf_pipeline: Pipeline, X_test: pd.DataFrame, feature_names
     preprocessor = rf_pipeline.named_steps["preprocess"]
     model = rf_pipeline.named_steps["model"]
 
-    X_test_enc = preprocessor.transform(X_test)
+    # Limit to a manageable subset for SHAP speed
+    subset = X_test.sample(n=min(500, len(X_test)), random_state=0).reset_index(drop=True)
+    subset_enc = preprocessor.transform(subset)
+    if hasattr(subset_enc, "toarray"):
+        subset_enc = subset_enc.toarray()
+    subset_enc = np.asarray(subset_enc, dtype=float)
+
     explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(X_test_enc)
 
-    # predictions to find candidate
-    preds = model.predict(preprocessor.transform(X_test))
-    candidate_idx = pick_candidate(X_test.reset_index(drop=True), preds)
+    preds = model.predict(subset_enc)
+    candidate_idx = pick_candidate(subset, preds)
 
-    # TreeExplainer returns list for classification
+    # Compute SHAP values only for the selected candidate to keep runtime small
+    shap_values = explainer.shap_values(subset_enc[candidate_idx : candidate_idx + 1])
+
     if isinstance(shap_values, list):
-        sv = shap_values[1][candidate_idx]
+        sv = np.asarray(shap_values[1]).reshape(-1)
         base_value = explainer.expected_value[1]
     else:
-        sv = shap_values[candidate_idx]
-        base_value = explainer.expected_value
+        arr = np.asarray(shap_values)
+        if arr.ndim == 3:
+            sv = arr[0, :, -1]
+            base_value = np.asarray(explainer.expected_value).reshape(-1)[-1]
+        elif arr.ndim == 2:
+            sv = arr[0]
+            base_value = np.asarray(explainer.expected_value).reshape(-1)[0]
+        else:
+            sv = arr.reshape(-1)
+            base_value = float(np.asarray(explainer.expected_value).reshape(-1)[0])
 
-    # Build force plot and save as PNG via matplotlib
-    shap.initjs()
-    force = shap.force_plot(base_value, sv, feature_names=feature_names, matplotlib=True, show=False)
-    plt.title("SHAP Force Plot: High-Citation Candidate")
+    contributions = pd.Series(sv, index=feature_names)
+    top = contributions.abs().sort_values(ascending=False).head(15)
+
+    plt.figure(figsize=(8, 6))
+    top.sort_values().plot(
+        kind="barh",
+        color=["#4c72b0" if v < 0 else "#dd8452" for v in top],
+    )
+    plt.axvline(0, color="k", linewidth=0.8)
+    plt.title("Top SHAP Contributions (candidate with high citations)")
+    plt.xlabel("Contribution to log-odds of migration")
+    plt.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(output_path, bbox_inches="tight", dpi=200)
+    plt.savefig(output_path, dpi=200)
     plt.close()
 
     return {
         "candidate_index": int(candidate_idx),
         "force_plot_path": output_path,
+        "base_value": float(base_value),
+        "model_output_log_odds": float(base_value + contributions.sum()),
     }
 
 
 def main():
     parser = argparse.ArgumentParser(description="Train models and generate SHAP explanations.")
-    parser.add_argument("--data", type=Path, default=Path("code/data/GlobalTechTalent_50k.csv"))
-    parser.add_argument("--figdir", type=Path, default=Path("code/figures"))
+    parser.add_argument("--data", type=Path, default=DEFAULT_DATA_PATH)
+    parser.add_argument("--figdir", type=Path, default=DEFAULT_FIG_DIR)
     args = parser.parse_args()
 
     df = load_data(args.data)

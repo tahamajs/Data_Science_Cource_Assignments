@@ -1,0 +1,146 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\geometry{margin=1in}
+
+\title{UT-ECE Data Science Final Assignment \\ Complete Solution Manual}
+\author{Teaching Assistant Team}
+\date{Spring 2025}
+
+\begin{document}
+\maketitle
+
+\section*{Q1. Advanced Data Engineering \& SQL}
+
+\subsection*{Q1A. Window-function solution}
+\begin{verbatim}
+WITH citation_velocity AS (
+    SELECT
+        UserID,
+        Country_Origin,
+        Year,
+        Research_Citations,
+        AVG(Research_Citations) OVER (
+            PARTITION BY Country_Origin
+            ORDER BY Year
+            ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) AS moving_avg_citations
+    FROM Professionals_Data
+)
+SELECT
+    UserID,
+    Country_Origin,
+    Year,
+    Research_Citations,
+    moving_avg_citations,
+    DENSE_RANK() OVER (
+        PARTITION BY Country_Origin
+        ORDER BY moving_avg_citations DESC
+    ) AS country_rank
+FROM citation_velocity;
+\end{verbatim}
+
+\subsection*{Q1B. Leakage diagnosis}
+\textbf{Direct leakage:} \texttt{Visa\_Approval\_Date} (post-outcome variable).
+
+\textbf{Potential temporal leakage:} \texttt{Last\_Login\_Region} and \texttt{Passport\_Renewal\_Status}, if logged after migration decision.
+
+\textbf{Usually safe:} \texttt{Years\_Since\_Degree}, provided degree date is known before inference.
+
+\section*{Q2. Statistical Inference \& Linear Models}
+
+\subsection*{Q2A. Elastic Net gradient}
+Given
+\[
+J(\theta)=\frac{1}{2m}\sum_{i=1}^m\left(h_\theta(x^{(i)})-y^{(i)}\right)^2+\lambda_1\sum_{j=1}^n|\theta_j|+\frac{\lambda_2}{2}\sum_{j=1}^n\theta_j^2,
+\]
+for coordinate $\theta_j$:
+\[
+\nabla_{\theta_j}J(\theta)=\frac{1}{m}\sum_{i=1}^m\left(h_\theta(x^{(i)})-y^{(i)}\right)x_j^{(i)}+\lambda_1\,\partial|\theta_j|+\lambda_2\theta_j.
+\]
+Subgradient of absolute value:
+\[
+\partial|\theta_j|=
+\begin{cases}
++1 & \theta_j>0\\
+-1 & \theta_j<0\\
+[-1,1] & \theta_j=0
+\end{cases}
+\]
+Thus coefficients may remain exactly zero under coordinate-descent optimization.
+
+\subsection*{Q2B. Interpretation}
+With coefficient $0.52$, p-value $0.003$, and 95\% CI $[0.18,0.86]$:
+\begin{itemize}
+    \item p-value $<0.05 \Rightarrow$ reject $H_0: \beta=0$.
+    \item CI excludes zero, confirming statistical significance.
+    \item Entire CI is positive, indicating a positive association with migration propensity.
+\end{itemize}
+
+\section*{Q3. Optimization \& Gradient Descent}
+
+\textbf{Ravine geometry:} one direction has high curvature and another low curvature. Vanilla SGD oscillates in steep direction and advances slowly.
+
+\textbf{Momentum update:}
+\[
+v_t=\beta v_{t-1}+\eta\nabla J(\theta_t),\quad \theta_{t+1}=\theta_t-v_t.
+\]
+Opposing gradients across steep walls cancel over iterations, while consistent shallow-direction gradients accumulate velocity.
+
+\textbf{Adam:}
+\[
+m_t=\beta_1m_{t-1}+(1-\beta_1)g_t,\quad
+s_t=\beta_2s_{t-1}+(1-\beta_2)g_t^2,
+\]
+with bias correction and coordinate-wise scaling. Adam typically handles anisotropic curvature and mixed feature scales better.
+
+\section*{Q4. Non-Linear Models \& Kernels}
+
+\subsection*{Q4A. RBF overfitting control}
+Kernel is $K(x,x')=\exp(-\gamma\|x-x'\|^2)$.
+
+If overfitting occurs, \textbf{decrease $\gamma$}. Larger $\gamma$ means narrow influence radius and highly wiggly boundaries; smaller $\gamma$ broadens influence and smooths decision boundary.
+
+\subsection*{Q4B. Cost-complexity pruning}
+\[
+R_\alpha(T)=R(T)+\alpha|T|.
+\]
+$\alpha$ penalizes leaf count:
+\begin{itemize}
+    \item small $\alpha$: larger trees (low bias, high variance)
+    \item large $\alpha$: smaller trees (higher bias, lower variance)
+\end{itemize}
+Optimal $\alpha$ is selected by validation/CV.
+
+\section*{Q5. Unsupervised Learning}
+
+\subsection*{Q5A. PCA explained variance}
+Given eigenvalues $\lambda_1,\lambda_2,\lambda_3$ of covariance matrix $\Sigma$:
+\[
+\mathrm{EVR}(PC_k)=\frac{\lambda_k}{\lambda_1+\lambda_2+\lambda_3}.
+\]
+Eigenvalue $\lambda_k$ equals variance captured along principal component $k$.
+
+\subsection*{Q5B. Elbow argument for K-Means}
+WCSS decreases monotonically with $K$ because each added centroid can only reduce minimum point-to-centroid squared distance.
+
+The elbow is the approximate point of maximum curvature where marginal gain
+\[
+\Delta_K=\mathrm{WCSS}(K-1)-\mathrm{WCSS}(K)
+\]
+starts diminishing substantially, giving a practical complexity-vs-fit compromise.
+
+\section*{Q6. Capstone Explainability}
+
+For SHAP local explanation:
+\begin{itemize}
+    \item \texttt{base\_value}: expected model output over reference/background data.
+    \item \texttt{output\_value}: model output for a specific candidate.
+\end{itemize}
+Their difference is the sum of per-feature SHAP contributions for that candidate.
+
+If a high-citation candidate is predicted \texttt{No Migration}, positive citation contribution can be outweighed by stronger negative contributions from other features (e.g., region/policy interaction, experience profile).
+
+\end{document}

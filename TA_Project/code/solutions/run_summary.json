@@ -1,0 +1,62 @@
+{
+  "data_path": "data/GlobalTechTalent_50k.csv",
+  "figures_dir": "figures",
+  "solutions_dir": "solutions",
+  "sql_path": "solutions/q1_moving_average.sql",
+  "answer_key_path": "solutions/complete_solution_key.md",
+  "q1_diagnostics": {
+    "visa_presence_corr_with_target": 1.0,
+    "target_rate_if_visa_present": 1.0,
+    "target_rate_if_visa_absent": 0.0,
+    "last_login_matches_origin_rate": 1.0
+  },
+  "q3": {
+    "sgd_final_loss": 0.40332878416046214,
+    "momentum_final_loss": 0.0008228167726981818,
+    "adam_final_loss": 3.4275147484818716e-05
+  },
+  "q4": {
+    "svm_best_gamma": 0.005,
+    "svm_best_val_accuracy": 0.6,
+    "svm_worst_val_accuracy": 0.5911111111111111,
+    "svm_support_ratio_gamma_min": 0.8244444444444444,
+    "svm_support_ratio_gamma_max": 0.8488888888888889,
+    "tree_best_alpha": 0.009639394341313778,
+    "tree_best_val_accuracy": 0.6
+  },
+  "q5": {
+    "pca_pc1_ratio": 0.27746854122099907,
+    "pca_pc2_ratio": 0.14487531867999512,
+    "pca_pc1_pc2_ratio": 0.4223438599009942,
+    "kmeans_elbow_k": 4.0,
+    "kmeans_wcss_k1": 84795.20934385121,
+    "kmeans_wcss_k10": 41890.23751106793
+  },
+  "q6": {
+    "model_name": "XGBoost",
+    "accuracy": 0.5835,
+    "roc_auc": 0.5495109829186658,
+    "f1": 0.24751580849141824,
+    "shap_status": "ok",
+    "base_value": -0.3494208753108978,
+    "output_value": -0.4507247805595398,
+    "output_probability_from_shap": 0.38918845680365577,
+    "shap_output_space": "log_odds",
+    "candidate_prediction_probability": 0.3891884982585907,
+    "candidate_index": 27343.0,
+    "force_plot_path": "figures/q6_shap_force_plot.png",
+    "summary_plot_path": "figures/q6_shap_summary.png",
+    "shap_top_feature": "num__Research_Citations",
+    "fairness_path": "solutions/q6_fairness_country_rates.csv"
+  },
+  "xgboost_available": true,
+  "shap_available": true,
+  "xgboost_import_error": "",
+  "shap_import_error": "",
+  "q1_sql_preview": [
+    "WITH citation_velocity AS (",
+    "    SELECT",
+    "        UserID,",
+    "        Country_Origin,"
+  ]
+}
