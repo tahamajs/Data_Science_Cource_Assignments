@@ -6,7 +6,7 @@ from __future__ import annotations
 import math
 import tempfile
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import Dict, List, Tuple
 
 import os
 
