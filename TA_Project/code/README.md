@@ -134,9 +134,10 @@ make report-fa
 ## Documentation
 
 - `docs/PROJECT_REPORT.md`: full technical report
+- `docs/PROJECT_REPORT_FA.md`: **comprehensive Persian section-by-section technical report**
+- `docs/CODE_AND_FIGURES_GUIDE_FA.md`: **full Persian code walkthrough + figure-by-figure explanation**
 - `docs/ASSIGNMENT_FA.md`: full Persian assignment specification
 - `solutions/SOLUTION_KEY_FA.md`: full Persian answer key
-- `docs/PROJECT_REPORT_FA.md`: full Persian report (markdown)
 - `docs/DATA_DICTIONARY.md`: feature-level schema and leakage notes
 - `docs/REPRODUCIBILITY.md`: exact commands and environment guidance
 - `docs/TOPIC_COVERAGE_FROM_UT_REPOS.md`: mapping from UT public repos to this extended assignment

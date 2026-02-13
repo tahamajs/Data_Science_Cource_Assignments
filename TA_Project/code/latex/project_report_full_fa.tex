@@ -246,6 +246,47 @@
 \lr{python code/scripts/full\_solution\_pipeline.py --profile \{fast,balanced,heavy\}}\\
 خروجی‌ها در \lr{code/solutions} و \lr{code/figures} ذخیره می‌شوند، شامل \lr{run\_summary.json} نسخه ۲، خروجی‌های \lr{Q18-Q20} و فایل‌های \lr{latex\_metrics} برای گزارش خودکار.
 
+\FASection{ضمیمه A: تشریح کدهای پروژه}
+\FASubsection{نقشه ماژول‌ها}
+\lr{full\_solution\_pipeline.py} ارکستریتور مرکزی \lr{Q1-Q20} است و جریان داده، مدل، خروجی و گزارش را یکپارچه می‌کند. \\
+\lr{q18\_temporal.py} اعتبارسنجی زمانی غلطان، افت \lr{AUC/F1} و شاخص درفت را تولید می‌کند. \\
+\lr{q19\_uncertainty.py} بازه‌های \lr{split-conformal} و تحلیل پوشش تجربی را می‌سازد. \\
+\lr{q20\_fairness\_mitigation.py} مقایسه قبل/بعد مداخله عدالت و قید سیاستی استقرار را اجرا می‌کند. \\
+\lr{report\_metrics\_export.py} متریک‌ها را به \lr{JSON/TEX} تبدیل می‌کند تا گزارش‌ها hard-code نباشند. \\
+\lr{generate\_report\_assets.py} شکل‌های گزارش مدیریتی و \lr{report\_stats.json} را بازتولید می‌کند.
+
+\FASubsection{منطق مهندسی}
+پایپ‌لاین با پروفایل‌های \lr{fast/balanced/heavy} کنترل بودجه اجرا را انجام می‌دهد و در هر اجرا:
+ابتدا ویژگی‌های نشت‌زا حذف می‌شوند، سپس خروجی‌های تحلیلی \lr{CSV/PNG} و در انتها \lr{run\_summary.json} نسخه ۲ ساخته می‌شود.
+این طراحی باعث می‌شود ارزیابی علمی، گزارش LaTeX، و تست خودکار همگی روی یک منبع حقیقت یکسان همگام بمانند.
+
+\FASection{ضمیمه B: شناسنامه کامل شکل‌ها}
+\FASubsection{شکل‌های گزارش پایه داده}
+\textbf{\lr{report\_target\_balance.png}}: هدف، بررسی توازن کلاس است. اگر عدم‌توازن زیاد باشد، دقت خام گمراه‌کننده می‌شود و باید از \lr{AUC/F1} استفاده شود. \\
+\textbf{\lr{report\_missingness\_top10.png}}: ستون‌های دارای گمشدگی بالا را نشان می‌دهد و ورودی تصمیم‌های حذف/جایگزینی است. \\
+\textbf{\lr{report\_numeric\_correlation.png}}: هم‌بستگی اولیه ویژگی‌ها با هدف را نمایش می‌دهد و برای اولویت‌بندی تحلیل چندمتغیره استفاده می‌شود. \\
+\textbf{\lr{report\_country\_migration\_rate.png}}: تفاوت نرخ مهاجرت بین کشورها را نشان می‌دهد و ضرورت تحلیل عدالت را تقویت می‌کند.
+
+\FASubsection{شکل‌های مدل‌سازی و یادگیری}
+\textbf{\lr{q3\_ravine\_optimizers.png}}: مقایسه مسیر همگرایی \lr{SGD/Momentum/Adam} روی تابع دره‌ای؛ مبنای انتخاب بهینه‌ساز پایدارتر است. \\
+\textbf{\lr{q4\_svm\_gamma\_sweep.png}}: حساسیت \lr{SVM-RBF} نسبت به \(\gamma\) و کنترل overfit را نشان می‌دهد. \\
+\textbf{\lr{q4\_tree\_pruning\_curve.png}}: اثر \lr{ccp\_alpha} بر tradeoff بایاس-واریانس در درخت تصمیم. \\
+\textbf{\lr{q5\_kmeans\_elbow.png}}: منطق انتخاب \lr{K} بر پایه بازده نزولی کاهش \lr{WCSS}. \\
+\textbf{\lr{q6\_shap\_force\_plot.png}}: تبیین محلی علت پیش‌بینی یک نمونه خاص. \\
+\textbf{\lr{q6\_shap\_summary.png}}: اهمیت سراسری ویژگی‌ها برای حاکمیت داده و کنترل کیفیت.
+
+\FASubsection{شکل‌های بلوک پیشرفته تولیدی}
+\textbf{\lr{q15\_calibration\_curve.png}}: هم‌راستایی احتمال پیش‌بینی با نرخ واقعی رخداد؛ مبنای تصمیم‌های ریسک‌محور. \\
+\textbf{\lr{q15\_threshold\_tradeoff.png}}: مصالحه آستانه بین \lr{Precision/Recall/F1} و هزینه مورد انتظار. \\
+\textbf{\lr{q16\_drift\_psi\_top12.png}}: رتبه‌بندی درفت ویژگی‌ها با \lr{PSI} و تعریف تریگر بازآموزی. \\
+\textbf{\lr{q17\_recourse\_median\_deltas.png}}: میانه تغییر لازم برای recourse در ویژگی‌های قابل اقدام. \\
+\textbf{\lr{q18\_temporal\_degradation.png}}: افت زمانی عملکرد در کنار proxy درفت؛ معیار آمادگی استقرار زمانی. \\
+\textbf{\lr{q19\_coverage\_vs\_alpha.png}}: پوشش اسمی-تجربی و پهنای بازه عدم‌قطعیت؛ مبنای human review برای موارد کم‌اطمینان. \\
+\textbf{\lr{q20\_fairness\_tradeoff.png}}: جابه‌جایی نقطه مدل روی صفحه عدالت-کارایی پس از mitigation و ارزیابی قید سیاستی.
+
+\FASubsection{شکل تکمیلی آموزشی}
+\textbf{\lr{shap\_force\_plot.png}} (legacy): خروجی نسخه baseline آموزشی در \lr{train\_and\_explain.py} است و جایگزین تحلیل کپستون \lr{Q6} نیست.
+
 \FASection{جمع‌بندی}
 پروژه در این نسخه به یک بسته حرفه‌ای کپستون تبدیل شده است: پیچیدگی علمی، استاندارد مهندسی، و قابلیت داوری آموزشی را به‌صورت یکپارچه و قابل بازتولید پوشش می‌دهد.
 
