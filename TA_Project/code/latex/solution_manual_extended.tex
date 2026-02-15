@@ -1,299 +1,723 @@
 \documentclass[11pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
-\usepackage{amsmath,amssymb}
-\usepackage{geometry}
-\usepackage{booktabs}
-\usepackage{enumitem}
-\geometry{margin=1in}
-\setlist[itemize]{leftmargin=1.4em}
-\setlist[enumerate]{leftmargin=1.6em}
 
-\title{UT-ECE Data Science -- Extended Final \\
-\textbf{Comprehensive Solution Manual (TA Edition)}}
-\author{Course Staff}
-\date{Spring 2025}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\geometry{margin=1in}
+\setlist[itemize]{leftmargin=1.5em}
+\setlist[enumerate]{leftmargin=1.7em}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=blue!60!black,
+    urlcolor=blue!60!black
+}
+
+\title{University of Tehran -- ECE Department\\
+\textbf{Data Science Comprehensive Final Assessment (Extended Edition)}\\
+\large Complete Professional Solution Pack}
+\author{Student Name: \underline{\hspace{5cm}} \quad Student ID: \underline{\hspace{3.5cm}}}
+\date{Spring 2025 -- Version 1.0}
 
 \begin{document}
 \maketitle
 
-\section*{Scoring Philosophy}
-Use evidence-based grading: correctness, rigor, reproducibility, and interpretation quality.
-Prefer transparent assumptions and explicit limitations over overconfident claims.
+\begin{tcolorbox}[colback=blue!3,colframe=blue!40!black,title=Submission Note]
+This report is a complete end-to-end solution template for Q1--Q20 + Capstone.
+Replace all placeholders (\texttt{TODO}) with your actual computed values, tables, and figures from the notebook.
+\end{tcolorbox}
 
-\section*{Q1. Lifecycle and Problem Framing}
-\textbf{High-quality answer includes:}
-\begin{itemize}
-    \item clear business target (e.g., early identification of migration propensity),
-    \item operational metric (AUC, recall@k, calibration, fairness constraints),
-    \item lifecycle phases: framing -> collection -> validation -> modeling -> deployment -> monitoring,
-    \item risk register (leakage, drift, policy shift, proxy bias).
-\end{itemize}
+\tableofcontents
+\newpage
 
-\section*{Q2. Python/EDA}
-\textbf{Expected components:}
-\begin{itemize}
-    \item dtype audit, null profile, duplicate checks, range sanity checks,
-    \item at least six meaningful visualizations with non-trivial interpretation,
-    \item modular preprocessing function with unit tests.
-\end{itemize}
+% ============================================================
+\section{Assessment Overview and Reproducibility Protocol}
 
-\section*{Q3. Scientific Studies and Inference}
-\textbf{Key grading points:}
-\begin{itemize}
-    \item distinguishes observational limits from causal claims,
-    \item states assumptions for CI/hypothesis testing,
-    \item interprets p-values and confidence intervals correctly.
-\end{itemize}
+\subsection{Dataset and Target}
+\textbf{Primary dataset:} \texttt{GlobalTechTalent\_50k.csv} (50,000 rows) \\
+\textbf{Target:} \texttt{Migration\_Status} (binary: 0/1)
 
-\textbf{Example framing:}
-\begin{itemize}
-    \item Null: $H_0: \Delta\mu=0$ for migration propensity proxy between cohorts.
-    \item Use two-sample test with variance assumptions checked.
-\end{itemize}
-
-\section*{Q4. Visualization and Storytelling}
-\textbf{Strong solution:}
-\begin{itemize}
-    \item KPI definitions tied to stakeholder decisions,
-    \item perceptual design rationale (position/length over area/color where possible),
-    \item explicit warning about misleading axis truncation or inappropriate color scales.
-\end{itemize}
-
-\section*{Q5. SQL Advanced Querying}
-\textbf{Canonical moving-average query pattern:}
-\begin{verbatim}
-WITH citation_velocity AS (
-  SELECT UserID, Country_Origin, Year, Research_Citations,
-         AVG(Research_Citations) OVER (
-           PARTITION BY Country_Origin
-           ORDER BY Year
-           ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-         ) AS moving_avg_citations
-  FROM Professionals_Data
-)
-SELECT *, DENSE_RANK() OVER (
-  PARTITION BY Country_Origin ORDER BY moving_avg_citations DESC
-) AS country_rank
-FROM citation_velocity;
-\end{verbatim}
-
-\textbf{Additional SQL expectations:}
-\begin{itemize}
-    \item percentile bucketing (e.g., NTILE or percentile window),
-    \item cohort/transition query via CTE.
-\end{itemize}
-
-\section*{Q6. Leakage and Big-Data Architecture}
-\textbf{Leakage decisions:}
-\begin{itemize}
-    \item \texttt{Visa\_Approval\_Date}: direct leakage (post-outcome),
-    \item \texttt{Last\_Login\_Region}: potential temporal leakage,
-    \item \texttt{Passport\_Renewal\_Status}: possible temporal proxy leakage,
-    \item \texttt{Years\_Since\_Degree}: acceptable if computed pre-inference.
-\end{itemize}
-
-\textbf{Architecture answer (acceptable):}
-Bronze/Silver/Gold tables, feature store with point-in-time joins, online/offline feature parity, periodic drift checks.
-
-\section*{Q7. Regression and Elastic Net}
-For
-\[
-J(\theta)=\frac{1}{2m}\sum_{i=1}^m (h_\theta(x^{(i)})-y^{(i)})^2 + \lambda_1\sum_j|\theta_j| + \frac{\lambda_2}{2}\sum_j\theta_j^2,
-\]
-\[
-\nabla_{\theta_j}J = \frac{1}{m}\sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)} + \lambda_1\partial|\theta_j| + \lambda_2\theta_j,
-\]
-\[
-\partial|\theta_j|=
-\begin{cases}
-+1 & \theta_j>0\\
--1 & \theta_j<0\\
-[-1,1] & \theta_j=0
-\end{cases}
-\]
-
-\section*{Q8. Optimization}
-\textbf{Ravine intuition:}
-steep curvature in one axis and shallow curvature in another causes SGD oscillation.
-
-\textbf{Momentum:}
-\[
-v_t=\beta v_{t-1}+\eta g_t,\quad \theta_{t+1}=\theta_t-v_t
-\]
-Damps sign-flipping gradients and accelerates consistent directions.
-
-\textbf{Adam:}
-first and second moments with bias correction, parameter-wise scaling.
-
-\section*{Q9. Model Family Comparison}
-\textbf{Minimum expected protocol:}
-\begin{itemize}
-    \item fixed train/validation/test split with stratification,
-    \item CV and hyperparameter tuning for each model family,
-    \item metric table with at least AUC, F1, calibration/error analysis,
-    \item interpretability discussion.
-\end{itemize}
-
-\section*{Q10. Dimensionality Reduction}
-\textbf{PCA explained variance ratio:}
-\[
-\mathrm{EVR}_k = \frac{\lambda_k}{\sum_i\lambda_i}
-\]
-where $\lambda_k$ is variance captured by component $k$.
-
-\section*{Q11. Clustering}
-\textbf{K-Means elbow rationale:}
-WCSS decreases monotonically with $K$, but marginal gain diminishes.
-
-\textbf{Density alternative:}
-DBSCAN robustness to non-spherical clusters and noise points.
-
-\section*{Q12. Neural Networks and Sequence Models}
-\textbf{Expected answer characteristics:}
-\begin{itemize}
-    \item clear architecture choice and training setup,
-    \item baseline comparison against classical model,
-    \item overfitting control (dropout/early stopping/regularization).
-\end{itemize}
-
-\section*{Q13. LMs and LLM Agents}
-\textbf{Strong answer includes:}
-\begin{itemize}
-    \item agent workflow (plan -> retrieve -> reason -> verify),
-    \item evaluation: faithfulness, hallucination, safety,
-    \item governance boundaries and fallback logic.
-\end{itemize}
-
-\section*{Q14. Ethics and Fairness}
-\textbf{Expected:}
-\begin{itemize}
-    \item subgroup metrics (e.g., by country/education),
-    \item recognition of historical policy bias and proxy discrimination,
-    \item mitigation and human override policy.
-\end{itemize}
-
-\section*{Q15. Calibration and Threshold Policy}
-\textbf{Expected answer components:}
-\begin{itemize}
-    \item reliability plot (calibration curve) with interpretation,
-    \item at least one probabilistic calibration metric (Brier score and/or ECE),
-    \item threshold policy from two objectives:
-    \begin{itemize}
-        \item maximize F1,
-        \item minimize asymmetric expected cost.
-    \end{itemize}
-\end{itemize}
-
-\textbf{Grading note:}
-threshold choice must be justified by task costs, not by arbitrary default 0.5.
-
-\section*{Q16. Drift Detection and Monitoring}
-\textbf{Expected answer components:}
-\begin{itemize}
-    \item two-window split design (preferably temporal),
-    \item numeric feature drift ranking via PSI,
-    \item one categorical drift signal (e.g., JS divergence),
-    \item clear trigger policy for warning/critical events.
-\end{itemize}
-
-\textbf{Reference interpretation of PSI:}
-\begin{itemize}
-    \item PSI < 0.10: low drift,
-    \item 0.10--0.25: moderate drift,
-    \item PSI >= 0.25: high drift requiring intervention.
-\end{itemize}
-
-\section*{Q17. Counterfactual Recourse}
-\textbf{Expected answer components:}
-\begin{itemize}
-    \item actionable feature set with practical constraints,
-    \item minimal-change search per candidate near decision boundary,
-    \item recourse success rate and per-feature effort summary,
-    \item discussion of realistic and ethical intervention boundaries.
-\end{itemize}
-
-\textbf{Grading note:}
-penalize unrealistic interventions (e.g., impossible immediate changes) if not explicitly acknowledged.
-
-\section*{Q18. Temporal Backtesting and Rolling Validation}
-\textbf{Expected answer components:}
-\begin{itemize}
-    \item Explicit chronological split strategy with rolling folds.
-    \item If no valid time field exists, a documented fallback ordering strategy.
-    \item Fold-wise metrics (at minimum AUC and F1), with decay measured relative to the first fold.
-    \item Drift-aware interpretation (e.g., mean PSI per fold or equivalent drift proxy).
-\end{itemize}
-
-\textbf{Minimum acceptable artifacts:}
-\begin{itemize}
-    \item \texttt{q18\_temporal\_backtest.csv}
-    \item \texttt{q18\_temporal\_degradation.png}
-\end{itemize}
-
-\textbf{Grading note:}
-if fallback chronology is used, students must explicitly justify why and state threat-to-validity impact.
-
-\section*{Q19. Uncertainty Quantification}
-\textbf{Expected answer components:}
-\begin{itemize}
-    \item Split-conformal or equivalent calibrated uncertainty procedure.
-    \item Empirical coverage at multiple confidence levels.
-    \item Interval width analysis and under-coverage reporting.
-    \item Practical handling policy for low-confidence predictions.
-\end{itemize}
-
-\textbf{Minimum acceptable artifacts:}
-\begin{itemize}
-    \item \texttt{q19\_uncertainty\_coverage.csv}
-    \item \texttt{q19\_coverage\_vs\_alpha.png}
-\end{itemize}
-
-\textbf{Grading note:}
-students lose points if they report confidence levels without empirical coverage validation.
-
-\section*{Q20. Fairness Mitigation Experiment}
-\textbf{Expected answer components:}
-\begin{itemize}
-    \item Baseline subgroup fairness metrics (at least demographic parity gap or equal opportunity gap).
-    \item One explicit mitigation intervention (e.g., reweighing) with pre/post comparison.
-    \item Performance-vs-fairness tradeoff analysis.
-    \item Policy constraint check (e.g., max tolerated AUC/F1 degradation).
-\end{itemize}
-
-\textbf{Minimum acceptable artifacts:}
-\begin{itemize}
-    \item \texttt{q20\_fairness\_mitigation\_comparison.csv}
-    \item \texttt{q20\_fairness\_tradeoff.png}
-\end{itemize}
-
-\textbf{Grading note:}
-no full credit if mitigation is presented without explicit policy constraints for deployment decisions.
-
-\section*{Block J (Bonus): Advanced Extensions}
-\textbf{Strong submissions may include:}
-\begin{itemize}
-    \item \textbf{Causal DAG}: clear graph, plausible assumptions, and discussion of (non-)identifiability and adjustment sets.
-    \item \textbf{Uncertainty}: conformal prediction or calibrated intervals with empirical coverage reported on held-out data.
-    \item \textbf{Temporal validation}: chronological split vs random split with degradation analysis.
-    \item \textbf{Online/streaming serving}: feature freshness plan, SLA/latency targets, OOD/drift guardrail, rollback path.
-\end{itemize}
-Partial credit for well-reasoned designs even without full code; no credit for causal claims without addressing assumptions.
-
-\section*{Capstone}
-\textbf{Minimum complete capstone output:}
+\subsection{Submitted Artifacts}
 \begin{enumerate}
-    \item leakage-safe preprocessing,
-    \item best model with validated metrics,
-    \item SHAP local explanation for high-citation no-migration case,
-    \item global importance plot,
-    \item fairness slice and deployment recommendation.
+    \item Reproducible notebook with sections Q1--Q20 + Capstone
+    \item PDF report (this file)
+    \item Code package (\texttt{src/}, \texttt{tests/}, \texttt{requirements.txt})
+    \item Presentation deck (10--15 slides)
+    \item Ethics/Fairness memo (1--2 pages)
 \end{enumerate}
 
-\section*{Rubric Notes for TAs}
+\subsection{Reproducibility Settings}
 \begin{itemize}
-    \item Deduct for hidden leakage or unjustified assumptions.
-    \item Deduct for non-reproducible code.
-    \item Reward honest limitations and rigorous diagnostics.
+    \item Global random seed fixed: \texttt{TODO\_SEED}
+    \item Data split strategy: \texttt{TODO\_SPLIT\_STRATEGY}
+    \item Environment logging: Python \texttt{TODO\_PY\_VERSION}, packages exported
+    \item Leakage controls: all post-outcome features removed prior to training
 \end{itemize}
+
+\subsection{Evaluation Protocol}
+\begin{itemize}
+    \item Validation method: \texttt{TODO\_CV\_METHOD}
+    \item Primary metrics: AUC, F1, Precision, Recall
+    \item Reliability metrics: Brier Score, ECE
+    \item Fairness metrics: subgroup TPR/FPR/Precision gaps, calibration by group
+\end{itemize}
+
+% ============================================================
+\section{Block A -- Foundations (20 points)}
+
+\subsection{Q1. Data Science Lifecycle and Problem Framing (10 pts)}
+
+\subsubsection*{Business Objective}
+Predict candidate migration propensity to support evidence-based interventions in talent retention and policy planning.
+
+\subsubsection*{Measurable Success Criteria}
+\begin{itemize}
+    \item Model discrimination: AUC $\geq$ \texttt{TODO\_AUC\_TARGET}
+    \item Operational utility: F1 at selected threshold $\geq$ \texttt{TODO\_F1\_TARGET}
+    \item Risk control: false negative rate in high-priority segment $\leq$ \texttt{TODO}
+    \item Fairness: maximum subgroup TPR gap $\leq$ \texttt{TODO\_FAIRNESS\_BOUND}
+\end{itemize}
+
+\subsubsection*{Data Assumptions}
+\begin{itemize}
+    \item Features are measured prior to migration outcome timestamp.
+    \item Labels are sufficiently accurate and consistent.
+    \item Sample is reasonably representative of deployment population.
+\end{itemize}
+
+\subsubsection*{Potential Failure Modes}
+\begin{itemize}
+    \item Sampling bias by geography/field
+    \item Label leakage via post-outcome variables
+    \item Temporal drift in macroeconomic/policy conditions
+    \item Proxy discrimination through correlated features
+\end{itemize}
+
+\subsubsection*{Deployment and Monitoring}
+\begin{itemize}
+    \item Batch scoring cadence: \texttt{TODO\_WEEKLY/MONTHLY}
+    \item Human review for low-confidence and policy-sensitive cases
+    \item Automated alerts for drift, calibration decay, and fairness degradation
+\end{itemize}
+
+\subsubsection*{Lifecycle Diagram}
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.92\linewidth}{
+\centering
+\textbf{Problem Framing} $\rightarrow$ \textbf{Data Ingestion} $\rightarrow$ \textbf{Validation/Cleaning} $\rightarrow$ \textbf{Feature Engineering} $\rightarrow$ \textbf{Modeling} $\rightarrow$ \textbf{Evaluation} $\rightarrow$ \textbf{Deployment} $\rightarrow$ \textbf{Monitoring/Retraining}
+}}
+\caption{End-to-end lifecycle for migration prediction}
+\end{figure}
+
+\subsection{Q2. Python Data Operations and EDA (10 pts)}
+
+\subsubsection*{Schema and Quality Checks}
+Performed robust checks for:
+\begin{itemize}
+    \item Data types, missingness, duplicates, invalid domain values
+    \item Numeric outliers (IQR/Z-score)
+    \item Category normalization and rare category handling
+\end{itemize}
+
+\subsubsection*{EDA Visuals and Interpretation}
+At least six plots were produced:
+\begin{enumerate}
+    \item Class distribution of \texttt{Migration\_Status}
+    \item Missingness profile
+    \item Core numeric distributions
+    \item Boxplots by target class
+    \item Correlation matrix of numeric features
+    \item Migration rate by country/education
+\end{enumerate}
+\textbf{Key finding summary:} \texttt{TODO\_EDA\_SUMMARY}
+
+\subsubsection*{Reusable Preprocessing Utility}
+Implemented function: \texttt{build\_preprocessor(...)} with:
+\begin{itemize}
+    \item Numeric branch: imputation + scaling
+    \item Categorical branch: imputation + one-hot encoding
+    \item Unseen category handling for validation/test/inference
+\end{itemize}
+
+\subsubsection*{Unit Tests}
+\begin{itemize}
+    \item Output shape invariance
+    \item No nulls after transform
+    \item Stable behavior under fixed seed
+    \item Correct behavior on unseen categories
+\end{itemize}
+
+% ============================================================
+\section{Block B -- Inference and Visualization (20 points)}
+
+\subsection{Q3. Scientific Studies and Inference (10 pts)}
+
+\subsubsection*{Observational vs Experimental}
+This study is observational; causal conclusions are limited without randomization or valid identification assumptions.
+
+\subsubsection*{Sampling Bias Risks}
+\begin{itemize}
+    \item Over/under representation across countries and institutions
+    \item Platform visibility bias
+    \item Survivorship bias in profile availability
+\end{itemize}
+
+\subsubsection*{Confidence Interval (Example)}
+For migration rate difference between two groups:
+\[
+(\hat{p}_1-\hat{p}_2)\pm 1.96\sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}
+\]
+\textbf{Computed result:} \texttt{TODO\_CI\_RESULT}
+
+\subsubsection*{Hypothesis Test (Example)}
+\begin{itemize}
+    \item $H_0$: migration is independent of education level
+    \item Test: Chi-square test of independence
+    \item Reported: $\chi^2=$ \texttt{TODO}, $p=$ \texttt{TODO}, effect size (Cramér’s V) = \texttt{TODO}
+\end{itemize}
+
+\subsection{Q4. Visualization Design + Storytelling (10 pts)}
+
+\subsubsection*{Stakeholder KPI Dashboard}
+Included:
+\begin{itemize}
+    \item Overall migration rate
+    \item Predicted high-risk count
+    \item Threshold-specific Precision/Recall/F1
+    \item Fairness gap indicator
+\end{itemize}
+
+\subsubsection*{Design Rationale}
+\begin{itemize}
+    \item Consistent color mapping for favorable/unfavorable outcomes
+    \item Preattentive emphasis on position/length before color
+    \item Uncertainty bars for subgroup comparisons
+\end{itemize}
+
+\subsubsection*{Misleading Visualization Pitfall and Fix}
+\begin{itemize}
+    \item Pitfall: truncated y-axis exaggerating subgroup gaps
+    \item Correction: baseline-aware axes + clear annotation + CI bars
+\end{itemize}
+
+% ============================================================
+\section{Block C -- SQL and Data Engineering (25 points)}
+
+\subsection{Q5. SQL-1/SQL-2 Advanced Querying (15 pts)}
+
+\subsubsection*{(1) 3-year moving average citations by country}
+\begin{verbatim}
+SELECT
+  country,
+  year,
+  AVG(avg_citations) OVER (
+    PARTITION BY country
+    ORDER BY year
+    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+  ) AS ma3_citations
+FROM country_year_stats;
+\end{verbatim}
+
+\subsubsection*{(2) Top decile ranking + percentile bucketing}
+\begin{verbatim}
+SELECT
+  candidate_id,
+  total_citations,
+  NTILE(10) OVER (ORDER BY total_citations DESC) AS decile,
+  PERCENT_RANK() OVER (ORDER BY total_citations) AS pct_rank
+FROM candidates;
+\end{verbatim}
+
+\subsubsection*{(3) Cohort retention (CTE style)}
+\begin{verbatim}
+WITH base AS (
+  SELECT candidate_id, cohort_year, migration_status
+  FROM candidate_outcomes
+),
+cohort_size AS (
+  SELECT cohort_year, COUNT(*) AS n0
+  FROM base GROUP BY cohort_year
+),
+retained AS (
+  SELECT cohort_year, COUNT(*) AS n_retained
+  FROM base
+  WHERE migration_status = 0
+  GROUP BY cohort_year
+)
+SELECT
+  c.cohort_year, c.n0, r.n_retained,
+  1.0 * r.n_retained / c.n0 AS retention_rate
+FROM cohort_size c
+JOIN retained r USING (cohort_year)
+ORDER BY c.cohort_year;
+\end{verbatim}
+
+\subsection{Q6. Data Leakage and Big-Data Architecture (10 pts)}
+
+\subsubsection*{Leaky Feature Audit}
+Excluded features containing post-outcome information:
+\begin{itemize}
+    \item \texttt{TODO\_LEAKY\_FEATURE\_1}
+    \item \texttt{TODO\_LEAKY\_FEATURE\_2}
+    \item \texttt{TODO\_LEAKY\_FEATURE\_3}
+\end{itemize}
+
+\subsubsection*{Batch + Streaming Architecture}
+\begin{itemize}
+    \item Bronze: raw immutable ingestion (batch + stream)
+    \item Silver: validated, standardized, deduplicated data
+    \item Gold: model-ready feature tables and KPI marts
+\end{itemize}
+
+\subsubsection*{Feature Store Design}
+\begin{itemize}
+    \item Offline store for training (point-in-time correct)
+    \item Online store for low-latency serving
+    \item Unified feature definitions and versioning to ensure train/serve parity
+\end{itemize}
+
+% ============================================================
+\section{Block D -- Supervised Learning and Optimization (45 points)}
+
+\subsection{Q7. Linear/Logistic Models + Regularization (15 pts)}
+
+\subsubsection*{Baselines}
+\begin{itemize}
+    \item Baseline logistic regression for binary outcome
+    \item Optional linear baseline for continuous proxy task (if applicable)
+\end{itemize}
+
+\subsubsection*{Elastic Net Objective}
+\[
+\min_{\beta} \mathcal{L}_{\text{log}}(\beta) + \lambda
+\left[\alpha\|\beta\|_{1} + \frac{1-\alpha}{2}\|\beta\|_2^2\right]
+\]
+\textbf{Implementation approach:} \texttt{TODO\_LIBRARY\_OR\_CUSTOM\_GRADIENT}
+
+\subsubsection*{Interpretation}
+\begin{itemize}
+    \item Coefficient sign and magnitude interpretation in log-odds
+    \item Confidence intervals (where inferential framework available)
+    \item Calibration check on predicted probabilities
+\end{itemize}
+
+\subsection{Q8. Optimization Deep Dive (10 pts)}
+
+Compared SGD, Momentum, Adam on ravine objective:
+\[
+f(x,y)=100(y-x^2)^2 + (1-x)^2
+\]
+\textbf{Observed behavior:}
+\begin{itemize}
+    \item SGD: oscillatory in steep curvature direction
+    \item Momentum: smoother convergence, reduced oscillation
+    \item Adam: robust and fast under feature-scale heterogeneity
+\end{itemize}
+\textbf{Recommendation:} \texttt{TODO\_OPTIMIZER\_RECOMMENDATION}
+
+\subsection{Q9. Model Family Comparison (20 pts)}
+
+\subsubsection*{Model Set}
+\begin{itemize}
+    \item SVM, KNN
+    \item Decision Tree, Random Forest
+    \item Boosting model (XGBoost/GBM/CatBoost)
+\end{itemize}
+
+\subsubsection*{Search Protocol}
+\begin{itemize}
+    \item Cross-validation: \texttt{TODO\_CV}
+    \item Hyperparameter tuning: \texttt{TODO\_RANDOM/BAYESIAN/GRID}
+    \item Final lock: best validation model evaluated once on test
+\end{itemize}
+
+\subsubsection*{Performance Summary}
+\begin{table}[H]
+\centering
+\caption{Model comparison on validation/test}
+\begin{tabular}{lcccc}
+\toprule
+Model & AUC & F1 & Precision & Recall \\
+\midrule
+Logistic Regression & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+Random Forest & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+Boosting Model & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+Best Model (\texttt{TODO}) & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{Error Analysis}
+Confusion patterns indicated \texttt{TODO\_ERROR\_PATTERN}. Additional analysis by subgroup suggests \texttt{TODO\_SUBGROUP\_RISK}.
+
+% ============================================================
+\section{Block E -- Unsupervised Learning (20 points)}
+
+\subsection{Q10. Dimensionality Reduction (10 pts)}
+
+\subsubsection*{PCA}
+\begin{itemize}
+    \item Cumulative explained variance at $k$ components: \texttt{TODO}
+    \item Selected dimension: \texttt{TODO\_K}
+\end{itemize}
+
+\subsubsection*{Additional Method}
+Used \texttt{TODO\_TSNE/UMAP/RP} for latent structure visualization/embedding. \\
+\textbf{Interpretation:} \texttt{TODO\_LATENT\_INTERPRETATION}
+
+\subsection{Q11. Clustering (10 pts)}
+
+\subsubsection*{K-Means}
+\begin{itemize}
+    \item Elbow-selected $k$: \texttt{TODO}
+    \item Silhouette score: \texttt{TODO}
+\end{itemize}
+
+\subsubsection*{DBSCAN}
+\begin{itemize}
+    \item Parameters: $\epsilon=\texttt{TODO}$, \texttt{min\_samples}=\texttt{TODO}
+    \item Noise rate: \texttt{TODO}
+\end{itemize}
+
+\subsubsection*{Stability and Meaning}
+Cluster stability across seeds/resamples: \texttt{TODO}. Practical profile summary: \texttt{TODO}.
+
+% ============================================================
+\section{Block F -- Deep Learning, NLP, and LMs (30 points)}
+
+\subsection{Q12. Neural Networks and Sequence Models (15 pts)}
+
+\subsubsection*{Tabular NN}
+MLP architecture: \texttt{TODO\_ARCH} with dropout/batchnorm and early stopping.
+
+\subsubsection*{Sequence/NLP Model}
+Model: \texttt{TODO\_LSTM/GRU/CNN} on text/sequence feature variant. Tokenization and max length: \texttt{TODO}.
+
+\subsubsection*{Comparison Against Classical Baseline}
+\begin{table}[H]
+\centering
+\caption{Deep model vs classical baseline}
+\begin{tabular}{lccc}
+\toprule
+Model & AUC & F1 & Notes \\
+\midrule
+Best Classical (\texttt{TODO}) & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+MLP & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+Sequence/NLP & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Q13. Language Models and LLM Agents (15 pts)}
+
+\subsubsection*{Agentic Workflow (Design)}
+\begin{enumerate}
+    \item Retrieve grounded knowledge (policy/docs/DB rows)
+    \item Plan task decomposition
+    \item Tool execution (query/scoring)
+    \item Compose citation-grounded response
+    \item Safety and policy filter
+\end{enumerate}
+
+\subsubsection*{Evaluation Criteria}
+\begin{itemize}
+    \item Faithfulness to retrieved context
+    \item Hallucination rate
+    \item Safety violation rate
+    \item Latency and cost per request
+\end{itemize}
+
+\subsubsection*{Governance Constraints}
+\begin{itemize}
+    \item PII minimization and access controls
+    \item Prompt injection defenses
+    \item Audit logging and human escalation path
+\end{itemize}
+
+% ============================================================
+\section{Block G -- Ethics, Fairness, Governance (15 points)}
+
+\subsection{Q14. Fairness, Bias, and Responsible Deployment (15 pts)}
+
+\subsubsection*{Subgroup Evaluation}
+Evaluated by country/education (and additional relevant groups):
+\begin{itemize}
+    \item TPR/FPR gaps
+    \item Precision disparities
+    \item Calibration differences
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Fairness slice summary (baseline)}
+\begin{tabular}{lcccc}
+\toprule
+Group & TPR & FPR & Precision & Support \\
+\midrule
+Group A & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+Group B & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+Group C & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{Bias Discussion}
+Potential historical-policy and representation biases identified: \texttt{TODO}.
+
+\subsubsection*{Human-in-the-Loop Policy}
+\begin{itemize}
+    \item Manual override for low-confidence/high-impact predictions
+    \item Appeals process with documented rationale
+    \item Periodic fairness and impact audit
+\end{itemize}
+
+% ============================================================
+\section{Block H -- Integrated Capstone (25 points)}
+
+\subsection{Capstone Implementation Summary}
+\begin{enumerate}
+    \item Leakage-safe preprocessing and model training pipeline
+    \item Model card and experiment tracking summary
+    \item SHAP global and local explainability outputs
+    \item Deployment recommendation with thresholds and monitoring
+\end{enumerate}
+
+\subsection{Required Capstone Outputs}
+
+\subsubsection*{(1) Local Explanation}
+Case: high-citation candidate predicted as no-migration. \\
+Top feature contributions: \texttt{TODO\_LOCAL\_SHAP\_SUMMARY}
+
+\subsubsection*{(2) Global Feature Importance}
+Global SHAP ranking indicates most influential features: \texttt{TODO}.
+
+\subsubsection*{(3) Fairness Slice Table}
+Included in Section Q14 and updated for final selected threshold.
+
+\subsubsection*{(4) Executive Summary}
+\begin{tcolorbox}[colback=green!3,colframe=green!40!black,title=Executive Summary for Non-Technical Stakeholders]
+The final model improves migration risk identification over baseline methods while maintaining transparent decision logic and fairness checks. The recommended threshold balances overall accuracy and policy cost asymmetry. Deployment is recommended with guardrails: continuous drift monitoring, calibration checks, and mandatory human review for low-confidence or high-impact cases.
+\end{tcolorbox}
+
+% ============================================================
+\section{Block I -- Production Reliability Extension (Q15--Q20, 60 points)}
+
+\subsection{Q15. Calibration and Threshold Policy (10 pts)}
+
+\subsubsection*{Calibration Analysis}
+\begin{itemize}
+    \item Reliability curve generated
+    \item Brier Score: \texttt{TODO}
+    \item ECE: \texttt{TODO}
+\end{itemize}
+
+\subsubsection*{Threshold Policies}
+\begin{itemize}
+    \item Threshold maximizing F1: \texttt{TODO}
+    \item Threshold minimizing asymmetric cost ($C_{FN} > C_{FP}$): \texttt{TODO}
+\end{itemize}
+
+\subsubsection*{Final Threshold Recommendation}
+\texttt{TODO\_THRESHOLD\_JUSTIFICATION}
+
+\subsection{Q16. Drift Detection and Monitoring Design (10 pts)}
+
+\subsubsection*{Drift Metrics}
+\begin{itemize}
+    \item PSI for numeric features
+    \item JS divergence for categorical distribution shift
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Drift table (window A vs window B)}
+\begin{tabular}{lccc}
+\toprule
+Feature & Metric & Value & Status \\
+\midrule
+Feature\_1 & PSI & \texttt{TODO} & \texttt{TODO} \\
+Feature\_2 & PSI & \texttt{TODO} & \texttt{TODO} \\
+Country Dist. & JS Div. & \texttt{TODO} & \texttt{TODO} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{Monitoring SOP}
+\begin{itemize}
+    \item Warning threshold: \texttt{TODO}
+    \item Critical threshold: \texttt{TODO}
+    \item Retraining trigger: \texttt{TODO\_TRIGGER\_RULE}
+\end{itemize}
+
+\subsection{Q17. Counterfactual Recourse Analysis (10 pts)}
+
+\subsubsection*{Setup}
+Analyzed near-boundary negatives and selected actionable features:
+\begin{itemize}
+    \item \texttt{TODO\_ACTIONABLE\_1}
+    \item \texttt{TODO\_ACTIONABLE\_2}
+\end{itemize}
+
+\subsubsection*{Results}
+\begin{itemize}
+    \item Recourse success rate: \texttt{TODO}
+    \item Median intervention magnitude: \texttt{TODO}
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Counterfactual recourse examples}
+\begin{tabular}{lccc}
+\toprule
+Candidate & Feature Change & Required Delta & Outcome Flip \\
+\midrule
+ID\_1 & \texttt{TODO} & \texttt{TODO} & Yes/No \\
+ID\_2 & \texttt{TODO} & \texttt{TODO} & Yes/No \\
+ID\_3 & \texttt{TODO} & \texttt{TODO} & Yes/No \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{Ethics/Practicality}
+\texttt{TODO\_RECOURSE\_ETHICS\_DISCUSSION}
+
+\subsection{Q18. Temporal Backtesting and Rolling Validation (10 pts)}
+
+\subsubsection*{Method}
+Chronological folds were used based on \texttt{TODO\_TIME\_COLUMN}. If unavailable, fallback ordering strategy: \texttt{TODO\_FALLBACK}.
+
+\begin{table}[H]
+\centering
+\caption{Temporal backtest summary}
+\begin{tabular}{lccc}
+\toprule
+Fold & AUC & F1 & Decay vs Fold 1 \\
+\midrule
+Fold 1 & \texttt{TODO} & \texttt{TODO} & 0.00 \\
+Fold 2 & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+Fold 3 & \texttt{TODO} & \texttt{TODO} & \texttt{TODO} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{Drift-Aware Interpretation}
+Performance decay aligned with drift proxy (mean PSI = \texttt{TODO}): \texttt{TODO\_INTERPRETATION}.
+
+\subsection{Q19. Uncertainty Quantification and Coverage (10 pts)}
+
+\subsubsection*{Method}
+Implemented \texttt{TODO\_CONFORMAL/CALIBRATED\_INTERVALS} on validation-calibrated predictions.
+
+\begin{table}[H]
+\centering
+\caption{Coverage summary across confidence levels}
+\begin{tabular}{lcc}
+\toprule
+Confidence Level & Empirical Coverage & Avg Interval Width \\
+\midrule
+80\% & \texttt{TODO} & \texttt{TODO} \\
+90\% & \texttt{TODO} & \texttt{TODO} \\
+95\% & \texttt{TODO} & \texttt{TODO} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{Policy for Low Confidence}
+\texttt{TODO\_LOW\_CONFIDENCE\_ESCALATION\_RULE}
+
+\subsection{Q20. Fairness Mitigation Experiment (10 pts)}
+
+\subsubsection*{Baseline vs Mitigated}
+Mitigation method: \texttt{TODO\_REWEIGHING/THRESHOLDING/OTHER}
+
+\begin{table}[H]
+\centering
+\caption{Pre/post mitigation utility-fairness comparison}
+\begin{tabular}{lcc}
+\toprule
+Metric & Baseline & Mitigated \\
+\midrule
+AUC & \texttt{TODO} & \texttt{TODO} \\
+F1 & \texttt{TODO} & \texttt{TODO} \\
+TPR Gap & \texttt{TODO} & \texttt{TODO} \\
+FPR Gap & \texttt{TODO} & \texttt{TODO} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{Policy Constraint Evaluation}
+Constraint example: max AUC drop $\leq$ 0.02. \\
+Observed change: \texttt{TODO}. \\
+\textbf{Deployment recommendation:} \texttt{TODO\_GO/NO-GO/CONDITIONAL}
+
+% ============================================================
+\section{Block J -- Advanced Extensions (Bonus +20)}
+
+\subsection*{Extension 1: Causal Framing (DAG)}
+\texttt{TODO\_DAG\_DESCRIPTION\_AND\_IDENTIFICATION\_LIMITS}
+
+\subsection*{Extension 2: Advanced Uncertainty}
+\texttt{TODO\_CONFORMAL\_EXTENSION\_RESULTS}
+
+\subsection*{Extension 3: Temporal Robustness}
+\texttt{TODO\_RANDOM\_VS\_TEMPORAL\_COMPARISON}
+
+\subsection*{Extension 4: Streaming/Online Serving}
+\texttt{TODO\_ONLINE\_INFERENCE\_DESIGN\_WITH\_OOD\_GUARDRAILS}
+
+% ============================================================
+\section{Academic Integrity and Professional Standards}
+
+\begin{itemize}
+    \item All external resources, packages, and generated assistance are cited.
+    \item No unattributed copied code.
+    \item Negative or null results are reported transparently.
+    \item Preference given to interpretable and auditable pipelines over leaderboard-only optimization.
+\end{itemize}
+
+% ============================================================
+\section{Conclusion}
+
+This project delivers a complete, reproducible, and governance-aware migration prediction pipeline.
+Final recommendation is based on joint optimization of utility, calibration, fairness, and operational reliability rather than a single metric.
+Production release is conditionally approved with continuous monitoring, retraining triggers, and human oversight safeguards.
+
+% ============================================================
+\appendix
+\section{Appendix A: Figure Placeholders}
+\begin{itemize}
+    \item Calibration curve: \texttt{figures/q15\_calibration.png}
+    \item Threshold tradeoff: \texttt{figures/q15\_threshold\_tradeoff.png}
+    \item Drift ranking: \texttt{figures/q16\_drift\_ranking.png}
+    \item Recourse effort: \texttt{figures/q17\_recourse\_effort.png}
+    \item Temporal degradation: \texttt{figures/q18\_degradation.png}
+    \item Coverage vs confidence: \texttt{figures/q19\_coverage.png}
+    \item Fairness-utility tradeoff: \texttt{figures/q20\_tradeoff.png}
+\end{itemize}
+
+\section{Appendix B: CSV Deliverables}
+\begin{itemize}
+    \item \texttt{outputs/q18\_temporal\_backtest.csv}
+    \item \texttt{outputs/q19\_coverage\_summary.csv}
+    \item \texttt{outputs/q20\_mitigation\_comparison.csv}
+\end{itemize}
+
+\section{Appendix C: Environment}
+\texttt{TODO\_PASTE\_requirements.txt\_OR\_conda\_env}
 
 \end{document}

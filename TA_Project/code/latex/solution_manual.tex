@@ -1,21 +1,83 @@
 \documentclass[11pt,a4paper]{article}
+
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath,amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
 \usepackage{geometry}
 \usepackage{booktabs}
-\geometry{margin=1in}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{caption}
 
-\title{UT-ECE Data Science Final Assignment \\ Complete Solution Manual}
+\geometry{margin=1in}
+\setlist[itemize]{leftmargin=1.4em}
+\setlist[enumerate]{leftmargin=1.6em}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  columns=fullflexible
+}
+
+\title{UT-ECE Data Science Final Assignment\\
+\textbf{Complete Solution Manual (Extended \& Grading-Oriented)}}
 \author{Teaching Assistant Team}
 \date{Spring 2025}
 
 \begin{document}
 \maketitle
 
-\section*{Q1. Advanced Data Engineering \& SQL}
+\begin{tcolorbox}[colback=blue!3,colframe=blue!40!black,title=Purpose of this Manual]
+This document provides complete conceptual solutions, implementation guidance, and grading-oriented deliverables for Q1--Q6.
+It is designed so students can map each question to code, report text, and evaluation artifacts.
+\end{tcolorbox}
 
-\subsection*{Q1A. Window-function solution}
-\begin{verbatim}
+\tableofcontents
+\newpage
+
+% ============================================================
+\section*{Global Assumptions and Reproducibility Standards}
+\addcontentsline{toc}{section}{Global Assumptions and Reproducibility Standards}
+
+\begin{itemize}
+    \item All reported metrics must come from a leakage-safe split (\textbf{time-aware if possible}).
+    \item Preprocessing (imputation/scaling/encoding) must be fit on training data only.
+    \item Random seeds should be fixed and reported.
+    \item Post-outcome features are excluded from both model fitting and hyperparameter tuning.
+    \item Statistical claims must include assumptions and uncertainty (CI/p-values/effect sizes when applicable).
+\end{itemize}
+
+\textbf{Recommended report artifacts per question:}
+\begin{itemize}
+    \item one concise theory block,
+    \item one implementation block,
+    \item one diagnostics/result block,
+    \item one short ``risk \& limitation'' note.
+\end{itemize}
+
+% ============================================================
+\section*{Q1. Advanced Data Engineering \& SQL}
+\addcontentsline{toc}{section}{Q1. Advanced Data Engineering \& SQL}
+
+\subsection*{Q1A. Window-function solution (complete)}
+\textbf{Goal:} compute country-level 3-year moving average of citations and rank users by this smoothed signal.
+
+\begin{lstlisting}[language=SQL]
 WITH citation_velocity AS (
     SELECT
         UserID,
@@ -28,35 +90,75 @@ WITH citation_velocity AS (
             ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
         ) AS moving_avg_citations
     FROM Professionals_Data
+),
+ranked AS (
+    SELECT
+        UserID,
+        Country_Origin,
+        Year,
+        Research_Citations,
+        moving_avg_citations,
+        DENSE_RANK() OVER (
+            PARTITION BY Country_Origin
+            ORDER BY moving_avg_citations DESC
+        ) AS country_rank,
+        NTILE(10) OVER (
+            PARTITION BY Country_Origin
+            ORDER BY moving_avg_citations DESC
+        ) AS country_decile
+    FROM citation_velocity
 )
-SELECT
-    UserID,
-    Country_Origin,
-    Year,
-    Research_Citations,
-    moving_avg_citations,
-    DENSE_RANK() OVER (
-        PARTITION BY Country_Origin
-        ORDER BY moving_avg_citations DESC
-    ) AS country_rank
-FROM citation_velocity;
-\end{verbatim}
+SELECT *
+FROM ranked
+ORDER BY Country_Origin, country_rank, Year;
+\end{lstlisting}
 
-\subsection*{Q1B. Leakage diagnosis}
-\textbf{Direct leakage:} \texttt{Visa\_Approval\_Date} (post-outcome variable).
+\textbf{Why this is correct:}
+\begin{itemize}
+    \item \texttt{ROWS BETWEEN 2 PRECEDING AND CURRENT ROW} gives a 3-point moving window.
+    \item \texttt{PARTITION BY Country\_Origin} prevents cross-country contamination.
+    \item \texttt{DENSE\_RANK} handles ties without rank gaps.
+\end{itemize}
 
-\textbf{Potential temporal leakage:} \texttt{Last\_Login\_Region} and \texttt{Passport\_Renewal\_Status}, if logged after migration decision.
+\textbf{Edge-case note:} in first two years of each country, moving average is over fewer than 3 observations by design.
 
-\textbf{Usually safe:} \texttt{Years\_Since\_Degree}, provided degree date is known before inference.
+\subsection*{Q1B. Leakage diagnosis (complete)}
+\textbf{Direct leakage:}
+\begin{itemize}
+    \item \texttt{Visa\_Approval\_Date} if timestamp is after decision/event target.
+\end{itemize}
 
+\textbf{Potential temporal leakage (must verify event time):}
+\begin{itemize}
+    \item \texttt{Last\_Login\_Region}
+    \item \texttt{Passport\_Renewal\_Status}
+\end{itemize}
+
+\textbf{Usually safe (if measured pre-inference):}
+\begin{itemize}
+    \item \texttt{Years\_Since\_Degree}
+\end{itemize}
+
+\textbf{Leakage audit protocol (recommended):}
+\begin{enumerate}
+    \item define prediction timestamp \(t_0\),
+    \item verify each feature timestamp \(t_f \le t_0\),
+    \item drop/lag/aggregate features violating causality order,
+    \item re-run feature importance to ensure no hidden proxies remain.
+\end{enumerate}
+
+\textbf{Common mistake:} checking only semantic meaning of features without checking logged timestamps.
+
+% ============================================================
 \section*{Q2. Statistical Inference \& Linear Models}
+\addcontentsline{toc}{section}{Q2. Statistical Inference \& Linear Models}
 
-\subsection*{Q2A. Elastic Net gradient}
-Given
+\subsection*{Q2A. Elastic Net gradient and optimization interpretation}
+Given objective:
 \[
-J(\theta)=\frac{1}{2m}\sum_{i=1}^m\left(h_\theta(x^{(i)})-y^{(i)}\right)^2+\lambda_1\sum_{j=1}^n|\theta_j|+\frac{\lambda_2}{2}\sum_{j=1}^n\theta_j^2,
+J(\theta)=\frac{1}{2m}\sum_{i=1}^m\left(h_\theta(x^{(i)})-y^{(i)}\right)^2+\lambda_1\sum_{j=1}^n|\theta_j|+\frac{\lambda_2}{2}\sum_{j=1}^n\theta_j^2.
 \]
-for coordinate $\theta_j$:
+For coordinate \(\theta_j\):
 \[
 \nabla_{\theta_j}J(\theta)=\frac{1}{m}\sum_{i=1}^m\left(h_\theta(x^{(i)})-y^{(i)}\right)x_j^{(i)}+\lambda_1\,\partial|\theta_j|+\lambda_2\theta_j.
 \]
@@ -69,78 +171,240 @@ Subgradient of absolute value:
 [-1,1] & \theta_j=0
 \end{cases}
 \]
-Thus coefficients may remain exactly zero under coordinate-descent optimization.
 
-\subsection*{Q2B. Interpretation}
-With coefficient $0.52$, p-value $0.003$, and 95\% CI $[0.18,0.86]$:
+\textbf{Implication:}
 \begin{itemize}
-    \item p-value $<0.05 \Rightarrow$ reject $H_0: \beta=0$.
-    \item CI excludes zero, confirming statistical significance.
-    \item Entire CI is positive, indicating a positive association with migration propensity.
+    \item \(\ell_1\) term induces sparsity (\(\theta_j=0\) exactly).
+    \item \(\ell_2\) term stabilizes under collinearity.
+    \item Elastic Net balances feature selection and coefficient shrinkage.
 \end{itemize}
 
+\textbf{Practical optimizer note:}
+\begin{itemize}
+    \item coordinate descent is standard for convex EN formulations;
+    \item standardization of features before EN is essential.
+\end{itemize}
+
+\subsection*{Q2B. Coefficient interpretation with uncertainty}
+Given coefficient \(0.52\), p-value \(0.003\), and 95\% CI \([0.18,0.86]\):
+\begin{itemize}
+    \item \(p<0.05\) \(\Rightarrow\) reject \(H_0:\beta=0\).
+    \item CI excludes zero \(\Rightarrow\) statistical evidence of non-zero effect.
+    \item Positive interval entirely above 0 \(\Rightarrow\) positive association.
+\end{itemize}
+
+\textbf{For logistic regression:}
+A one-unit increase multiplies odds by \(\exp(0.52)\approx 1.68\), ceteris paribus.
+
+\textbf{Caution:}
+\begin{itemize}
+    \item significance \(\neq\) causal effect;
+    \item coefficient comparability requires feature scaling awareness;
+    \item multicollinearity can inflate uncertainty.
+\end{itemize}
+
+% ============================================================
 \section*{Q3. Optimization \& Gradient Descent}
+\addcontentsline{toc}{section}{Q3. Optimization \& Gradient Descent}
 
-\textbf{Ravine geometry:} one direction has high curvature and another low curvature. Vanilla SGD oscillates in steep direction and advances slowly.
+\subsection*{Ravine behavior and optimizer comparison}
+\textbf{Ravine geometry:} steep curvature in one direction, shallow in another.  
+Vanilla SGD oscillates across steep walls and progresses slowly along valley floor.
 
-\textbf{Momentum update:}
+\subsection*{Momentum dynamics}
 \[
-v_t=\beta v_{t-1}+\eta\nabla J(\theta_t),\quad \theta_{t+1}=\theta_t-v_t.
+v_t=\beta v_{t-1}+\eta\nabla J(\theta_t),\qquad
+\theta_{t+1}=\theta_t-v_t.
 \]
-Opposing gradients across steep walls cancel over iterations, while consistent shallow-direction gradients accumulate velocity.
+\begin{itemize}
+    \item Opposite-sign gradients in steep axis partially cancel via momentum averaging.
+    \item Consistent gradients in shallow axis accumulate velocity.
+    \item Net effect: reduced zig-zag, faster valley traversal.
+\end{itemize}
 
-\textbf{Adam:}
+\subsection*{Adam dynamics}
 \[
-m_t=\beta_1m_{t-1}+(1-\beta_1)g_t,\quad
-s_t=\beta_2s_{t-1}+(1-\beta_2)g_t^2,
+m_t=\beta_1m_{t-1}+(1-\beta_1)g_t,\qquad
+s_t=\beta_2s_{t-1}+(1-\beta_2)g_t^2.
 \]
-with bias correction and coordinate-wise scaling. Adam typically handles anisotropic curvature and mixed feature scales better.
+With bias correction:
+\[
+\hat m_t=\frac{m_t}{1-\beta_1^t},\quad
+\hat s_t=\frac{s_t}{1-\beta_2^t},\quad
+\theta_{t+1}=\theta_t-\eta\frac{\hat m_t}{\sqrt{\hat s_t}+\epsilon}.
+\]
 
+\textbf{Why Adam often wins in this setup:}
+\begin{itemize}
+    \item per-coordinate adaptive learning rates,
+    \item robustness to scale heterogeneity,
+    \item less manual learning-rate tuning.
+\end{itemize}
+
+\textbf{What to submit:}
+\begin{itemize}
+    \item trajectory plot on contour map,
+    \item loss-vs-iteration plot,
+    \item short recommendation justified by observed curvature behavior.
+\end{itemize}
+
+% ============================================================
 \section*{Q4. Non-Linear Models \& Kernels}
+\addcontentsline{toc}{section}{Q4. Non-Linear Models \& Kernels}
 
 \subsection*{Q4A. RBF overfitting control}
-Kernel is $K(x,x')=\exp(-\gamma\|x-x'\|^2)$.
+RBF kernel:
+\[
+K(x,x')=\exp(-\gamma\|x-x'\|^2).
+\]
 
-If overfitting occurs, \textbf{decrease $\gamma$}. Larger $\gamma$ means narrow influence radius and highly wiggly boundaries; smaller $\gamma$ broadens influence and smooths decision boundary.
+\textbf{If overfitting occurs:} decrease \(\gamma\) (and/or decrease \(C\)).
+
+\begin{itemize}
+    \item Large \(\gamma\): very local influence \(\Rightarrow\) highly flexible boundary.
+    \item Small \(\gamma\): smoother, broader influence \(\Rightarrow\) lower variance.
+\end{itemize}
+
+\textbf{Hyperparameter interaction:}
+\begin{itemize}
+    \item High \(C\) + high \(\gamma\): strongest overfit risk.
+    \item Lower \(C\) can regularize margin violations.
+\end{itemize}
 
 \subsection*{Q4B. Cost-complexity pruning}
 \[
 R_\alpha(T)=R(T)+\alpha|T|.
 \]
-$\alpha$ penalizes leaf count:
 \begin{itemize}
-    \item small $\alpha$: larger trees (low bias, high variance)
-    \item large $\alpha$: smaller trees (higher bias, lower variance)
+    \item \(\alpha \uparrow \Rightarrow\) stronger penalty on leaf count \(\Rightarrow\) smaller tree.
+    \item \(\alpha \downarrow \Rightarrow\) larger tree, potentially lower training error but higher variance.
 \end{itemize}
-Optimal $\alpha$ is selected by validation/CV.
 
+\textbf{Model-selection protocol:}
+\begin{enumerate}
+    \item generate pruning path over \(\alpha\),
+    \item evaluate by CV,
+    \item choose smallest tree within 1-SE rule (optional, robust practice).
+\end{enumerate}
+
+% ============================================================
 \section*{Q5. Unsupervised Learning}
+\addcontentsline{toc}{section}{Q5. Unsupervised Learning}
 
-\subsection*{Q5A. PCA explained variance}
-Given eigenvalues $\lambda_1,\lambda_2,\lambda_3$ of covariance matrix $\Sigma$:
+\subsection*{Q5A. PCA explained variance ratio}
+Given covariance eigenvalues \(\lambda_1,\lambda_2,\lambda_3\):
 \[
-\mathrm{EVR}(PC_k)=\frac{\lambda_k}{\lambda_1+\lambda_2+\lambda_3}.
+\mathrm{EVR}(PC_k)=\frac{\lambda_k}{\sum_j\lambda_j}.
 \]
-Eigenvalue $\lambda_k$ equals variance captured along principal component $k$.
+\textbf{Interpretation:} \(\lambda_k\) is variance captured along principal axis \(k\).
 
-\subsection*{Q5B. Elbow argument for K-Means}
-WCSS decreases monotonically with $K$ because each added centroid can only reduce minimum point-to-centroid squared distance.
-
-The elbow is the approximate point of maximum curvature where marginal gain
+\textbf{Cumulative criterion:}
 \[
-\Delta_K=\mathrm{WCSS}(K-1)-\mathrm{WCSS}(K)
+\mathrm{CEVR}(K)=\sum_{k=1}^{K}\mathrm{EVR}(PC_k).
 \]
-starts diminishing substantially, giving a practical complexity-vs-fit compromise.
+Pick minimum \(K\) achieving target (e.g., 90\%--95\%).
 
-\section*{Q6. Capstone Explainability}
+\textbf{Important:} PCA should be applied after centering (and typically scaling if units differ).
 
-For SHAP local explanation:
+\subsection*{Q5B. Elbow method for K-Means}
+Within-cluster sum of squares:
+\[
+\mathrm{WCSS}(K)=\sum_{c=1}^{K}\sum_{x_i\in c}\|x_i-\mu_c\|^2.
+\]
+WCSS decreases monotonically as \(K\) increases.
+
+Define marginal gain:
+\[
+\Delta_K=\mathrm{WCSS}(K-1)-\mathrm{WCSS}(K).
+\]
+Elbow is where \(\Delta_K\) starts shrinking substantially.
+
+\textbf{Good practice:}
 \begin{itemize}
-    \item \texttt{base\_value}: expected model output over reference/background data.
-    \item \texttt{output\_value}: model output for a specific candidate.
+    \item report elbow + silhouette score together;
+    \item run multiple initializations to avoid local minima;
+    \item assess cluster stability under resampling.
 \end{itemize}
-Their difference is the sum of per-feature SHAP contributions for that candidate.
 
-If a high-citation candidate is predicted \texttt{No Migration}, positive citation contribution can be outweighed by stronger negative contributions from other features (e.g., region/policy interaction, experience profile).
+% ============================================================
+\section*{Q6. Capstone Explainability}
+\addcontentsline{toc}{section}{Q6. Capstone Explainability}
+
+\subsection*{Local SHAP decomposition}
+For one instance:
+\begin{itemize}
+    \item \texttt{base\_value}: expected model output on background data
+    \item \texttt{output\_value}: model output for that instance
+\end{itemize}
+SHAP additivity:
+\[
+\texttt{output\_value}=\texttt{base\_value}+\sum_{j=1}^{p}\phi_j
+\]
+where \(\phi_j\) is feature \(j\)'s contribution.
+
+\subsection*{Interpretation example}
+A high-citation candidate predicted \texttt{No Migration} can occur if:
+\begin{itemize}
+    \item citation feature contributes positively,
+    \item but multiple stronger negative contributors (e.g., policy-region effects, career-stage patterns, compensation mismatch) dominate total logit/probability shift.
+\end{itemize}
+
+\subsection*{What makes explanation reliable}
+\begin{itemize}
+    \item background dataset must match deployment population,
+    \item feature pipeline at explanation time must match training/serving pipeline,
+    \item report both local (\(\phi_j\) table/waterfall) and global (mean\(|\phi_j|\)) views.
+\end{itemize}
+
+% ============================================================
+\section*{Final Deliverables Checklist (Grading-Oriented)}
+\addcontentsline{toc}{section}{Final Deliverables Checklist (Grading-Oriented)}
+
+\begin{longtable}{p{0.28\linewidth}p{0.67\linewidth}}
+\toprule
+\textbf{Section} & \textbf{Minimum complete evidence} \\
+\midrule
+Q1 SQL \& Leakage &
+Window query output sample, ranking table, timestamp-based leakage audit table (feature, event-time status, action). \\
+Q2 Inference &
+Elastic Net derivation, coefficient table with CI/p-values, assumptions note. \\
+Q3 Optimization &
+Trajectory + loss plots for SGD/Momentum/Adam, comparison paragraph. \\
+Q4 Nonlinear &
+SVM grid/CV heatmap (at least conceptual), pruning path vs validation score. \\
+Q5 Unsupervised &
+PCA EVR/CEVR plot, elbow+silhouette evidence, cluster interpretation. \\
+Q6 Explainability &
+One local SHAP case, one global importance plot, consistency and caveat note. \\
+\bottomrule
+\end{longtable}
+
+\begin{tcolorbox}[colback=green!3,colframe=green!40!black,title=Common Reasons for Point Deduction]
+\begin{itemize}
+    \item leakage not audited with timestamps,
+    \item reporting metrics without uncertainty or split protocol,
+    \item claiming causal interpretation from observational associations,
+    \item explanation plots without linking to final decision logic,
+    \item missing reproducibility details (seed, versions, split rules).
+\end{itemize}
+\end{tcolorbox}
+
+% ============================================================
+\section*{Short Executive Summary Template}
+\addcontentsline{toc}{section}{Short Executive Summary Template}
+
+\textbf{Problem:} Predict migration propensity under fairness and reliability constraints. \\
+\textbf{Approach:} Leakage-safe data engineering, regularized supervised models, optimizer diagnostics, nonlinear model control, unsupervised structure analysis, SHAP explainability. \\
+\textbf{Result:} Best model selected via validation protocol with interpretable and auditable behavior. \\
+\textbf{Deployment note:} Proceed with monitoring for drift, calibration, and subgroup fairness.
+
+\vspace{1em}
+\textbf{(Fill with actual numbers):}
+\begin{itemize}
+    \item Best AUC: \texttt{TODO}
+    \item Best F1: \texttt{TODO}
+    \item Brier / ECE: \texttt{TODO}
+    \item Max subgroup TPR gap: \texttt{TODO}
+\end{itemize}
 
 \end{document}

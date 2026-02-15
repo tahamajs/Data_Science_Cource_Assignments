@@ -1,14 +1,24 @@
 \documentclass[conference]{IEEEtran}
+
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{hyperref}
 \usepackage{url}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{multirow}
 \hypersetup{hidelinks}
+
+% =========================
+% Auto-import generated metrics if available
+% =========================
 \IfFileExists{../solutions/latex_metrics.tex}{\input{../solutions/latex_metrics.tex}}{}
 
+% =========================
 % Fallback defaults (overridden by auto-generated metrics when available)
+% =========================
 \providecommand{\MetricRuntimeProfile}{N/A}
 \providecommand{\MetricQSixModel}{N/A}
 \providecommand{\MetricQSixAccuracy}{N/A}
@@ -41,211 +51,278 @@ Spring 2025 Capstone Package}
 \maketitle
 
 \begin{abstract}
-This report documents an end-to-end graduate-level data science capstone on \texttt{GlobalTechTalent\_50k.csv}. The pipeline covers data engineering, leakage diagnostics, inference, optimization, non-linear modeling, unsupervised learning, explainable AI, and production-oriented extensions (Q15--Q20). The implementation is reproducible via a profile-aware CLI and generates report-ready metrics and artifacts automatically.
+This report presents an end-to-end graduate-level data science capstone on \texttt{GlobalTechTalent\_50k.csv}, targeting prediction of \texttt{Migration\_Status}. The workflow integrates data engineering, leakage diagnostics, statistical inference, optimization, non-linear modeling, unsupervised learning, explainability, and production-grade extensions (Q15--Q20). The implementation is reproducible via a profile-aware command-line pipeline and exports publication-ready metrics and figures automatically.
 \end{abstract}
 
-\section{Problem Statement and Scope}
-The project predicts \texttt{Migration\_Status} for 50,000 technical professionals while enforcing methodological controls for leakage, drift, uncertainty, and fairness. The final package is organized as a full instructional+engineering deliverable: scripts, tests, notebooks, and bilingual reports.
+\begin{IEEEkeywords}
+Data Science, Migration Prediction, Reproducibility, Calibration, Drift Detection, Counterfactual Recourse, Fairness Mitigation, SHAP
+\end{IEEEkeywords}
 
-\section{Dataset Diagnostics}
+% =========================================================
+\section{Problem Statement and Scope}
+The objective is to estimate migration propensity for 50{,}000 technical professionals while enforcing methodological safeguards against leakage, drift, uncertainty, and subgroup harm. The deliverable is both instructional and production-oriented: scripts, tests, notebooks, figures, and IEEE-ready reports.
+
+\subsection{Primary Research Questions}
+\begin{itemize}[leftmargin=1.4em]
+\item Can a leakage-safe supervised pipeline provide reliable migration risk estimates?
+\item Are predictions calibrated enough for threshold-based policy use?
+\item How robust is model quality under drift and temporal shifts?
+\item Can fairness improve under explicit policy constraints with acceptable utility loss?
+\end{itemize}
+
+% =========================================================
+\section{Data Diagnostics and EDA}
 
 \subsection{Target Balance}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\linewidth]{../figures/report_target_balance.png}
 \caption{Class distribution for \texttt{Migration\_Status}.}
+\label{fig:target_balance}
 \end{figure}
-\textbf{Interpretation:} The dataset is moderately imbalanced and requires threshold-aware evaluation beyond raw accuracy. \\
-\textbf{Decision Impact:} Model selection and threshold policy are evaluated with AUC/F1/calibration rather than accuracy alone. \\
-\textbf{Limitation/Threat:} Class prevalence can shift in deployment, so historical balance should not be treated as stationary.
+\textbf{Interpretation:} The target is moderately imbalanced.\\
+\textbf{Decision Impact:} Accuracy alone is insufficient; AUC/F1/calibration are primary.\\
+\textbf{Threat:} Class prevalence may shift post-deployment.
 
 \subsection{Missingness Profile}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.90\linewidth]{../figures/report_missingness_top10.png}
 \caption{Top-10 missingness rates across columns.}
+\label{fig:missingness}
 \end{figure}
-\textbf{Interpretation:} Missingness is concentrated in operational fields, notably visa-related attributes. \\
-\textbf{Decision Impact:} Features tied to post-outcome process states are either removed or treated as leakage candidates. \\
-\textbf{Limitation/Threat:} Missing-not-at-random behavior can encode policy effects and induce biased estimates.
+\textbf{Interpretation:} Missingness clusters around operational and visa-related fields.\\
+\textbf{Decision Impact:} Post-outcome process features are treated as leakage candidates.\\
+\textbf{Threat:} Missing-not-at-random mechanisms can bias estimates.
 
 \subsection{Correlation Structure}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.90\linewidth]{../figures/report_numeric_correlation.png}
 \caption{Correlation heatmap for key numeric predictors and target.}
+\label{fig:corr}
 \end{figure}
-\textbf{Interpretation:} The target correlates with activity and prominence indicators but no single predictor is sufficient. \\
-\textbf{Decision Impact:} Multivariate and non-linear models are justified by mixed signal strength and interaction effects. \\
-\textbf{Limitation/Threat:} Correlation is not causal; policy-sensitive confounders remain unobserved.
+\textbf{Interpretation:} Multiple weak-to-moderate signals appear; no single dominant predictor.\\
+\textbf{Decision Impact:} Multivariate and non-linear modeling is justified.\\
+\textbf{Threat:} Correlation is not causation.
 
-\subsection{Country-Level Migration Rates}
+\subsection{Country-Level Outcome Variation}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.90\linewidth]{../figures/report_country_migration_rate.png}
-\caption{Country-level migration rate ranking under minimum support filter.}
+\caption{Country-level migration rates with minimum support filter.}
+\label{fig:country_rate}
 \end{figure}
-\textbf{Interpretation:} Group-level outcome rates vary materially across origin countries. \\
-\textbf{Decision Impact:} Fairness slicing and post-mitigation evaluation are mandatory before policy use. \\
-\textbf{Limitation/Threat:} Observed regional differences may encode visa regimes, not individual readiness.
+\textbf{Interpretation:} Group-level outcome disparities are material.\\
+\textbf{Decision Impact:} Fairness slicing is mandatory before policy use.\\
+\textbf{Threat:} Country effects may encode policy regimes rather than individual readiness.
 
+% =========================================================
 \section{Core Questions (Q1--Q6)}
 
-\subsection{Q1 Data Engineering and Leakage}
-The SQL window-function answer is exported to \texttt{code/solutions/q1\_moving\_average.sql}. Leakage diagnostics show that \texttt{Visa\_Approval\_Date} must be excluded because it is a post-outcome process artifact.
+\subsection{Q1: Data Engineering and Leakage Control}
+The SQL window-function solution is provided in \texttt{code/solutions/q1\_moving\_average.sql}.  
+Leakage diagnosis flags \texttt{Visa\_Approval\_Date} as a post-outcome artifact and therefore excluded from training.
 
-\subsection{Q3 Optimizer Dynamics}
+\textbf{Governance rule:} a feature is eligible only if timestamped at or before prediction time.
+
+\subsection{Q3: Optimizer Dynamics on Ravine Geometry}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\linewidth]{../figures/q3_ravine_optimizers.png}
 \caption{SGD vs Momentum vs Adam trajectories on a ravine objective.}
+\label{fig:q3_optim}
 \end{figure}
-\textbf{Interpretation:} Momentum and Adam reduce ravine oscillation and converge faster than plain SGD. \\
-\textbf{Decision Impact:} For ill-conditioned objectives, adaptive or momentum-based optimizers are preferred defaults. \\
-\textbf{Limitation/Threat:} Toy ravine behavior does not fully capture non-convex deep objective geometry.
+\textbf{Interpretation:} Momentum/Adam reduce oscillation and speed convergence compared with plain SGD.\\
+\textbf{Decision Impact:} For ill-conditioned surfaces, adaptive or momentum-based optimizers are preferred.\\
+\textbf{Threat:} Toy ravine outcomes may not fully transfer to deep non-convex settings.
 
-\subsection{Q4 Non-Linear Models and Complexity Control}
+\subsection{Q4: Non-Linear Models and Complexity Control}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\linewidth]{../figures/q4_svm_gamma_sweep.png}
-\caption{Validation sensitivity to RBF kernel width (\(\gamma\)).}
+\caption{Validation sensitivity to RBF width (\(\gamma\)).}
+\label{fig:q4_svm}
 \end{figure}
-\textbf{Interpretation:} Larger \(\gamma\) increases local sensitivity and can increase variance. \\
-\textbf{Decision Impact:} Overfitting regimes are controlled by reducing \(\gamma\) and cross-validating the support pattern. \\
-\textbf{Limitation/Threat:} Hyperparameter effect depends on feature scaling and class overlap.
+\textbf{Interpretation:} High \(\gamma\) increases local sensitivity and variance risk.\\
+\textbf{Decision Impact:} Overfit control via \(\gamma\downarrow\), \(C\)-tuning, and CV.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\linewidth]{../figures/q4_tree_pruning_curve.png}
-\caption{Cost-complexity pruning tradeoff for CART.}
+\caption{Cost-complexity pruning curve for CART.}
+\label{fig:q4_prune}
 \end{figure}
-\textbf{Interpretation:} Increasing \(\alpha\) regularizes tree size and moves along the bias-variance frontier. \\
-\textbf{Decision Impact:} Selected \(\alpha\) should maximize validation generalization, not training fit. \\
-\textbf{Limitation/Threat:} Pruning curves are data-split dependent and may drift under regime changes.
+\textbf{Interpretation:} Increasing \(\alpha\) shrinks tree complexity along the bias--variance frontier.\\
+\textbf{Decision Impact:} Select \(\alpha\) by validation generalization, not training fit.
 
-\subsection{Q5 Unsupervised Structure}
+\subsection{Q5: Unsupervised Structure Discovery}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.82\linewidth]{../figures/q5_kmeans_elbow.png}
-\caption{WCSS elbow curve for model order selection in K-Means.}
+\caption{WCSS elbow curve for K-Means model order selection.}
+\label{fig:q5_elbow}
 \end{figure}
-\textbf{Interpretation:} WCSS shows diminishing returns after a moderate cluster count. \\
-\textbf{Decision Impact:} Elbow-based \(K\) is treated as a complexity heuristic, then validated against interpretability utility. \\
-\textbf{Limitation/Threat:} Elbow location can be ambiguous when curvature is shallow.
+\textbf{Interpretation:} Diminishing WCSS gains after moderate \(K\).\\
+\textbf{Decision Impact:} \(K\) selected as complexity--utility compromise, then validated with interpretability.
 
-\subsection{Q6 Explainable Capstone Model}
-Current run profile: \textbf{\MetricRuntimeProfile}. \\
-Capstone model: \textbf{\MetricQSixModel}. \\
+\subsection{Q6: Explainable Capstone Model}
+Runtime profile: \textbf{\MetricRuntimeProfile}.  
+Capstone model: \textbf{\MetricQSixModel}.  
 AUC: \textbf{\MetricQSixAuc}, Accuracy: \textbf{\MetricQSixAccuracy}, F1: \textbf{\MetricQSixFOne}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\linewidth]{../figures/q6_shap_force_plot.png}
 \caption{Local SHAP explanation for a selected high-citation candidate.}
+\label{fig:q6_local}
 \end{figure}
-\textbf{Interpretation:} The candidate prediction is the sum of feature-level positive and negative contributions from the base value. \\
-\textbf{Decision Impact:} Decision review can target dominant negative drivers instead of relying on aggregate score alone. \\
-\textbf{Limitation/Threat:} SHAP explains model behavior, not structural causality.
+\textbf{Interpretation:} Instance-level score equals base value plus feature contributions.\\
+\textbf{Decision Impact:} Review focuses on dominant negative drivers, not only aggregate score.\\
+\textbf{Threat:} SHAP explains model behavior, not causal mechanisms.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\linewidth]{../figures/q6_shap_summary.png}
-\caption{Global feature influence summary for the capstone model.}
+\caption{Global SHAP summary for the capstone model.}
+\label{fig:q6_global}
 \end{figure}
-\textbf{Interpretation:} Research and activity-related predictors dominate the global attribution profile. \\
-\textbf{Decision Impact:} Feature governance should prioritize data quality and policy review for top-ranked drivers. \\
-\textbf{Limitation/Threat:} Global importance does not reflect all subgroup-specific interactions.
+\textbf{Interpretation:} Research/activity indicators dominate attribution globally.\\
+\textbf{Decision Impact:} Top drivers require stricter data-quality and policy oversight.\\
+\textbf{Threat:} Global importance can hide subgroup interaction heterogeneity.
 
+% =========================================================
 \section{Advanced Production-Oriented Block (Q15--Q20)}
 
-\subsection{Q15 Calibration and Threshold Policy}
-Brier: \textbf{\MetricQFifteenBrier}, ECE: \textbf{\MetricQFifteenEce}, Best-F1 threshold: \textbf{\MetricQFifteenBestFOneThreshold}.
+\subsection{Q15: Calibration and Threshold Policy}
+Brier: \textbf{\MetricQFifteenBrier}; ECE: \textbf{\MetricQFifteenEce}; Best-F1 threshold: \textbf{\MetricQFifteenBestFOneThreshold}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\linewidth]{../figures/q15_calibration_curve.png}
-\caption{Calibration reliability curve for the capstone model.}
+\caption{Reliability (calibration) curve of the capstone model.}
+\label{fig:q15_cal}
 \end{figure}
-\textbf{Interpretation:} The calibration curve quantifies probability reliability against empirical frequencies. \\
-\textbf{Decision Impact:} Operational thresholds are selected from calibrated risk estimates rather than raw scores. \\
-\textbf{Limitation/Threat:} Calibration can degrade over time and must be monitored.
+\textbf{Interpretation:} Reliability gap between predicted and observed frequencies is quantified.\\
+\textbf{Decision Impact:} Thresholds are selected from calibrated risk, not raw margins.\\
+\textbf{Threat:} Calibration degrades under shift; requires periodic recalibration.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.90\linewidth]{../figures/q15_threshold_tradeoff.png}
-\caption{Threshold tradeoff between F1 components and expected decision cost.}
+\caption{Threshold tradeoff: precision/recall/F1 and expected decision cost.}
+\label{fig:q15_thr}
 \end{figure}
-\textbf{Interpretation:} Precision, recall, and expected error cost respond differently to threshold movement. \\
-\textbf{Decision Impact:} The threshold is chosen by policy utility (cost matrix), not a universal default. \\
-\textbf{Limitation/Threat:} Cost assumptions are context-dependent and can change by jurisdiction.
+\textbf{Interpretation:} Policy utility changes nonlinearly with threshold.\\
+\textbf{Decision Impact:} Operating point is cost-matrix driven (FN vs FP asymmetry).
 
-\subsection{Q16 Drift Monitoring}
-Top drift feature: \textbf{\MetricQSixteenTopFeature} with PSI \textbf{\MetricQSixteenTopPsi}.
+\subsection{Q16: Drift Detection and Monitoring}
+Top drift feature: \textbf{\MetricQSixteenTopFeature}; PSI: \textbf{\MetricQSixteenTopPsi}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.90\linewidth]{../figures/q16_drift_psi_top12.png}
-\caption{Feature drift ranking using PSI thresholds.}
+\caption{PSI-based drift ranking.}
+\label{fig:q16_drift}
 \end{figure}
-\textbf{Interpretation:} A subset of features exhibits moderate-to-high instability between reference and current windows. \\
-\textbf{Decision Impact:} Retraining and feature-level alerting are triggered by PSI severity bands. \\
-\textbf{Limitation/Threat:} PSI detects distribution shift, not necessarily target relationship drift.
+\textbf{Interpretation:} Several predictors show moderate/high instability.\\
+\textbf{Decision Impact:} Severity bands trigger alerts, retraining checks, and model revalidation.\\
+\textbf{Threat:} Covariate drift does not necessarily imply concept drift.
 
-\subsection{Q17 Counterfactual Recourse}
+\subsection{Q17: Counterfactual Recourse}
 Recourse success rate: \textbf{\MetricQSeventeenRecourseRate}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.78\linewidth]{../figures/q17_recourse_median_deltas.png}
-\caption{Median actionable effort needed to flip near-boundary predictions.}
+\caption{Median actionable effort to flip near-boundary negative predictions.}
+\label{fig:q17_rec}
 \end{figure}
-\textbf{Interpretation:} Actionability varies across controllable features and can be quantified. \\
-\textbf{Decision Impact:} Candidate guidance can focus on the lowest-effort feasible interventions. \\
-\textbf{Limitation/Threat:} Counterfactual feasibility depends on real-world constraints not encoded in data.
+\textbf{Interpretation:} Recourse burden varies by controllable feature.\\
+\textbf{Decision Impact:} Guidance can prioritize low-effort, feasible interventions.\\
+\textbf{Threat:} Real-world feasibility constraints may be partially unobserved.
 
-\subsection{Q18 Temporal Backtesting and Degradation}
-Mean temporal AUC: \textbf{\MetricQEighteenMeanAuc}, AUC decay: \textbf{\MetricQEighteenAucDecay}.
+\subsection{Q18: Temporal Backtesting and Degradation}
+Mean temporal AUC: \textbf{\MetricQEighteenMeanAuc}; AUC decay: \textbf{\MetricQEighteenAucDecay}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.90\linewidth]{../figures/q18_temporal_degradation.png}
-\caption{Rolling temporal folds: performance decay against drift proxy.}
+\caption{Rolling temporal fold performance versus drift proxy.}
+\label{fig:q18_temp}
 \end{figure}
-\textbf{Interpretation:} Performance changes across sequential folds and is contrasted with drift magnitude. \\
-\textbf{Decision Impact:} Time-aware validation is required before production claims on future windows. \\
-\textbf{Limitation/Threat:} If a true time field is absent, fallback ordering introduces uncertainty in temporal realism.
+\textbf{Interpretation:} Sequential performance degradation is measurable and drift-aware.\\
+\textbf{Decision Impact:} Time-aware validation is required before future-window claims.\\
+\textbf{Threat:} If true timestamps are absent, fallback ordering adds uncertainty.
 
-\subsection{Q19 Uncertainty Quantification}
-Coverage@90: \textbf{\MetricQNineteenCovNinety}, max under-coverage: \textbf{\MetricQNineteenMaxUndercoverage}.
+\subsection{Q19: Uncertainty Quantification}
+Coverage@90: \textbf{\MetricQNineteenCovNinety}; Max under-coverage: \textbf{\MetricQNineteenMaxUndercoverage}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.90\linewidth]{../figures/q19_coverage_vs_alpha.png}
-\caption{Nominal vs empirical coverage and interval width across confidence levels.}
+\caption{Nominal vs empirical coverage and interval width.}
+\label{fig:q19_uq}
 \end{figure}
-\textbf{Interpretation:} Split-conformal intervals expose the calibration-quality tradeoff between reliability and interval width. \\
-\textbf{Decision Impact:} Policy can reject low-confidence cases and route them for human review. \\
-\textbf{Limitation/Threat:} Distribution shift can break finite-sample coverage guarantees.
+\textbf{Interpretation:} Conformal coverage reflects reliability-width tradeoff.\\
+\textbf{Decision Impact:} Low-confidence cases can be deferred to human review.\\
+\textbf{Threat:} Distribution shift can weaken finite-sample guarantees.
 
-\subsection{Q20 Fairness Mitigation Experiment}
-DP gap baseline: \textbf{\MetricQTwentyDpGapBase}; DP gap mitigated: \textbf{\MetricQTwentyDpGapMitigated}; policy pass: \textbf{\MetricQTwentyPolicyPass}.
+\subsection{Q20: Fairness Mitigation}
+DP gap (baseline): \textbf{\MetricQTwentyDpGapBase}; DP gap (mitigated): \textbf{\MetricQTwentyDpGapMitigated}; Policy pass: \textbf{\MetricQTwentyPolicyPass}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.84\linewidth]{../figures/q20_fairness_tradeoff.png}
-\caption{Fairness-performance tradeoff from baseline to mitigated model.}
+\caption{Fairness--performance tradeoff after mitigation (e.g., reweighing).}
+\label{fig:q20_fair}
 \end{figure}
-\textbf{Interpretation:} Reweighing shifts the operating point on the fairness-performance plane. \\
-\textbf{Decision Impact:} Deployment requires explicit policy constraints on acceptable performance drop and fairness gain. \\
-\textbf{Limitation/Threat:} Single-metric fairness gains can mask harms on unmonitored subgroups.
+\textbf{Interpretation:} Mitigation shifts operating point on utility-fairness plane.\\
+\textbf{Decision Impact:} Deployment depends on explicit policy bounds for utility loss.\\
+\textbf{Threat:} Improvement in one fairness metric may mask harms elsewhere.
 
+% =========================================================
+\section{Consolidated Metric Snapshot}
+\begin{table}[H]
+\centering
+\caption{Auto-exported key outcomes}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.49\linewidth} >{\raggedleft\arraybackslash}p{0.42\linewidth}}
+\toprule
+\textbf{Metric} & \textbf{Value}\\
+\midrule
+Run profile & \MetricRuntimeProfile\\
+Capstone model & \MetricQSixModel\\
+Q6 AUC / Accuracy / F1 & \MetricQSixAuc\ /\ \MetricQSixAccuracy\ /\ \MetricQSixFOne\\
+Q15 Brier / ECE & \MetricQFifteenBrier\ /\ \MetricQFifteenEce\\
+Q15 Best-F1 threshold & \MetricQFifteenBestFOneThreshold\\
+Q16 Top PSI feature (value) & \MetricQSixteenTopFeature\ (\MetricQSixteenTopPsi)\\
+Q17 Recourse success rate & \MetricQSeventeenRecourseRate\\
+Q18 Mean AUC / AUC decay & \MetricQEighteenMeanAuc\ /\ \MetricQEighteenAucDecay\\
+Q19 Coverage@90 / Max under-coverage & \MetricQNineteenCovNinety\ /\ \MetricQNineteenMaxUndercoverage\\
+Q20 DP gap baseline $\rightarrow$ mitigated & \MetricQTwentyDpGapBase\ $\rightarrow$\ \MetricQTwentyDpGapMitigated\\
+Q20 Policy pass & \MetricQTwentyPolicyPass\\
+\bottomrule
+\end{tabular}
+\label{tab:metrics}
+\end{table}
+
+% =========================================================
 \section{Reproducibility and Artifacts}
-The implementation supports profile-based execution via
-\texttt{python code/scripts/full\_solution\_pipeline.py --profile \{fast,balanced,heavy\}}.
-All artifacts are generated under:\\
-\texttt{code/solutions/} and \texttt{code/figures/}, including schema-v2 \texttt{run\_summary.json}, Q18--Q20 CSV outputs, and report metric exports (\texttt{latex\_metrics.json}/\texttt{.tex}).
+The full run is profile-driven:
+\begin{quote}
+\texttt{python code/scripts/full\_solution\_pipeline.py --profile \{fast,balanced,heavy\}}
+\end{quote}
+
+Generated outputs include:
+\begin{itemize}[leftmargin=1.4em]
+\item figures under \texttt{code/figures/} and \texttt{../figures/}
+\item solution tables under \texttt{code/solutions/}
+\item machine-readable summaries: \texttt{run\_summary.json}
+\item report-ready exports: \texttt{latex\_metrics.json}, \texttt{latex\_metrics.tex}
+\item Q18--Q20 CSV artifacts for auditability and grading
+\end{itemize}
 
 \section{Conclusion}
-The project now operates as a full graduate-capstone package: it combines mathematical rigor, engineering reproducibility, production diagnostics, and explainability/fairness accountability in a single auditable workflow.
+This capstone delivers a complete, auditable workflow that connects methodological rigor with production-readiness: leakage-safe modeling, calibrated decision policy, drift surveillance, uncertainty-aware routing, and fairness-constrained mitigation. The package is suitable for graduate instruction and near-production experimentation under explicit governance controls.
 
 \end{document}

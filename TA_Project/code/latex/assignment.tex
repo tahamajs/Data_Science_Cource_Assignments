@@ -1,12 +1,27 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{amsmath,amssymb}
 \usepackage{geometry}
 \usepackage{tcolorbox}
 \usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{listings}
 \geometry{margin=1in}
+\hypersetup{hidelinks}
+\setlist[itemize]{leftmargin=1.4em}
+\setlist[enumerate]{leftmargin=1.6em}
 
-\title{University of Tehran \\ Department of Electrical and Computer Engineering \\ \textbf{Data Science - Final Assignment}}
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true,
+  columns=fullflexible
+}
+
+\title{University of Tehran \\ Department of Electrical and Computer Engineering \\ \textbf{Data Science - Final Assignment} \\ \large Complete Solved Version}
 \author{Lead Teaching Assistant Team}
 \date{Spring 2025}
 
@@ -18,53 +33,240 @@
 \end{tcolorbox}
 
 \section{Question 1: Advanced Data Engineering \& SQL}
-\subsection*{Part A: Time-Series Trends via Window Functions}
-Write a single SQL query to compute the 3-year moving average of \texttt{Research\_Citations} for each user, partitioned by \texttt{Country\_Origin}, and rank users inside each country by this moving average.
 
-\subsection*{Part B: Diagnostic Identification of Data Leakage}
-Given proposed features below, identify which would introduce leakage and justify your answer:
+\subsection*{Part A: Time-Series Trends via Window Functions}
+\textbf{Required:} Compute 3-year moving average of \texttt{Research\_Citations}, partitioned by \texttt{Country\_Origin}, then rank users inside each country by this moving average.
+
+\textbf{Solution SQL (single-query with CTE):}
+\begin{lstlisting}[language=SQL]
+WITH citation_ma AS (
+    SELECT
+        UserID,
+        Country_Origin,
+        Year,
+        Research_Citations,
+        AVG(Research_Citations) OVER (
+            PARTITION BY Country_Origin, UserID
+            ORDER BY Year
+            ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) AS ma3_citations
+    FROM Professionals_Data
+)
+SELECT
+    UserID,
+    Country_Origin,
+    Year,
+    Research_Citations,
+    ma3_citations,
+    DENSE_RANK() OVER (
+        PARTITION BY Country_Origin
+        ORDER BY ma3_citations DESC
+    ) AS country_rank_by_ma3
+FROM citation_ma
+ORDER BY Country_Origin, country_rank_by_ma3, UserID, Year;
+\end{lstlisting}
+
+\textbf{Why this is correct:}
 \begin{itemize}
-    \item \texttt{Years\_Since\_Degree}
-    \item \texttt{Visa\_Approval\_Date}
-    \item \texttt{Last\_Login\_Region}
-    \item \texttt{Passport\_Renewal\_Status}
+    \item \texttt{ROWS BETWEEN 2 PRECEDING AND CURRENT ROW} gives a rolling window of size 3.
+    \item Partition by \texttt{Country\_Origin, UserID} computes per-user trend inside each country.
+    \item \texttt{DENSE\_RANK()} ranks users by smoothed citation signal inside each country.
 \end{itemize}
 
+\subsection*{Part B: Diagnostic Identification of Data Leakage}
+\textbf{Feature-by-feature diagnosis:}
+\begin{itemize}
+    \item \texttt{Years\_Since\_Degree}: \textbf{Usually safe}, if degree date is known before prediction time.
+    \item \texttt{Visa\_Approval\_Date}: \textbf{Direct leakage} (typically post-outcome or tightly post-decision).
+    \item \texttt{Last\_Login\_Region}: \textbf{Potential temporal leakage}; if recorded after migration decision, it leaks outcome state.
+    \item \texttt{Passport\_Renewal\_Status}: \textbf{Potential leakage}; may reflect post-decision process behavior depending on timestamp.
+\end{itemize}
+
+\textbf{Rule:} a feature is allowed only if its timestamp \(t_f \le t_0\) (prediction time).
+
+% ---------------------------------------------------------
 \section{Question 2: Statistical Inference \& Linear Models}
+
 \subsection*{Part A: Elastic Net Derivation}
 Given
 \[
 J(\theta)=\frac{1}{2m}\sum_{i=1}^{m}\left(h_\theta(x^{(i)})-y^{(i)}\right)^2+\lambda_1\sum_{j=1}^{n}|\theta_j|+\frac{\lambda_2}{2}\sum_{j=1}^{n}\theta_j^2,
 \]
-derive $\nabla J(\theta)$ with respect to $\theta_j$, and explain subgradient behavior at $\theta_j=0$.
+for coordinate \(\theta_j\):
+\[
+\frac{\partial J}{\partial \theta_j}
+=
+\frac{1}{m}\sum_{i=1}^{m}\left(h_\theta(x^{(i)})-y^{(i)}\right)x_j^{(i)}
++\lambda_1\,\partial |\theta_j|
++\lambda_2\theta_j.
+\]
+
+Subgradient of \(|\theta_j|\):
+\[
+\partial |\theta_j| =
+\begin{cases}
++1, & \theta_j>0\\
+-1, & \theta_j<0\\
+[-1,1], & \theta_j=0.
+\end{cases}
+\]
+
+\textbf{Interpretation at \(\theta_j=0\):}
+\begin{itemize}
+    \item The derivative is set-valued (\([-1,1]\)).
+    \item This enables exact zeros under coordinate descent/proximal updates.
+    \item Hence Elastic Net combines sparsity (\(L_1\)) and stability (\(L_2\)).
+\end{itemize}
 
 \subsection*{Part B: Interpreting Regression Outputs}
-For \texttt{GitHub\_Activity}:
+Given for \texttt{GitHub\_Activity}:
+\[
+\hat\beta=0.52,\quad p=0.003,\quad 95\%\ \mathrm{CI}=[0.18,0.86].
+\]
+
+\textbf{Statistical significance under \(H_0:\beta=0\):}
 \begin{itemize}
-    \item Coefficient: 0.52
-    \item P-value: 0.003
-    \item 95\% CI: [0.18, 0.86]
+    \item Since \(p=0.003<0.05\), reject \(H_0\).
+    \item CI excludes 0, confirming significance.
 \end{itemize}
-State whether it is statistically significant under $H_0: \beta=0$ and interpret both p-value and CI.
 
+\textbf{Effect interpretation:}
+\begin{itemize}
+    \item Estimated association is positive.
+    \item If logistic model: one-unit increase multiplies odds by \(\exp(0.52)\approx 1.68\).
+    \item If linear probability-style interpretation, sign and CI still indicate positive relationship, with model-specific scale caveat.
+\end{itemize}
+
+% ---------------------------------------------------------
 \section{Question 3: Optimization \& Gradient Descent}
-Explain the ravine phenomenon and compare Momentum vs Adam for optimization in this geometry.
 
+\textbf{Ravine phenomenon:}
+In ravine-shaped objectives, curvature is very steep in one direction and flat in another. Plain SGD oscillates across steep walls and advances slowly along the shallow axis.
+
+\textbf{Momentum:}
+\[
+v_t=\beta v_{t-1}+\eta \nabla J(\theta_t),\qquad
+\theta_{t+1}=\theta_t-v_t.
+\]
+\begin{itemize}
+    \item Reduces zig-zag oscillation by accumulating consistent directional gradients.
+    \item Faster movement along valley floor compared to vanilla SGD.
+\end{itemize}
+
+\textbf{Adam:}
+\[
+m_t=\beta_1 m_{t-1}+(1-\beta_1)g_t,\quad
+s_t=\beta_2 s_{t-1}+(1-\beta_2)g_t^2,
+\]
+with bias correction and per-coordinate scaling
+\[
+\theta_{t+1}=\theta_t-\eta\frac{\hat m_t}{\sqrt{\hat s_t}+\epsilon}.
+\]
+\begin{itemize}
+    \item Typically more robust to anisotropy and feature-scale mismatch.
+    \item Usually converges faster with less manual tuning.
+\end{itemize}
+
+\textbf{Practical recommendation:}
+Use Adam as default in heterogeneous-scale settings; use Momentum-SGD when you want simpler dynamics and strong control via schedule tuning.
+
+% ---------------------------------------------------------
 \section{Question 4: Non-Linear Models \& Kernels}
+
 \subsection*{Part A: SVM RBF Parameterization}
-If RBF-SVM overfits, how should $\gamma$ be adjusted and why?
+RBF kernel:
+\[
+K(x,x')=\exp(-\gamma\|x-x'\|^2).
+\]
+
+If overfitting occurs, \textbf{decrease \(\gamma\)}.
+\begin{itemize}
+    \item Large \(\gamma\): very local influence, highly wiggly boundary (high variance).
+    \item Smaller \(\gamma\): smoother boundary, better generalization.
+\end{itemize}
+Also consider reducing \(C\) to strengthen regularization.
 
 \subsection*{Part B: Cost-Complexity Pruning}
-Given $R_\alpha(T)=R(T)+\alpha|T|$, explain how $\alpha$ controls pruning and bias-variance behavior.
+\[
+R_\alpha(T)=R(T)+\alpha|T|.
+\]
 
+\begin{itemize}
+    \item \(\alpha\) penalizes tree size (\(|T|\): number of leaves/terminal nodes).
+    \item Small \(\alpha\): larger trees (lower bias, higher variance).
+    \item Large \(\alpha\): smaller trees (higher bias, lower variance).
+\end{itemize}
+
+\textbf{Selection:}
+Choose \(\alpha\) via validation/CV to optimize out-of-sample performance rather than training error.
+
+% ---------------------------------------------------------
 \section{Question 5: Unsupervised Learning}
+
 \subsection*{Part A: PCA Explained Variance}
-For a $3\times3$ covariance matrix, show how to compute explained variance ratios for PC1 and PC2 and interpret eigenvalues.
+Let covariance matrix eigenvalues be \(\lambda_1,\lambda_2,\lambda_3\) (sorted descending).
+Explained variance ratio:
+\[
+\mathrm{EVR}(PC_k)=\frac{\lambda_k}{\lambda_1+\lambda_2+\lambda_3}.
+\]
+Hence:
+\[
+\mathrm{EVR}(PC_1)=\frac{\lambda_1}{\lambda_1+\lambda_2+\lambda_3},\qquad
+\mathrm{EVR}(PC_2)=\frac{\lambda_2}{\lambda_1+\lambda_2+\lambda_3}.
+\]
+
+\textbf{Interpretation of eigenvalues:}
+\(\lambda_k\) is variance captured along principal axis \(k\). Larger \(\lambda_k\) means more information retained by that component.
 
 \subsection*{Part B: K-Means Elbow Method}
-Give a mathematical/geometric argument for why WCSS elbow is a useful heuristic for choosing $K$.
+WCSS objective:
+\[
+\mathrm{WCSS}(K)=\sum_{c=1}^{K}\sum_{x_i\in c}\|x_i-\mu_c\|^2.
+\]
+As \(K\) increases, WCSS monotonically decreases (more centroids \(\Rightarrow\) smaller within-cluster distances).
 
+Define marginal gain:
+\[
+\Delta_K=\mathrm{WCSS}(K-1)-\mathrm{WCSS}(K).
+\]
+The elbow is where \(\Delta_K\) begins to shrink sharply, indicating diminishing returns.  
+So elbow gives a geometric complexity-vs-fit compromise.
+
+% ---------------------------------------------------------
 \section{Question 6: Capstone Explainability}
-Using SHAP for an XGBoost model, explain the difference between \texttt{base\_value} and \texttt{output\_value} for a high-citation candidate predicted as \texttt{No Migration}.
+
+For SHAP in XGBoost:
+\begin{itemize}
+    \item \texttt{base\_value}: expected model output over background data.
+    \item \texttt{output\_value}: prediction for the specific candidate.
+\end{itemize}
+
+Additive relation:
+\[
+\texttt{output\_value}=\texttt{base\_value}+\sum_{j=1}^{p}\phi_j
+\]
+where \(\phi_j\) is feature \(j\)'s SHAP contribution.
+
+\textbf{Why high-citation candidate can still be predicted \texttt{No Migration}:}
+\begin{itemize}
+    \item \texttt{Research\_Citations} may push prediction upward (positive \(\phi\)),
+    \item but stronger negative contributions from other features
+    (e.g., region-policy interaction, stability proxies, experience pattern)
+    can dominate, leading to final negative class.
+\end{itemize}
+
+\textbf{Important caveat:}
+SHAP explains model behavior, not causal truth.
+
+% ---------------------------------------------------------
+\section*{Compact Grading Checklist}
+\begin{itemize}
+    \item Q1: correct window function + timestamp-based leakage reasoning
+    \item Q2: correct EN gradient/subgradient + valid statistical interpretation
+    \item Q3: accurate ravine explanation + Momentum vs Adam comparison
+    \item Q4: correct \(\gamma\) direction for overfit + pruning bias-variance logic
+    \item Q5: correct EVR formulas + sound elbow argument
+    \item Q6: correct SHAP decomposition and interpretation
+\end{itemize}
 
 \end{document}

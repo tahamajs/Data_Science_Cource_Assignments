@@ -1,25 +1,39 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage{amsmath,amssymb}
 \usepackage{geometry}
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{tcolorbox}
 \usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{listings}
 \geometry{margin=1in}
 \setlist[itemize]{leftmargin=1.4em}
 \setlist[enumerate]{leftmargin=1.6em}
+\hypersetup{hidelinks}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true,
+  columns=fullflexible
+}
 
 \title{University of Tehran -- ECE Department \\
-\textbf{Data Science Comprehensive Final Assessment (Extended Edition)}}
+\textbf{Data Science Comprehensive Final Assessment (Extended Edition)}\\
+\large Complete Solution Blueprint \& Professional Submission Guide}
 \author{Course Staff (Spring 2025) -- Professional Assignment Pack}
-\date{Version 1.0}
+\date{Version 2.0 (Complete Guide)}
 
 \begin{document}
 \maketitle
 
 \begin{tcolorbox}
-\textbf{Course Context:} This extended final integrates the full UT-ECE Data Science track seen in Spring 2024/2025 repositories, from Python and scientific studies to SQL engineering, ML, deep learning, NLP, and LLM agents.
+\textbf{Course Context:} This extended final integrates the full UT-ECE Data Science track from Python and scientific studies to SQL engineering, ML, deep learning, NLP, LLM agents, and production reliability.
 \end{tcolorbox}
 
 \section*{1. Assessment Overview}
@@ -29,7 +43,7 @@
 
 \textbf{Additional allowed datasets:}
 \begin{itemize}
-    \item Course assignment datasets from the UT-ECE repos (where relevant).
+    \item Course assignment datasets from UT-ECE repositories (where relevant).
     \item Public benchmark datasets with proper citation.
 \end{itemize}
 
@@ -49,6 +63,11 @@
     \item Log software environment and package versions.
     \item No leakage from post-outcome variables.
 \end{itemize}
+
+\begin{tcolorbox}
+\textbf{Recommended execution order:}
+Setup \(\rightarrow\) Leakage Audit \(\rightarrow\) EDA/Inference \(\rightarrow\) Supervised/Unsupervised models \(\rightarrow\) Deep/NLP \(\rightarrow\) Fairness/Governance \(\rightarrow\) Capstone integration \(\rightarrow\) Q15--Q20 production diagnostics.
+\end{tcolorbox}
 
 \section*{2. Grading Distribution (260 points)}
 
@@ -74,265 +93,379 @@ Optional bonus &  & +20 \\
 \end{tabular}
 \end{center}
 
+% ============================================================
 \section*{Block A -- Foundations (20 points)}
 
 \subsection*{Q1. Data Science Lifecycle and Problem Framing (10 pts)}
-Define an end-to-end lifecycle for this migration prediction problem:
+
+\textbf{Expected complete answer:}
 \begin{itemize}
-    \item business objective and measurable success criteria,
-    \item data assumptions and potential failure modes,
-    \item deployment setting and monitoring plan.
+    \item \textbf{Business objective:} predict migration propensity for policy/retention decisions.
+    \item \textbf{Success criteria:} define AUC/F1/calibration/fairness targets.
+    \item \textbf{Assumptions:} timestamp correctness, label validity, representativeness.
+    \item \textbf{Failure modes:} leakage, sampling bias, drift, proxy discrimination.
+    \item \textbf{Deployment:} batch or API scoring + human review policy.
+    \item \textbf{Monitoring:} performance, calibration, fairness, drift thresholds.
 \end{itemize}
 
-\textbf{Deliverable:} 1-page structured problem statement with a lifecycle diagram.
+\textbf{Deliverable format:}
+one-page structured statement + lifecycle diagram:
+\[
+\text{Problem} \rightarrow \text{Data} \rightarrow \text{Model} \rightarrow \text{Eval} \rightarrow \text{Deploy} \rightarrow \text{Monitor} \rightarrow \text{Retrain}
+\]
 
 \subsection*{Q2. Python Data Operations and EDA (10 pts)}
-Using Pandas/NumPy/Matplotlib/Seaborn:
+
+\textbf{Minimum complete implementation:}
 \begin{enumerate}
-    \item perform robust schema checks (types, nulls, outliers),
-    \item produce at least six EDA plots with interpretation,
-    \item implement one reusable preprocessing function with tests.
+    \item Schema checks: dtypes, nulls, duplicates, outliers, invalid ranges.
+    \item At least 6 plots:
+    \begin{itemize}
+        \item target balance,
+        \item missingness profile,
+        \item distributions of key numeric variables,
+        \item boxplots by target,
+        \item correlation heatmap,
+        \item group migration rate (country/education).
+    \end{itemize}
+    \item One reusable preprocessing function + tests.
 \end{enumerate}
 
-\textbf{Deliverable:} EDA section in notebook + tested utility function.
+\textbf{Suggested utility signature:}
+\begin{lstlisting}[language=Python]
+def build_preprocessor(num_cols, cat_cols):
+    # impute/scale numeric, impute/encode categorical
+    # return sklearn ColumnTransformer pipeline
+    ...
+\end{lstlisting}
 
+\textbf{Unit tests required:}
+no NaN after transform, stable output shape, unseen-category handling.
+
+% ============================================================
 \section*{Block B -- Inference and Visualization (20 points)}
 
 \subsection*{Q3. Scientific Studies and Inference (10 pts)}
-Address the following:
+
+\textbf{Expected complete answer:}
 \begin{itemize}
-    \item observational vs experimental framing for migration analysis,
-    \item sampling bias risks,
-    \item one confidence interval and one hypothesis test with assumptions.
+    \item Observational vs experimental framing (causal limits).
+    \item Sampling-bias risks and mitigation.
+    \item One confidence interval + one hypothesis test with assumptions.
 \end{itemize}
+
+\textbf{Example CI (difference in two proportions):}
+\[
+(\hat p_1-\hat p_2)\pm z_{0.975}\sqrt{\frac{\hat p_1(1-\hat p_1)}{n_1}+\frac{\hat p_2(1-\hat p_2)}{n_2}}
+\]
+
+\textbf{Example hypothesis test:} chi-square independence (education vs migration) with effect size (Cramér’s V).
 
 \subsection*{Q4. Visualization Design + Storytelling (10 pts)}
-Create a narrative dashboard (or notebook dashboard section) for non-technical stakeholders.
-Must include:
+
+\textbf{Required elements in dashboard/narrative:}
 \begin{itemize}
-    \item clear KPI definitions,
-    \item color and preattentive design rationale,
-    \item one misleading-visualization pitfall and correction.
+    \item KPI definitions (migration rate, risk count, threshold metrics, fairness gap).
+    \item Preattentive and color rationale (consistency, contrast, cognitive load).
+    \item One misleading chart pitfall + corrected version.
 \end{itemize}
 
+\textbf{Pitfall example:} truncated y-axis exaggerating group differences.  
+\textbf{Fix:} proper baseline, confidence bars, annotation.
+
+% ============================================================
 \section*{Block C -- SQL and Data Engineering (25 points)}
 
 \subsection*{Q5. SQL-1/SQL-2 Advanced Querying (15 pts)}
-Write SQL for:
-\begin{enumerate}
-    \item 3-year moving average citations by country (window function),
-    \item top decile ranking and percentile bucketing,
-    \item one CTE-based cohort retention/transition style query.
-\end{enumerate}
+
+\textbf{(i) 3-year moving average by country (window):}
+\begin{lstlisting}[language=SQL]
+SELECT
+  country_origin,
+  year,
+  AVG(research_citations) OVER (
+    PARTITION BY country_origin
+    ORDER BY year
+    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+  ) AS ma3_citations
+FROM professionals_data;
+\end{lstlisting}
+
+\textbf{(ii) top decile + percentile bucketing:}
+\begin{lstlisting}[language=SQL]
+SELECT
+  userid,
+  research_citations,
+  NTILE(10) OVER (ORDER BY research_citations DESC) AS decile,
+  PERCENT_RANK() OVER (ORDER BY research_citations) AS pct_rank
+FROM professionals_data;
+\end{lstlisting}
+
+\textbf{(iii) cohort retention (CTE style):}
+\begin{lstlisting}[language=SQL]
+WITH base AS (
+  SELECT cohort_year, migration_status
+  FROM candidate_outcomes
+),
+cohort_size AS (
+  SELECT cohort_year, COUNT(*) AS n_total
+  FROM base GROUP BY cohort_year
+),
+retained AS (
+  SELECT cohort_year, COUNT(*) AS n_not_migrated
+  FROM base
+  WHERE migration_status = 0
+  GROUP BY cohort_year
+)
+SELECT c.cohort_year,
+       c.n_total,
+       r.n_not_migrated,
+       1.0 * r.n_not_migrated / c.n_total AS retention_rate
+FROM cohort_size c
+JOIN retained r USING (cohort_year)
+ORDER BY c.cohort_year;
+\end{lstlisting}
 
 \subsection*{Q6. Data Leakage and Big-Data Architecture (10 pts)}
+
+\textbf{Expected complete answer:}
 \begin{itemize}
-    \item Identify leaky features and defend exclusions.
-    \item Propose a scalable batch + streaming architecture (Bronze/Silver/Gold or equivalent).
-    \item Explain feature store design for training-serving consistency.
+    \item Identify leaky/post-outcome features by timestamp logic \(t_f \le t_0\).
+    \item Propose Bronze/Silver/Gold (or equivalent) architecture.
+    \item Explain feature store split:
+    \begin{itemize}
+        \item offline store (training; point-in-time correct),
+        \item online store (serving; low latency),
+        \item shared feature definitions/versioning.
+    \end{itemize}
 \end{itemize}
 
+% ============================================================
 \section*{Block D -- Supervised Learning and Optimization (45 points)}
 
 \subsection*{Q7. Linear/Logistic Models + Regularization (15 pts)}
+
+\textbf{Minimum complete coverage:}
 \begin{itemize}
-    \item Fit baseline linear and logistic models.
-    \item Derive and implement Elastic Net objective gradients (or use validated library implementation with derivation in report).
-    \item Interpret coefficients, p-values/intervals (where applicable), and calibration.
+    \item baseline linear/logistic models,
+    \item Elastic Net objective and gradient/subgradient explanation,
+    \item coefficient interpretation + CI/p-values (when applicable),
+    \item probability calibration check.
 \end{itemize}
+
+\textbf{Elastic Net form:}
+\[
+\mathcal{L}(\beta)+\lambda\left[\alpha\|\beta\|_1+\frac{1-\alpha}{2}\|\beta\|_2^2\right]
+\]
 
 \subsection*{Q8. Optimization Deep Dive (10 pts)}
-Compare SGD, Momentum, and Adam on a ravine-style objective.
+
+Compare SGD, Momentum, Adam on ravine objective.
+
+\textbf{Expected observations:}
 \begin{itemize}
-    \item show trajectories,
-    \item discuss curvature and oscillation,
-    \item recommend optimizer under feature-scale heterogeneity.
+    \item SGD: oscillatory in steep direction.
+    \item Momentum: damped oscillation, faster valley traversal.
+    \item Adam: adaptive coordinate-wise scaling, robust under heterogeneous scales.
 \end{itemize}
+
+\textbf{Required artifacts:} trajectory plot + loss-vs-iteration + recommendation.
 
 \subsection*{Q9. Model Family Comparison (20 pts)}
-Train and compare:
-\begin{itemize}
-    \item SVM/KNN,
-    \item Decision Tree/Random Forest,
-    \item one boosting model (XGBoost/GradientBoosting/CatBoost if available).
-\end{itemize}
-Required:
+
+\textbf{Model families:} SVM/KNN, Tree/RF, one boosting model.
+
+\textbf{Required protocol:}
 \begin{enumerate}
-    \item cross-validation protocol,
-    \item hyperparameter search strategy,
-    \item error analysis and confusion patterns.
+    \item Cross-validation setup (stratified or temporal).
+    \item Hyperparameter search (random/grid/Bayesian with bounds).
+    \item Error analysis: confusion patterns + subgroup slices.
 \end{enumerate}
 
+\textbf{Minimum report table:}
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+Model & AUC & F1 & Precision & Recall \\
+\midrule
+Logistic & -- & -- & -- & -- \\
+RandomForest & -- & -- & -- & -- \\
+Boosting & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
 \section*{Block E -- Unsupervised Learning (20 points)}
 
 \subsection*{Q10. Dimensionality Reduction (10 pts)}
+
+\textbf{Required:}
 \begin{itemize}
-    \item PCA with explained variance ratio,
-    \item one additional method (random projection, t-SNE, or UMAP),
-    \item interpretation of latent dimensions.
+    \item PCA explained variance ratio (EVR, cumulative EVR plot),
+    \item one additional method (RP/t-SNE/UMAP),
+    \item interpretation limits of latent dimensions.
 \end{itemize}
 
 \subsection*{Q11. Clustering (10 pts)}
+
+\textbf{Required:}
 \begin{itemize}
-    \item K-Means with elbow and silhouette analysis,
-    \item DBSCAN (or equivalent density method),
-    \item compare cluster stability and practical meaning.
+    \item K-Means + elbow and silhouette,
+    \item DBSCAN (or density equivalent),
+    \item cluster stability and practical meaning.
 \end{itemize}
 
+\textbf{Note:} justify chosen \(K\)/\(\epsilon\) and discuss sensitivity.
+
+% ============================================================
 \section*{Block F -- Deep Learning, NLP, and LMs (30 points)}
 
 \subsection*{Q12. Neural Networks and Sequence Models (15 pts)}
-Complete one tabular NN and one sequence/NLP model experiment:
+
+\textbf{Required experiments:}
 \begin{itemize}
-    \item MLP or shallow feed-forward network for tabular task,
-    \item CNN or RNN/LSTM/GRU for text/sequence variant,
-    \item compare against classical baseline.
+    \item one tabular NN (MLP/shallow FFN),
+    \item one sequence/NLP model (CNN/RNN/LSTM/GRU),
+    \item comparison vs best classical baseline.
 \end{itemize}
+
+\textbf{Must report:} split protocol, early stopping logic, overfitting diagnostics.
 
 \subsection*{Q13. Language Models and LLM Agents (15 pts)}
+
+\textbf{Expected complete answer:}
 \begin{itemize}
-    \item design a small agentic workflow (retrieval/planning/tool-use pseudocode acceptable),
-    \item define evaluation criteria (faithfulness, hallucination rate, safety),
-    \item discuss governance constraints for academic/enterprise deployment.
+    \item agentic workflow (retrieve \(\rightarrow\) plan \(\rightarrow\) tool use \(\rightarrow\) verify \(\rightarrow\) respond),
+    \item evaluation criteria: faithfulness, hallucination rate, safety,
+    \item governance constraints: PII controls, prompt-injection defenses, audit logs.
 \end{itemize}
 
+% ============================================================
 \section*{Block G -- Ethics and Governance (15 points)}
 
 \subsection*{Q14. Fairness, Bias, and Responsible Deployment (15 pts)}
+
+\textbf{Required:}
 \begin{itemize}
-    \item evaluate subgroup metrics (e.g., by country/education),
-    \item discuss historical-policy bias and proxy discrimination,
-    \item propose human-in-the-loop and override policy.
+    \item subgroup metrics (country/education etc.),
+    \item discussion of historical bias + proxy discrimination,
+    \item human-in-the-loop, override and appeals policy.
 \end{itemize}
 
+\textbf{Recommended fairness metrics:}
+TPR/FPR gaps, precision parity, calibration by subgroup, DP gap (if policy-relevant).
+
+% ============================================================
 \section*{Block H -- Integrated Capstone (25 points)}
 
 \subsection*{Capstone Task}
-Deliver a full-stack implementation that includes:
+
+\textbf{Implementation must include:}
 \begin{enumerate}
-    \item data preprocessing and leakage-safe training,
-    \item model card and experiment tracking summary,
-    \item SHAP-based local and global explainability,
-    \item deployment recommendation with monitoring thresholds.
+    \item leakage-safe preprocessing and training pipeline,
+    \item model card + experiment tracking summary,
+    \item SHAP local and global explainability,
+    \item deployment recommendation + monitoring thresholds.
 \end{enumerate}
 
-\textbf{Required capstone outputs:}
+\textbf{Mandatory outputs:}
 \begin{itemize}
-    \item one local explanation for a high-citation candidate predicted as no-migration,
+    \item one local explanation for a high-citation candidate predicted no-migration,
     \item one global feature-importance plot,
     \item one fairness slice table,
     \item one executive summary for non-technical stakeholders.
 \end{itemize}
 
-\section*{Block I -- Production Reliability Extension (30 points)}
+% ============================================================
+\section*{Block I -- Production Reliability Extension (60 points)}
 
 \subsection*{Q15. Calibration and Threshold Policy (10 pts)}
-Using your best supervised model from earlier sections:
+
+\textbf{Required:}
 \begin{itemize}
-    \item generate a reliability/calibration curve,
-    \item compute at least one probabilistic calibration metric (e.g., Brier score, ECE),
-    \item derive two threshold policies:
-    \begin{enumerate}
-        \item threshold maximizing F1,
-        \item threshold minimizing an asymmetric cost (e.g., FN cost > FP cost).
-    \end{enumerate}
+    \item reliability/calibration curve,
+    \item at least one calibration metric (Brier, ECE),
+    \item threshold maximizing F1,
+    \item threshold minimizing asymmetric cost (\(C_{FN}>C_{FP}\)).
 \end{itemize}
 
 \textbf{Deliverables:}
-\begin{itemize}
-    \item calibration plot,
-    \item threshold-vs-metric tradeoff plot,
-    \item final threshold recommendation with justification.
-\end{itemize}
+calibration plot, threshold tradeoff plot, final threshold recommendation with policy logic.
 
 \subsection*{Q16. Drift Detection and Monitoring Design (10 pts)}
-Define and execute a drift analysis between two data windows (time-based if possible).
+
+\textbf{Required:}
 \begin{itemize}
-    \item compute PSI for numeric features and rank by severity,
-    \item include one categorical drift indicator (e.g., JS divergence over country distribution),
-    \item propose a monitoring policy (warning/critical thresholds and retraining triggers).
+    \item PSI ranking for numeric features,
+    \item one categorical drift metric (e.g., JS divergence),
+    \item warning/critical thresholds and retraining triggers.
 \end{itemize}
 
-\textbf{Deliverables:}
-\begin{itemize}
-    \item drift table (feature, metric, status),
-    \item drift ranking figure,
-    \item concise monitoring SOP for production.
-\end{itemize}
+\textbf{SOP expectation:}
+who monitors, frequency, escalation policy, rollback/retrain condition.
 
 \subsection*{Q17. Counterfactual Recourse Analysis (10 pts)}
-For near-boundary negative predictions, estimate minimal actionable changes needed to flip outcome.
+
+\textbf{Required:}
 \begin{itemize}
-    \item choose at least two actionable features (e.g., GitHub activity, citations),
-    \item compute minimal intervention per candidate under realistic caps,
-    \item report recourse success rate and median intervention magnitude by feature.
+    \item select at least two actionable features,
+    \item minimal intervention under feasibility caps,
+    \item recourse success rate + median intervention by feature.
 \end{itemize}
 
-\textbf{Deliverables:}
-\begin{itemize}
-    \item recourse examples table,
-    \item recourse-effort summary plot,
-    \item discussion of practicality/ethics of suggested interventions.
-\end{itemize}
+\textbf{Include ethics note:}
+avoid unrealistic/inequitable recourse recommendations.
 
 \subsection*{Q18. Temporal Backtesting and Rolling Validation (10 pts)}
-Run a temporal robustness experiment.
+
+\textbf{Required:}
 \begin{itemize}
-    \item Use chronological folds where a valid time column exists.
-    \item If no valid time column exists, define and justify a fallback ordering strategy.
-    \item Report fold-wise performance (\texttt{AUC}, \texttt{F1}) and decay relative to the first fold.
-    \item Add a drift-aware interpretation using a feature drift proxy (e.g., mean PSI).
+    \item chronological folds (or justified fallback ordering),
+    \item fold-wise AUC/F1 and decay vs first fold,
+    \item drift-aware interpretation (e.g., mean PSI trend).
 \end{itemize}
 
 \textbf{Deliverables:}
-\begin{itemize}
-    \item temporal backtest table (\texttt{csv}),
-    \item degradation figure (\texttt{png}),
-    \item explanation of fallback strategy (if used) in the report.
-\end{itemize}
+\texttt{q18\_temporal\_backtest.csv}, degradation figure, fallback explanation in report.
 
 \subsection*{Q19. Uncertainty Quantification and Coverage (10 pts)}
-Quantify predictive uncertainty and validate reliability.
+
+\textbf{Required:}
 \begin{itemize}
-    \item Implement conformal or calibrated probability intervals.
-    \item Evaluate empirical coverage across multiple confidence levels.
-    \item Report interval width and under-coverage risk.
+    \item conformal or calibrated predictive intervals/sets,
+    \item empirical coverage across confidence levels,
+    \item interval width and under-coverage analysis.
 \end{itemize}
 
 \textbf{Deliverables:}
-\begin{itemize}
-    \item coverage summary table (\texttt{csv}),
-    \item coverage-vs-confidence figure (\texttt{png}),
-    \item policy note for handling low-confidence cases.
-\end{itemize}
+\texttt{q19\_coverage\_summary.csv}, coverage-vs-confidence figure, low-confidence handling policy.
 
 \subsection*{Q20. Fairness Mitigation Experiment (10 pts)}
-Design and evaluate a mitigation intervention under explicit policy constraints.
+
+\textbf{Required:}
 \begin{itemize}
-    \item Train a baseline model and compute subgroup fairness metrics.
-    \item Apply one mitigation method (reweighing/thresholding/other justified method).
-    \item Compare pre/post fairness and pre/post utility.
-    \item Define and evaluate policy constraints (e.g., max acceptable AUC drop).
+    \item baseline fairness metrics,
+    \item one mitigation (reweighing/thresholding/justified method),
+    \item pre/post fairness and utility comparison,
+    \item explicit policy constraint check (e.g., max AUC drop).
 \end{itemize}
 
 \textbf{Deliverables:}
-\begin{itemize}
-    \item pre/post mitigation comparison table (\texttt{csv}),
-    \item fairness-performance tradeoff figure (\texttt{png}),
-    \item deployment recommendation based on policy constraints.
-\end{itemize}
+\texttt{q20\_mitigation\_comparison.csv}, fairness-performance tradeoff figure, deployment recommendation.
 
+% ============================================================
 \section*{Block J -- Advanced Extensions (Bonus +20)}
 Any subset earns partial bonus. Keep results reproducible and justified.
 \begin{enumerate}
-    \item \textbf{Causal framing (5 pts)}: propose a DAG for migration, identify (in)valid adjustment sets, and discuss identifiability limits.
-    \item \textbf{Uncertainty (5 pts)}: add conformal prediction or calibrated prediction intervals with empirical coverage check on the test split.
-    \item \textbf{Temporal robustness (5 pts)}: perform time-based validation (e.g., train on earlier years, test on later) and compare to random split; report drift-aware degradation.
-    \item \textbf{Streaming/online serving (5 pts)}: outline a minimal online inference design (feature freshness, idempotent writes, latency/SLA), plus a guardrail for out-of-distribution detection.
+    \item \textbf{Causal framing (5 pts):} DAG, valid/invalid adjustment sets, identifiability limits.
+    \item \textbf{Uncertainty (5 pts):} conformal/calibrated intervals with empirical coverage.
+    \item \textbf{Temporal robustness (5 pts):} time-based vs random split comparison with drift-aware degradation.
+    \item \textbf{Streaming/online serving (5 pts):} minimal online inference design (freshness, idempotence, SLA) + OOD guardrail.
 \end{enumerate}
 
+% ============================================================
 \section*{3. Academic Integrity and Professional Standards}
-
 \begin{itemize}
     \item Cite all external resources and model-generated assistance.
     \item Any copied code without attribution is a violation.
@@ -340,12 +473,26 @@ Any subset earns partial bonus. Keep results reproducible and justified.
     \item Prefer interpretable, audited pipelines over leaderboard-only optimization.
 \end{itemize}
 
-\section*{4. Bonus (up to +10 points)}
-
+\section*{4. Extra Bonus (up to +10 points)}
 \begin{itemize}
     \item Causal inference extension (DAG + identification discussion).
     \item Real-time pipeline prototype for streaming updates.
     \item Advanced uncertainty quantification (conformal or Bayesian approximation).
 \end{itemize}
+
+% ============================================================
+\section*{5. Submission Quality Checklist (Must Pass)}
+\begin{itemize}
+    \item[ ] All sections Q1--Q20 + Capstone present and clearly labeled.
+    \item[ ] Leakage audit documented with timestamp logic.
+    \item[ ] Reproducibility: seeds, split protocol, package versions.
+    \item[ ] Calibration, drift, uncertainty, fairness all included.
+    \item[ ] Policy thresholds and governance decisions justified.
+    \item[ ] Figures/tables filenames consistent with notebook outputs.
+\end{itemize}
+
+\begin{tcolorbox}
+\textbf{Final note:} Full credit requires not only strong metrics, but also methodological validity, interpretability, fairness accountability, and production-readiness.
+\end{tcolorbox}
 
 \end{document}
