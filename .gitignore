@@ -195,7 +195,7 @@ $RECYCLE.BIN/
 python
 
 # Compressed files
-*.zip
+# *.zip
 *.tar.gz
 *.rar
 
